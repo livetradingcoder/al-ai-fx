@@ -10,17 +10,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const res = await signIn("credentials", { 
-      email, 
-      password, 
-      redirect: false,
-      callbackUrl: "/dashboard" 
-    }) as any;
-
-    if (res?.error) {
-      setError("Invalid email or password");
-    } else if (res?.url) {
-      window.location.href = res.url;
+    try {
+      const res = await signIn("credentials", { 
+        email, 
+        password, 
+        callbackUrl: "/dashboard",
+        redirect: true 
+      });
+    } catch (err) {
+      setError("An unexpected error occurred");
     }
   };
 
