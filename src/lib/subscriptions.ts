@@ -81,6 +81,25 @@ export async function provisionSubscription(email: string, tierRaw: string, payg
     }
   }
 
+  // Check if an active subscription of the same tier already exists
+  const existingSub = await prisma.subscription.findFirst({
+    where: {
+      userId: user.id,
+      tier,
+      status: "ACTIVE",
+    },
+  });
+
+  if (existingSub) {
+    console.log(`[Subscription Service] User ${email} already has an active ${tier} subscription.`);
+    return {
+      userId: user.id,
+      subscriptionId: existingSub.id,
+      duplicated: true,
+      emailSuccess: true,
+    };
+  }
+
   const expiresAt = computeExpirationDate(tier);
   const subscription = await prisma.subscription.create({
     data: {
