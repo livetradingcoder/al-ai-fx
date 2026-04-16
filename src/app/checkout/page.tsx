@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-type TierId = "free-trial" | "1-month" | "6-months" | "lifetime";
+type TierId = "free-trial" | "1-month" | "6-months" | "lifetime" | "secret-test";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -19,7 +19,8 @@ function CheckoutContent() {
     "free-trial": { name: "3-Day Free Trial", price: "$0", amount: "0.00" },
     "1-month": { name: "Monthly Plan", price: "$149", amount: "149.00" },
     "6-months": { name: "Biannual Plan", price: "$499", amount: "499.00" },
-    lifetime: { name: "Lifetime Access", price: "$999", amount: "999.00" },
+    "lifetime": { name: "Lifetime Access", price: "$999", amount: "999.00" },
+    "secret-test": { name: "Secret Test Tier", price: "$10", amount: "10.00" },
   };
 
   const selectedPlan = planDetails[tier] || planDetails["1-month"];

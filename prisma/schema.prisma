@@ -68,6 +68,7 @@ enum PricingTier {
   ONE_MONTH
   SIX_MONTHS
   LIFETIME
+  SECRET_TEST_TIER
 }
 
 enum SubStatus {

@@ -18,6 +18,9 @@ export function mapTier(tierRaw: string): PricingTier {
       return PricingTier.SIX_MONTHS;
     case "lifetime":
       return PricingTier.LIFETIME;
+    case "secret-test":
+    case "secret_test":
+      return PricingTier.SECRET_TEST_TIER;
     default:
       return PricingTier.ONE_MONTH;
   }
@@ -32,6 +35,8 @@ export function computeExpirationDate(tier: PricingTier): Date {
     expiresAt.setMonth(expiresAt.getMonth() + 1);
   } else if (tier === PricingTier.SIX_MONTHS) {
     expiresAt.setMonth(expiresAt.getMonth() + 6);
+  } else if (tier === PricingTier.SECRET_TEST_TIER) {
+    expiresAt.setDate(expiresAt.getDate() + 7);
   } else {
     expiresAt.setFullYear(expiresAt.getFullYear() + 100);
   }
