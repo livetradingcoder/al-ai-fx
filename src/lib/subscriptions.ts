@@ -42,6 +42,7 @@ export function computeExpirationDate(tier: PricingTier): Date {
 export async function findOrCreateUser(email: string) {
   let user = await prisma.user.findUnique({ where: { email } });
   let tempPassword = null;
+  let emailSuccess = true;
 
   if (!user) {
     tempPassword = Math.random().toString(36).slice(-10);
@@ -56,20 +57,26 @@ export async function findOrCreateUser(email: string) {
     });
 
     console.log(`[Subscription Service] Created new user: ${email}. Temporary Password: ${tempPassword}`);
-    await sendWelcomeEmail(email, tempPassword);
+    try {
+      await sendWelcomeEmail(email, tempPassword);
+    } catch (error) {
+      console.error(`[Subscription Service] Failed to send welcome email to ${email}:`, error);
+      emailSuccess = false;
+    }
   }
 
-  return { user, tempPassword };
+  return { user, tempPassword, emailSuccess };
 }
 
 export async function provisionSubscription(email: string, tierRaw: string, paygateId?: string, amount?: number, currency?: string) {
   const tier = mapTier(tierRaw);
-  const { user } = await findOrCreateUser(email);
+  const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
+  let overallEmailSuccess = welcomeEmailSuccess;
 
   if (paygateId) {
     const existingOrder = await prisma.order.findUnique({ where: { paygateId } });
     if (existingOrder) {
-      return { userId: user.id, orderId: existingOrder.id, duplicated: true };
+      return { userId: user.id, orderId: existingOrder.id, duplicated: true, emailSuccess: true };
     }
   }
 
@@ -99,12 +106,18 @@ export async function provisionSubscription(email: string, tierRaw: string, payg
   }
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)
-  await sendPurchaseConfirmationEmail(email, tier, expiresAt);
+  try {
+    await sendPurchaseConfirmationEmail(email, tier, expiresAt);
+  } catch (error) {
+    console.error(`[Subscription Service] Failed to send confirmation email to ${email}:`, error);
+    overallEmailSuccess = false;
+  }
 
   return {
     userId: user.id,
     subscriptionId: subscription.id,
     orderId,
     duplicated: false,
+    emailSuccess: overallEmailSuccess,
   };
 }

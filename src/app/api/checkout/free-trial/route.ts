@@ -14,6 +14,12 @@ export async function POST(req: Request) {
 
     const result = await provisionSubscription(email, "free-trial");
 
+    if (!result.emailSuccess) {
+      return NextResponse.json({
+        error: "Your account was created, but we failed to send the welcome email with your credentials. Please contact support@al-ai-fx.xyz immediately to get your password."
+      }, { status: 500 });
+    }
+
     return NextResponse.json({
       success: true,
       message: "Free trial activated successfully.",
