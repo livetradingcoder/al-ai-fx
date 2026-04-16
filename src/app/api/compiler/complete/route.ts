@@ -17,9 +17,16 @@ export async function POST(req: Request) {
     const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
     if (!blobToken) {
       console.error("[Compiler Complete] ERROR: BLOB_READ_WRITE_TOKEN is missing from environment variables.");
+      return NextResponse.json({ 
+        error: 'Configuration Error', 
+        details: 'Vercel Blob storage is not configured. BLOB_READ_WRITE_TOKEN is missing.' 
+      }, { status: 500 });
     }
 
-    const { jobId, fileDataBase64, status } = await req.json();
+    const rawBody = await req.text();
+    console.log(`[Compiler Complete] Received body size: ${rawBody.length} bytes`);
+    
+    const { jobId, fileDataBase64, status } = JSON.parse(rawBody);
 
     if (status === 'COMPLETED' && fileDataBase64) {
       const buffer = Buffer.from(fileDataBase64, 'base64');
@@ -27,22 +34,31 @@ export async function POST(req: Request) {
       
       console.log(`[Compiler Complete] Uploading ${fileName} to Vercel Blob...`);
       
-      const blob = await put(`compiled/${fileName}`, buffer, {
-        access: 'public',
-        contentType: 'application/octet-stream',
-      });
+      try {
+        const blob = await put(`compiled/${fileName}`, buffer, {
+          access: 'public',
+          contentType: 'application/octet-stream',
+          token: blobToken // Explicitly pass the token
+        });
 
-      console.log(`[Compiler Complete] Upload successful: ${blob.url}`);
+        console.log(`[Compiler Complete] Upload successful: ${blob.url}`);
 
-      await prisma.compilation.update({
-        where: { id: jobId },
-        data: { 
-          status: 'COMPLETED',
-          downloadUrl: blob.url
-        }
-      });
+        await prisma.compilation.update({
+          where: { id: jobId },
+          data: { 
+            status: 'COMPLETED',
+            downloadUrl: blob.url
+          }
+        });
 
-      return NextResponse.json({ success: true, url: blob.url }, { status: 200 });
+        return NextResponse.json({ success: true, url: blob.url }, { status: 200 });
+      } catch (blobError: any) {
+        console.error("Vercel Blob put error:", blobError.message || blobError);
+        return NextResponse.json({ 
+          error: 'Upload Failed', 
+          details: `Failed to upload to Vercel Blob: ${blobError.message}` 
+        }, { status: 500 });
+      }
     } else {
       await prisma.compilation.update({
         where: { id: jobId },
