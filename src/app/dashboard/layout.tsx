@@ -1,4 +1,10 @@
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions) as any;
+  const isAdmin = session?.user?.role === "ADMIN";
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', paddingTop: '80px' }}>
       
@@ -18,6 +24,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <li style={{ marginTop: '2rem' }}><a href="/api/auth/signout" style={{ color: 'var(--text-muted)' }}>Logout &rarr;</a></li>
           </ul>
         </div>
+
+        {isAdmin && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' }}>Administration</h3>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <li><a href="/admin" style={{ color: 'var(--accent-accent)', fontWeight: '600' }}>Admin Center &rarr;</a></li>
+            </ul>
+          </div>
+        )}
       </aside>
 
       {/* Main Content Area */}
