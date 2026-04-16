@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       
       try {
         const blob = await put(`compiled/${fileName}`, buffer, {
-          access: 'public',
+          access: 'private',
           contentType: 'application/octet-stream',
           token: blobToken // Explicitly pass the token
         });

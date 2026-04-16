@@ -78,9 +78,9 @@ export default async function DashboardOverview() {
               </p>
             </div>
             {activeSub.mt5AccountNumber ? (
-              user?.subscriptions[0]?.compilations[0]?.downloadUrl ? (
+              user?.subscriptions[0]?.compilations[0]?.id ? (
                 <a 
-                  href={user.subscriptions[0].compilations[0].downloadUrl} 
+                  href={`/api/compiler/download?jobId=${user.subscriptions[0].compilations[0].id}`} 
                   download 
                   className="btn-primary" 
                   style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}

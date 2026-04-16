@@ -41,7 +41,7 @@ async function testBlob() {
     console.log(`Uploading ${fileName}...`);
     
     const blob = await put(`diagnostics/${fileName}`, testContent, {
-      access: 'public',
+      access: 'private',
       contentType: 'text/plain',
     });
 

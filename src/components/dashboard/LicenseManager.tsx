@@ -124,8 +124,13 @@ export default function LicenseManager({ subscription, latestCompilation: initia
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Download Latest Build</p>
           
-          {compilation?.status === "COMPLETED" && compilation.downloadUrl ? (
-            <a href={compilation.downloadUrl} download className="btn-primary" style={{ textAlign: "center", textDecoration: "none" }}>
+          {compilation?.status === "COMPLETED" && compilation.id ? (
+            <a 
+              href={`/api/compiler/download?jobId=${compilation.id}`} 
+              download 
+              className="btn-primary" 
+              style={{ textAlign: "center", textDecoration: "none" }}
+            >
               Download Latest .ex5
             </a>
           ) : (
