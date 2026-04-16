@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type TierId = "free-trial" | "1-month" | "6-months" | "lifetime";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const tier = (searchParams?.get("tier") || "1-month") as TierId;
 
@@ -202,5 +202,17 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Loading Checkout...</p>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
