@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { UserRole, PricingTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail, sendPurchaseConfirmationEmail } from "@/lib/mail";
 
 type ProvisionPaymentInput = {
   email: string;
@@ -49,9 +50,10 @@ function computeExpirationDate(tier: PricingTier): Date {
 
 async function findOrCreateUser(email: string) {
   let user = await prisma.user.findUnique({ where: { email } });
+  let tempPassword = null;
 
   if (!user) {
-    const tempPassword = Math.random().toString(36).slice(-10);
+    tempPassword = Math.random().toString(36).slice(-10);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     user = await prisma.user.create({
@@ -63,25 +65,27 @@ async function findOrCreateUser(email: string) {
     });
 
     console.log(`[Paygate webhook] Created new user: ${email}. Temporary Password: ${tempPassword}`);
+    await sendWelcomeEmail(email, tempPassword);
   }
 
-  return user;
+  return { user, tempPassword };
 }
 
 async function provisionPayment(input: ProvisionPaymentInput) {
   const tier = mapTier(input.tierRaw);
-  const user = await findOrCreateUser(input.email);
+  const { user } = await findOrCreateUser(input.email);
 
   const existingOrder = await prisma.order.findUnique({ where: { paygateId: input.paygateId } });
   if (existingOrder) {
     return { userId: user.id, orderId: existingOrder.id, duplicated: true };
   }
 
+  const expiresAt = computeExpirationDate(tier);
   const subscription = await prisma.subscription.create({
     data: {
       userId: user.id,
       tier,
-      expiresAt: computeExpirationDate(tier),
+      expiresAt: expiresAt,
       status: "ACTIVE",
     },
   });
@@ -96,6 +100,9 @@ async function provisionPayment(input: ProvisionPaymentInput) {
       pricingTier: tier,
     },
   });
+
+  // Send purchase confirmation
+  await sendPurchaseConfirmationEmail(input.email, tier, expiresAt);
 
   return {
     userId: user.id,

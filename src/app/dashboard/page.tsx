@@ -15,6 +15,12 @@ export default async function DashboardOverview() {
     include: {
       subscriptions: {
         where: { status: "ACTIVE" },
+        include: {
+          compilations: {
+            orderBy: { createdAt: "desc" },
+            take: 1
+          }
+        },
         orderBy: { createdAt: "desc" },
         take: 1
       }
@@ -67,10 +73,25 @@ export default async function DashboardOverview() {
                   : 'Subscription active. Link an MT5 account to download.'}
               </p>
             </div>
-            {activeSub.mt5AccountNumber && (
-              <button className="btn-primary" style={{ border: 'none', fontSize: '1rem', padding: '0.8rem 2rem' }}>
-                Download Build
-              </button>
+            {activeSub.mt5AccountNumber ? (
+              user?.subscriptions[0]?.compilations[0]?.downloadUrl ? (
+                <a 
+                  href={user.subscriptions[0].compilations[0].downloadUrl} 
+                  download 
+                  className="btn-primary" 
+                  style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}
+                >
+                  Download Build
+                </a>
+              ) : (
+                <a href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
+                  Manage & Download
+                </a>
+              )
+            ) : (
+              <a href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
+                Setup License
+              </a>
             )}
           </div>
         ) : (
