@@ -60,7 +60,6 @@ function CheckoutContent() {
           tier,
           email: email.trim().toLowerCase(),
           currency: "USD",
-          provider: "moonpay",
           mt5AccountNumber: mt5Account.trim() || undefined,
         }),
       });
@@ -91,9 +90,9 @@ function CheckoutContent() {
           <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>Account & Payment Details</h2>
           {isSuccess ? (
             <div style={{ textAlign: "center", padding: "2rem 0" }}>
-              <div 
-                style={{ 
-                  fontSize: "4rem", 
+              <div
+                style={{
+                  fontSize: "4rem",
                   marginBottom: "1.5rem",
                   background: "linear-gradient(135deg, #4ade80, #22c55e)",
                   WebkitBackgroundClip: "text",
@@ -107,16 +106,16 @@ function CheckoutContent() {
               <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
                 Success! Your GoldBot access is now active. We've sent an email to <strong>{email}</strong> with your login credentials and getting-started guide.
               </p>
-              
+
               <div style={{ background: "var(--bg-secondary)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid var(--border-color)", marginBottom: "2rem" }}>
                 <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
                   <strong>Next Step:</strong> Check your inbox (and spam folder). Log in with your temporary password to access your dashboard and download your EA.
                 </p>
               </div>
 
-              <a 
-                href="/login" 
-                className="btn-primary fill" 
+              <a
+                href="/login"
+                className="btn-primary fill"
                 style={{ display: "inline-block", textDecoration: "none", width: "100%" }}
               >
                 Go to Login
@@ -193,7 +192,7 @@ function CheckoutContent() {
 
                 {!isFreeTrial && (
                   <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "0.85rem" }}>
-                    Provider: moonpay | Currency: USD | Amount: {selectedPlan.amount}
+                    Currency: USD | Amount: {selectedPlan.amount}
                   </p>
                 )}
 

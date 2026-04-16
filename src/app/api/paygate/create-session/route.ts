@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const body = (await req.json()) as CreateSessionPayload;
     const tier = (body.tier || "1-month") as TierId;
     const email = (body.email || "").trim().toLowerCase();
-    const provider = (body.provider || "moonpay").trim().toLowerCase();
+    const provider = (body.provider || "").trim().toLowerCase();
     const currency = (body.currency || "USD").trim().toUpperCase();
 
     if (!email || !email.includes("@")) {
@@ -101,7 +101,9 @@ export async function POST(req: Request) {
     const decodedAddress = decodeURIComponent(walletJson.address_in);
     paymentUrl.searchParams.set("address", decodedAddress);
     paymentUrl.searchParams.set("amount", amount);
-    paymentUrl.searchParams.set("provider", provider);
+    if (provider) {
+      paymentUrl.searchParams.set("provider", provider);
+    }
     paymentUrl.searchParams.set("email", email);
     paymentUrl.searchParams.set("currency", currency);
 
