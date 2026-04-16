@@ -50,19 +50,7 @@ export default async function AdminDashboard() {
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <nav className="navbar" style={{ position: 'sticky' }}>
-        <div className="nav-container">
-          <a href="/admin" className="logo" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-            GoldBot <span style={{fontSize: '0.8rem', fontWeight: 500, color: 'var(--accent-primary)'}}>Admin Center</span>
-          </a>
-          <div className="nav-links">
-            <a href="/dashboard" className="btn-secondary">Back to Site</a>
-            <a href="/api/auth/signout" className="btn-primary" style={{ marginLeft: '1rem' }}>Logout</a>
-          </div>
-        </div>
-      </nav>
-
-      <div style={{ padding: '4rem 2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <div style={{ padding: '6rem 2rem 4rem 2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>Platform Overview</h1>
 
         <div className="features-grid" style={{ marginBottom: '4rem' }}>
@@ -88,11 +76,11 @@ export default async function AdminDashboard() {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>MT5 Account</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>MT5 Account</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
               </tr>
             </thead>
             <tbody>
@@ -105,17 +93,17 @@ export default async function AdminDashboard() {
               )}
               {recentSubscriptions.map(sub => (
                 <tr key={sub.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1.5rem 0' }}>{sub.user.email}</td>
-                  <td style={{ padding: '1.5rem 0', fontFamily: 'monospace' }}>
+                  <td style={{ padding: '1.5rem 1rem' }}>{sub.user.email}</td>
+                  <td style={{ padding: '1.5rem 1rem', fontFamily: 'monospace' }}>
                     {sub.mt5AccountNumber || <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                   </td>
-                  <td style={{ padding: '1.5rem 0' }}>{sub.tier.replace('_', ' ')}</td>
-                  <td style={{ padding: '1.5rem 0' }}>
+                  <td style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{sub.tier.replace('_', ' ')}</td>
+                  <td style={{ padding: '1.5rem 1rem' }}>
                     <span style={{ color: sub.status === "ACTIVE" ? 'var(--accent-accent)' : 'var(--text-secondary)' }}>
                       {sub.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1.5rem 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                     {new Date(sub.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
@@ -152,12 +140,12 @@ export default async function AdminDashboard() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Order Ref (Paygate ID)</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Order Ref (Paygate ID)</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
+                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
               </tr>
             </thead>
             <tbody>
@@ -170,20 +158,20 @@ export default async function AdminDashboard() {
               )}
               {recentOrders.map(order => (
                 <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1.5rem 0' }}>{order.user.email}</td>
-                  <td style={{ padding: '1.5rem 0' }}>{order.pricingTier.replace('_', ' ')}</td>
-                  <td style={{ padding: '1.5rem 0', fontWeight: 'bold' }}>
+                  <td style={{ padding: '1.5rem 1rem' }}>{order.user.email}</td>
+                  <td style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{order.pricingTier.replace('_', ' ')}</td>
+                  <td style={{ padding: '1.5rem 1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     ${order.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {order.currency}
                   </td>
-                  <td style={{ padding: '1.5rem 0', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                  <td style={{ padding: '1.5rem 1rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
                     {order.paygateId || <span style={{ color: 'var(--text-secondary)' }}>N/A</span>}
                   </td>
-                  <td style={{ padding: '1.5rem 0' }}>
+                  <td style={{ padding: '1.5rem 1rem' }}>
                     <span style={{ color: order.status === "SUCCESS" ? 'var(--accent-accent)' : order.status === "PENDING" ? 'var(--text-secondary)' : '#fca5a5' }}>
                       {order.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1.5rem 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                     {new Date(order.createdAt).toLocaleString()}
                   </td>
                 </tr>
