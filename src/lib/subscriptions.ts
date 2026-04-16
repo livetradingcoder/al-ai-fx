@@ -1,4 +1,4 @@
-import { PricingTier, SubStatus } from "@prisma/client";
+import { PricingTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail, sendPurchaseConfirmationEmail } from "@/lib/mail";
