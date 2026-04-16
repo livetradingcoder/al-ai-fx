@@ -71,6 +71,11 @@ export default function LoginPage() {
             />
           </div>
           <button type="submit" className="btn-primary fill">Sign In</button>
+          <div style={{ textAlign: "center", marginTop: "-0.5rem" }}>
+            <a href="/forgot-password" style={{ color: "var(--text-muted)", fontSize: "0.85rem", textDecoration: "none" }}>
+              Forgot Password?
+            </a>
+          </div>
         </form>
         <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Don't have an account? <a href="/#pricing" style={{ color: 'var(--accent-primary)' }}>Buy GoldBot</a>

@@ -53,6 +53,7 @@ export async function findOrCreateUser(email: string) {
         email,
         passwordHash: hashedPassword,
         name: email.split("@")[0],
+        shouldResetPassword: true,
       },
     });
 
@@ -70,7 +71,7 @@ export async function findOrCreateUser(email: string) {
 
 export async function provisionSubscription(email: string, tierRaw: string, paygateId?: string, amount?: number, currency?: string) {
   const tier = mapTier(tierRaw);
-  const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
+  const { user, tempPassword, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
 
   if (paygateId) {
@@ -107,7 +108,7 @@ export async function provisionSubscription(email: string, tierRaw: string, payg
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)
   try {
-    await sendPurchaseConfirmationEmail(email, tier, expiresAt);
+    await sendPurchaseConfirmationEmail(email, tier, expiresAt, tempPassword);
   } catch (error) {
     console.error(`[Subscription Service] Failed to send confirmation email to ${email}:`, error);
     overallEmailSuccess = false;

@@ -27,6 +27,10 @@ export default async function DashboardOverview() {
     }
   });
 
+  if (user?.shouldResetPassword) {
+    redirect("/dashboard/reset-password");
+  }
+
   const activeSub = user?.subscriptions[0];
 
   return (
