@@ -4,6 +4,9 @@ import Navbar from "../components/Navbar";
 export const metadata = {
   title: 'GoldBot by AL-ai-FX | Advanced Algorithmic Trading',
   description: 'Automate your MT5 trading with GoldBot by AL-ai-FX. Subscribe, customize, and compile your exclusive Expert Advisor directly from our cloud service.',
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({

@@ -11,6 +11,7 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="nav-container">
           <a href="/" className="logo" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+            <img src="/favicon.png" alt="GoldBot Logo" style={{width: '32px', height: '32px'}} />
             GoldBot <span style={{fontSize: '0.8rem', fontWeight: 500, opacity: 0.8}}>by AL-ai-FX</span>
           </a>
           
