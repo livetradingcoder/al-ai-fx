@@ -14,6 +14,11 @@ export async function POST(req: Request) {
   }
 
   try {
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!blobToken) {
+      console.error("[Compiler Complete] ERROR: BLOB_READ_WRITE_TOKEN is missing from environment variables.");
+    }
+
     const { jobId, fileDataBase64, status } = await req.json();
 
     if (status === 'COMPLETED' && fileDataBase64) {
