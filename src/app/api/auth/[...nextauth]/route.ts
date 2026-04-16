@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 const authOptions = {
   providers: [
@@ -10,15 +12,24 @@ const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Mocking user verification. 
-        // In reality, this would use Prisma to verify bcrypt hashes.
-        if (credentials?.email === "admin@AL-ai-FX.com" && credentials?.password === "admin") {
-          return { id: "1", name: "Admin", email: "admin@AL-ai-FX.com", role: "ADMIN" };
-        }
-        if (credentials?.email && credentials?.password === "password") {
-          return { id: "2", name: "Trader", email: credentials.email, role: "USER" };
-        }
-        return null;
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.trim().toLowerCase() }
+        });
+
+        if (!user || !user.passwordHash) return null;
+
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+
+        if (!isValid) return null;
+
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role 
+        };
       }
     })
   ],
@@ -26,12 +37,14 @@ const authOptions = {
     async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
+        token.id = user.id;
       }
       return token;
     },
     async session({ session, token }: any) {
       if (session?.user) {
         session.user.role = token.role;
+        session.user.id = token.id;
       }
       return session;
     }

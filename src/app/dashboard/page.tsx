@@ -1,8 +1,31 @@
-export default function DashboardOverview() {
+import { getServerSession } from "next-auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+
+export default async function DashboardOverview() {
+  const session = await getServerSession() as any;
+  
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      subscriptions: {
+        where: { status: "ACTIVE" },
+        orderBy: { createdAt: "desc" },
+        take: 1
+      }
+    }
+  });
+
+  const activeSub = user?.subscriptions[0];
+
   return (
     <div style={{ maxWidth: '900px' }}>
       <header style={{ marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Welcome back, Trader</h1>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Welcome back, {user?.name || 'Trader'}</h1>
         <p style={{ color: 'var(--text-secondary)' }}>Manage your GoldBot licenses and account data.</p>
       </header>
 
@@ -11,29 +34,50 @@ export default function DashboardOverview() {
         {/* Active Subscription Card */}
         <div className="feature-card" style={{ borderLeft: '4px solid var(--accent-primary)' }}>
           <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '0.5rem' }}>Active Plan</h3>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>Lifetime Pass</div>
-          <p style={{ color: 'var(--accent-accent)', fontSize: '0.9rem', fontWeight: '600' }}>● Active</p>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>
+            {activeSub?.tier ? activeSub.tier.replace('_', ' ') : 'No Active Plan'}
+          </div>
+          <p style={{ color: activeSub ? 'var(--accent-accent)' : 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>
+            ● {activeSub ? 'Active' : 'Inactive'}
+          </p>
         </div>
 
         {/* Linked Account Card */}
         <div className="feature-card">
           <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '0.5rem' }}>Registered MT5 Account</h3>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>12345678</div>
-          <a href="#" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600' }}>Change Account</a>
+          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>
+            {activeSub?.mt5AccountNumber || 'Not Linked'}
+          </div>
+          <a href="/dashboard/licenses" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600' }}>
+            {activeSub?.mt5AccountNumber ? 'Change Account' : 'Link Account Now'}
+          </a>
         </div>
       </div>
 
       <section>
         <h2 style={{ fontSize: '1.8rem', textAlign: 'left', marginBottom: '1.5rem' }}>Download EA</h2>
-        <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h3 style={{ marginBottom: '0.5rem' }}>GoldBot_v2.0_Lifetime.ex5</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Compiled on April 15, 2026. Locked to Account 12345678.</p>
+        {activeSub ? (
+          <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ marginBottom: '0.5rem' }}>GoldBot_v2.0_{activeSub.tier}.ex5</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                {activeSub.mt5AccountNumber 
+                  ? `Locked to Account ${activeSub.mt5AccountNumber}.` 
+                  : 'Subscription active. Link an MT5 account to download.'}
+              </p>
+            </div>
+            {activeSub.mt5AccountNumber && (
+              <button className="btn-primary" style={{ border: 'none', fontSize: '1rem', padding: '0.8rem 2rem' }}>
+                Download Build
+              </button>
+            )}
           </div>
-          <button className="btn-primary" style={{ border: 'none', fontSize: '1rem', padding: '0.8rem 2rem' }}>
-            Download Build
-          </button>
-        </div>
+        ) : (
+          <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>You don't have an active subscription.</p>
+            <a href="/#pricing" className="btn-primary">View Pricing</a>
+          </div>
+        )}
       </section>
     </div>
   );
