@@ -25,10 +25,6 @@ function CheckoutContent() {
   const isFreeTrial = tier === "free-trial";
 
   async function handlePaygateRedirect() {
-    if (isFreeTrial) {
-      return;
-    }
-
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
       return;
@@ -38,6 +34,23 @@ function CheckoutContent() {
     setCheckoutError(null);
 
     try {
+      if (isFreeTrial) {
+        const response = await fetch("/api/checkout/free-trial", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to activate free trial.");
+        }
+
+        // Redirect to dashboard on successful free trial activation
+        window.location.assign("/dashboard");
+        return;
+      }
+
       const response = await fetch("/api/paygate/create-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

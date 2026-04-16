@@ -1,115 +1,16 @@
 import { NextResponse } from "next/server";
-import { UserRole, PricingTier } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import { sendWelcomeEmail, sendPurchaseConfirmationEmail } from "@/lib/mail";
+import { provisionSubscription } from "@/lib/subscriptions";
 
-type ProvisionPaymentInput = {
+// ProvisionPaymentInput type removed as it's handled by provisionSubscription
+
+async function provisionPayment(input: {
   email: string;
   tierRaw: string;
   amount: number;
   currency: string;
   paygateId: string;
-};
-
-function mapTier(tierRaw: string): PricingTier {
-  switch (tierRaw.toLowerCase()) {
-    case "free-trial":
-    case "free_trial":
-      return PricingTier.FREE_TRIAL;
-    case "1-month":
-    case "one_month":
-    case "monthly":
-      return PricingTier.ONE_MONTH;
-    case "6-months":
-    case "six_months":
-    case "biannual":
-      return PricingTier.SIX_MONTHS;
-    case "lifetime":
-      return PricingTier.LIFETIME;
-    default:
-      return PricingTier.ONE_MONTH;
-  }
-}
-
-function computeExpirationDate(tier: PricingTier): Date {
-  const expiresAt = new Date();
-
-  if (tier === PricingTier.FREE_TRIAL) {
-    expiresAt.setDate(expiresAt.getDate() + 3);
-  } else if (tier === PricingTier.ONE_MONTH) {
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-  } else if (tier === PricingTier.SIX_MONTHS) {
-    expiresAt.setMonth(expiresAt.getMonth() + 6);
-  } else {
-    expiresAt.setFullYear(expiresAt.getFullYear() + 100);
-  }
-
-  return expiresAt;
-}
-
-async function findOrCreateUser(email: string) {
-  let user = await prisma.user.findUnique({ where: { email } });
-  let tempPassword = null;
-
-  if (!user) {
-    tempPassword = Math.random().toString(36).slice(-10);
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
-    user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash: hashedPassword,
-        name: email.split("@")[0],
-      },
-    });
-
-    console.log(`[Paygate webhook] Created new user: ${email}. Temporary Password: ${tempPassword}`);
-    await sendWelcomeEmail(email, tempPassword);
-  }
-
-  return { user, tempPassword };
-}
-
-async function provisionPayment(input: ProvisionPaymentInput) {
-  const tier = mapTier(input.tierRaw);
-  const { user } = await findOrCreateUser(input.email);
-
-  const existingOrder = await prisma.order.findUnique({ where: { paygateId: input.paygateId } });
-  if (existingOrder) {
-    return { userId: user.id, orderId: existingOrder.id, duplicated: true };
-  }
-
-  const expiresAt = computeExpirationDate(tier);
-  const subscription = await prisma.subscription.create({
-    data: {
-      userId: user.id,
-      tier,
-      expiresAt: expiresAt,
-      status: "ACTIVE",
-    },
-  });
-
-  const order = await prisma.order.create({
-    data: {
-      userId: user.id,
-      amount: input.amount,
-      currency: input.currency,
-      status: "SUCCESS",
-      paygateId: input.paygateId,
-      pricingTier: tier,
-    },
-  });
-
-  // Send purchase confirmation
-  await sendPurchaseConfirmationEmail(input.email, tier, expiresAt);
-
-  return {
-    userId: user.id,
-    subscriptionId: subscription.id,
-    orderId: order.id,
-    duplicated: false,
-  };
+}) {
+  return provisionSubscription(input.email, input.tierRaw, input.paygateId, input.amount, input.currency);
 }
 
 export async function GET(req: Request) {
