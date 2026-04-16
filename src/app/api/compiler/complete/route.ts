@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 
+import { put } from '@vercel/blob';
+
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
@@ -17,23 +19,25 @@ export async function POST(req: Request) {
     if (status === 'COMPLETED' && fileDataBase64) {
       const buffer = Buffer.from(fileDataBase64, 'base64');
       const fileName = `AL-ai-FX_GoldBot_${jobId}.ex5`;
-      const uploadsDir = path.join(process.cwd(), 'public', 'compiled');
-      const publicPath = path.join(uploadsDir, fileName);
       
-      if (!fs.existsSync(uploadsDir)){
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-      fs.writeFileSync(publicPath, buffer);
+      console.log(`[Compiler Complete] Uploading ${fileName} to Vercel Blob...`);
+      
+      const blob = await put(`compiled/${fileName}`, buffer, {
+        access: 'public',
+        contentType: 'application/octet-stream',
+      });
+
+      console.log(`[Compiler Complete] Upload successful: ${blob.url}`);
 
       await prisma.compilation.update({
         where: { id: jobId },
         data: { 
           status: 'COMPLETED',
-          downloadUrl: `/compiled/${fileName}`
+          downloadUrl: blob.url
         }
       });
 
-      return NextResponse.json({ success: true }, { status: 200 });
+      return NextResponse.json({ success: true, url: blob.url }, { status: 200 });
     } else {
       await prisma.compilation.update({
         where: { id: jobId },
@@ -41,8 +45,8 @@ export async function POST(req: Request) {
       });
       return NextResponse.json({ success: false }, { status: 200 });
     }
-  } catch (error) {
-    console.error("Compile completion error", error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Compile completion error:", error.message || error);
+    return NextResponse.json({ error: 'Failed', details: error.message }, { status: 500 });
   }
 }
