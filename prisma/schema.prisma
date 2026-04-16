@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String?
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+  orders        Order[]
+}
+
+model Subscription {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier             PricingTier
+  status           SubStatus    @default(ACTIVE)
+  mt5AccountNumber String?      // The MT5 account locked to this EA
+  startsAt         DateTime     @default(now())
+  expiresAt        DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  compilations     Compilation[]
+}
+
+model Order {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id])
+  amount            Float
+  currency          String       @default("USD")
+  status            OrderStatus  @default(PENDING)
+  paygateId         String?      @unique
+  pricingTier       PricingTier
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Compilation {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  status         CompileStatus @default(PENDING)
+  downloadUrl    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum PricingTier {
+  FREE_TRIAL
+  ONE_MONTH
+  SIX_MONTHS
+  LIFETIME
+}
+
+enum SubStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum CompileStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
