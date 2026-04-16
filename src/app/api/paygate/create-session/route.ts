@@ -95,7 +95,10 @@ export async function POST(req: Request) {
     }
 
     const paymentUrl = new URL(PAYGATE_PROCESS_PAYMENT_ENDPOINT);
-    paymentUrl.searchParams.set("address", walletJson.address_in);
+    // address_in is already URL-encoded from Paygate API, so we decode it first
+    // to let the URL builder encode it exactly once.
+    const decodedAddress = decodeURIComponent(walletJson.address_in);
+    paymentUrl.searchParams.set("address", decodedAddress);
     paymentUrl.searchParams.set("amount", amount);
     paymentUrl.searchParams.set("provider", provider);
     paymentUrl.searchParams.set("email", email);

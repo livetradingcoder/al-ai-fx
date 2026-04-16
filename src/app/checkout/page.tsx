@@ -13,6 +13,7 @@ function CheckoutContent() {
   const [mt5Account, setMt5Account] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const planDetails = {
     "free-trial": { name: "3-Day Free Trial", price: "$0", amount: "0.00" },
@@ -46,8 +47,8 @@ function CheckoutContent() {
           throw new Error(data.error || "Failed to activate free trial.");
         }
 
-        // Redirect to dashboard on successful free trial activation
-        window.location.assign("/dashboard");
+        setIsSubmitting(false);
+        setIsSuccess(true);
         return;
       }
 
@@ -87,94 +88,129 @@ function CheckoutContent() {
       <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 1.5fr) 1fr", gap: "3rem" }}>
         <div className="glass-panel">
           <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>Account & Payment Details</h2>
-          <form
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-            onSubmit={(event) => {
-              event.preventDefault();
-              void handlePaygateRedirect();
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>Email Address</label>
-              <input
-                type="email"
-                placeholder="you@domain.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                  fontFamily: "inherit",
+          {isSuccess ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div 
+                style={{ 
+                  fontSize: "4rem", 
+                  marginBottom: "1.5rem",
+                  background: "linear-gradient(135deg, #4ade80, #22c55e)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  display: "inline-block"
                 }}
-              />
+              >
+                ✓
+              </div>
+              <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Account Activated!</h2>
+              <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
+                Success! Your GoldBot access is now active. We've sent an email to <strong>{email}</strong> with your login credentials and getting-started guide.
+              </p>
+              
+              <div style={{ background: "var(--bg-secondary)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid var(--border-color)", marginBottom: "2rem" }}>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                  <strong>Next Step:</strong> Check your inbox (and spam folder). Log in with your temporary password to access your dashboard and download your EA.
+                </p>
+              </div>
+
+              <a 
+                href="/login" 
+                className="btn-primary fill" 
+                style={{ display: "inline-block", textDecoration: "none", width: "100%" }}
+              >
+                Go to Login
+              </a>
             </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                MetaTrader 5 Account Number (Optional now)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. 12345678"
-                value={mt5Account}
-                onChange={(event) => setMt5Account(event.target.value)}
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                  fontFamily: "inherit",
-                }}
-              />
-              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                You can set this in your Dashboard later.
-              </span>
-            </div>
-
-            <hr style={{ border: "none", borderTop: "1px solid var(--border-color)", margin: "1rem 0" }} />
-
-            <div
-              style={{
-                background: "var(--bg-secondary)",
-                padding: "1.5rem",
-                borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--border-color)",
+          ) : (
+            <form
+              style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handlePaygateRedirect();
               }}
             >
-              <h3 style={{ fontSize: "1rem", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
-                <span>Paygate Integration</span>
-                <span style={{ color: "var(--accent-accent)" }}>🔒 Secure</span>
-              </h3>
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>
-                {isFreeTrial
-                  ? "Click below to instantly activate your 3-day trial. No credit card required."
-                  : "Clicking confirm will redirect you to Paygate.to to securely process your crypto or fiat payment."}
-              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>Email Address</label>
+                <input
+                  type="email"
+                  placeholder="you@domain.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  style={{
+                    padding: "1rem",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-secondary)",
+                    color: "var(--text-primary)",
+                    fontFamily: "inherit",
+                  }}
+                />
+              </div>
 
-              {!isFreeTrial && (
-                <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "0.85rem" }}>
-                  Provider: moonpay | Currency: USD | Amount: {selectedPlan.amount}
-                </p>
-              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                  MetaTrader 5 Account Number (Optional now)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 12345678"
+                  value={mt5Account}
+                  onChange={(event) => setMt5Account(event.target.value)}
+                  style={{
+                    padding: "1rem",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--border-color)",
+                    background: "var(--bg-secondary)",
+                    color: "var(--text-primary)",
+                    fontFamily: "inherit",
+                  }}
+                />
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                  You can set this in your Dashboard later.
+                </span>
+              </div>
 
-              {checkoutError && (
-                <p style={{ color: "#fca5a5", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{checkoutError}</p>
-              )}
+              <hr style={{ border: "none", borderTop: "1px solid var(--border-color)", margin: "1rem 0" }} />
 
-              <button
-                type="submit"
-                className="btn-primary fill"
-                style={{ border: "none", margin: "0", opacity: isSubmitting ? 0.75 : 1 }}
-                disabled={isSubmitting}
+              <div
+                style={{
+                  background: "var(--bg-secondary)",
+                  padding: "1.5rem",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--border-color)",
+                }}
               >
-                {isFreeTrial ? "Start Free Trial" : isSubmitting ? "Redirecting..." : "Proceed to Paygate.to"}
-              </button>
-            </div>
-          </form>
+                <h3 style={{ fontSize: "1rem", marginBottom: "1rem", display: "flex", justifyContent: "space-between" }}>
+                  <span>Paygate Integration</span>
+                  <span style={{ color: "var(--accent-accent)" }}>🔒 Secure</span>
+                </h3>
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>
+                  {isFreeTrial
+                    ? "Click below to instantly activate your 3-day trial. No credit card required."
+                    : "Clicking confirm will redirect you to Paygate.to to securely process your crypto or fiat payment."}
+                </p>
+
+                {!isFreeTrial && (
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "0.85rem" }}>
+                    Provider: moonpay | Currency: USD | Amount: {selectedPlan.amount}
+                  </p>
+                )}
+
+                {checkoutError && (
+                  <p style={{ color: "#fca5a5", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{checkoutError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  className="btn-primary fill"
+                  style={{ border: "none", margin: "0", opacity: isSubmitting ? 0.75 : 1 }}
+                  disabled={isSubmitting}
+                >
+                  {isFreeTrial ? "Start Free Trial" : isSubmitting ? "Redirecting..." : "Proceed to Paygate.to"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         <div>

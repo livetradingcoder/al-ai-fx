@@ -1,7 +1,7 @@
 import { MailtrapClient } from "mailtrap";
 
 const TOKEN = process.env.SMTP_PASS;
-const SENDER_EMAIL = process.env.SMTP_USER || "hello@al-ai-fx.xyz";
+const SENDER_EMAIL = process.env.SMTP_FROM_EMAIL || "hello@al-ai-fx.xyz";
 const FROM_NAME = process.env.SMTP_FROM_NAME || "GoldBot Support";
 
 if (!TOKEN) {
