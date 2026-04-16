@@ -12,24 +12,47 @@ const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          console.log("[Auth] Missing email or password");
+          return null;
+        }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.trim().toLowerCase() }
-        });
+        const email = credentials.email.trim().toLowerCase();
+        console.log(`[Auth] Attempting login for: ${email}`);
 
-        if (!user || !user.passwordHash) return null;
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email }
+          });
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+          if (!user) {
+            console.log(`[Auth] User not found: ${email}`);
+            return null;
+          }
 
-        if (!isValid) return null;
+          if (!user.passwordHash) {
+            console.log(`[Auth] User has no password hash: ${email}`);
+            return null;
+          }
 
-        return { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email, 
-          role: user.role 
-        };
+          const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+
+          if (!isValid) {
+            console.log(`[Auth] Invalid password for: ${email}`);
+            return null;
+          }
+
+          console.log(`[Auth] Login successful: ${email} (${user.role})`);
+          return { 
+            id: user.id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role 
+          };
+        } catch (error) {
+          console.error("[Auth] Database error during authorize:", error);
+          return null;
+        }
       }
     })
   ],
