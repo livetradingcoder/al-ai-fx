@@ -1,9 +1,10 @@
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export default async function DashboardOverview() {
-  const session = await getServerSession() as any;
+  const session = await getServerSession(authOptions) as any;
   
   if (!session?.user?.id) {
     redirect("/login");
