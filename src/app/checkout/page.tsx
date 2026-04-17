@@ -85,7 +85,7 @@ function CheckoutContent() {
         <p style={{ color: "var(--text-secondary)" }}>Complete your purchase to access GoldBot instantly.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 1.5fr) 1fr", gap: "3rem" }}>
+      <div className="checkout-grid">
         <div className="glass-panel">
           <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>Account & Payment Details</h2>
           {isSuccess ? (

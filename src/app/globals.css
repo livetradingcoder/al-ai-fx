@@ -599,6 +599,31 @@ ul {
   color: #f4b4b4;
 }
 
+/* Shared Layout Classes */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.5fr) 1fr;
+  gap: 3rem;
+}
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 80px;
+}
+
+.dashboard-sidebar {
+  width: 260px;
+  border-right: 1px solid var(--border-color);
+  padding: 2rem;
+  background: var(--bg-secondary);
+}
+
+.dashboard-main {
+  flex: 1;
+  padding: 3rem;
+}
+
 .landing-cta {
   text-align: center;
   margin-bottom: 4rem;
@@ -765,7 +790,7 @@ h2 {
 /* Pricing Section */
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
 }
 
@@ -1036,9 +1061,34 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .compare-table {
+    display: block;
+    overflow-x: auto;
+  }
+
   .compare-row {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    min-width: 500px;
+  }
+
+  .checkout-grid {
     grid-template-columns: 1fr;
-    gap: 0.35rem;
+    gap: 1.5rem;
+  }
+
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+  }
+
+  .dashboard-main {
+    padding: 1.5rem;
   }
 
   .landing-cta p {
@@ -1117,6 +1167,48 @@ h2 {
 
 .modal-close-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(10, 10, 12, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 2rem;
+  z-index: 1010;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s;
+}
+
+.modal-arrow:hover {
+  background: rgba(99, 102, 241, 0.85);
+  border-color: rgba(99, 102, 241, 1);
+}
+
+.modal-arrow.left {
+  left: 10px;
+}
+
+.modal-arrow.right {
+  right: 10px;
+}
+
+@media (min-width: 768px) {
+  .modal-arrow.left {
+    left: -70px;
+  }
+  .modal-arrow.right {
+    right: -70px;
+  }
 }
 
 .disclaimer-banner {

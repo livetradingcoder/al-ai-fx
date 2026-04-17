@@ -6,15 +6,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', paddingTop: '80px' }}>
+    <div className="dashboard-layout">
       
       {/* Sidebar */}
-      <aside style={{ 
-        width: '260px', 
-        borderRight: '1px solid var(--border-color)', 
-        padding: '2rem',
-        background: 'var(--bg-secondary)'
-      }}>
+      <aside className="dashboard-sidebar">
         <div style={{ marginBottom: '2rem' }}>
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' }}>Menu</h3>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -36,7 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '3rem' }}>
+      <main className="dashboard-main">
         {children}
       </main>
       

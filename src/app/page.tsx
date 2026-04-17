@@ -152,9 +152,10 @@ export default function Home() {
         <div className="pricing-grid">
           {[
             { id: "free-trial", title: "Free Trial", price: "$0", period: "for 3 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
+            { id: "10-days", title: "10 Days", price: "$51", period: "for 10 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
             { id: "1-month", title: "Monthly", price: "$149", period: "per month", featured: true, features: ["Unlimited Downloads", "All Strategy Features", "Automated Delivery"] },
-            { id: "6-months", title: "Biannual", price: "$499", period: "per 6 months", features: ["Unlimited Downloads", "All Strategy Features", "Priority Liquid Guard", "Automated Delivery"] },
-            { id: "lifetime", title: "Lifetime", price: "$999", period: "one-time", features: ["Unlimited Source Copies", "All Strategy Features", "VIP Setup Support", "Automated Delivery"] },
+            { id: "6-months", title: "Biannual", price: "$450", period: "per 6 months", features: ["Unlimited Downloads", "All Strategy Features", "Priority Liquid Guard", "Automated Delivery"] },
+            { id: "lifetime", title: "Lifetime", price: "$1111", period: "one-time", features: ["Unlimited Source Copies", "All Strategy Features", "VIP Setup Support", "Automated Delivery"] },
           ].map(plan => (
             <div key={plan.id} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
               {plan.featured && <div className="badge">Most Popular</div>}
