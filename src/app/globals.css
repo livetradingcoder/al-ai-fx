@@ -801,10 +801,38 @@ h2 {
 }
 
 /* Pricing Section */
+.pricing-category {
+  margin-bottom: 4rem;
+}
+
+.category-title {
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.category-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+}
+
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
+}
+
+.pricing-grid.subs {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pricing-grid.passes {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pricing-card {
@@ -1007,7 +1035,9 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .pricing-grid {
+  .pricing-grid,
+  .pricing-grid.subs,
+  .pricing-grid.passes {
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
@@ -1126,7 +1156,9 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .pricing-grid {
+  .pricing-grid,
+  .pricing-grid.subs,
+  .pricing-grid.passes {
     grid-template-columns: 1fr;
   }
 

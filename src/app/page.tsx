@@ -149,26 +149,51 @@ export default function Home() {
 
       <section id="pricing" className="pricing-section">
         <h2>Pricing Plans</h2>
-        <div className="pricing-grid">
-          {[
-            { id: "free-trial", title: "Free Trial", price: "$0", period: "for 3 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
-            { id: "10-days", title: "10 Days", price: "$51", period: "for 10 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
-            { id: "1-month", title: "Monthly", price: "$149", period: "per month", featured: true, features: ["Unlimited Downloads", "All Strategy Features", "Automated Delivery"] },
-            { id: "6-months", title: "Biannual", price: "$450", period: "per 6 months", features: ["Unlimited Downloads", "All Strategy Features", "Priority Liquid Guard", "Automated Delivery"] },
-            { id: "lifetime", title: "Lifetime", price: "$1111", period: "one-time", features: ["Unlimited Source Copies", "All Strategy Features", "VIP Setup Support", "Automated Delivery"] },
-          ].map(plan => (
-            <div key={plan.id} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
-              {plan.featured && <div className="badge">Most Popular</div>}
-              <h3>{plan.title}</h3>
-              <div className="price">{plan.price}<span>/{plan.period}</span></div>
-              <ul className="plan-features">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx}>{feature}</li>
-                ))}
-              </ul>
-              <a href={`/checkout?tier=${plan.id}`} className="btn-primary fill">Select Plan</a>
-            </div>
-          ))}
+        
+        <div className="pricing-category">
+          <h3 className="category-title">Recurring Subscriptions</h3>
+          <p className="category-subtitle">Continuous access, priority support, and all strategy features.</p>
+          <div className="pricing-grid subs">
+            {[
+              { id: "1-month", title: "Monthly", price: "$149", period: "per month", featured: true, features: ["Unlimited Downloads", "All Strategy Features", "Automated Delivery"] },
+              { id: "6-months", title: "Biannual", price: "$450", period: "per 6 months", features: ["Unlimited Downloads", "All Strategy Features", "Priority Liquid Guard", "Automated Delivery"] },
+            ].map(plan => (
+              <div key={plan.id} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
+                {plan.featured && <div className="badge">Most Popular</div>}
+                <h3>{plan.title}</h3>
+                <div className="price">{plan.price}<span>/{plan.period}</span></div>
+                <ul className="plan-features">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx}>{feature}</li>
+                  ))}
+                </ul>
+                <a href={`/checkout?tier=${plan.id}`} className="btn-primary fill">Select Plan</a>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pricing-category">
+          <h3 className="category-title">Passes & Lifetime</h3>
+          <p className="category-subtitle">One-time payment for short trials or permanent access.</p>
+          <div className="pricing-grid passes">
+            {[
+              { id: "free-trial", title: "Free Trial", price: "$0", period: "for 3 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
+              { id: "10-days", title: "10 Days", price: "$51", period: "for 10 days", features: ["Basic Features", "Standard Recovery", "Automated Delivery"] },
+              { id: "lifetime", title: "Lifetime", price: "$1111", period: "one-time", features: ["Unlimited Source Copies", "All Strategy Features", "VIP Setup Support", "Automated Delivery"] },
+            ].map(plan => (
+              <div key={plan.id} className="pricing-card">
+                <h3>{plan.title}</h3>
+                <div className="price">{plan.price}<span>/{plan.period}</span></div>
+                <ul className="plan-features">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx}>{feature}</li>
+                  ))}
+                </ul>
+                <a href={`/checkout?tier=${plan.id}`} className="btn-primary fill">Select Plan</a>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
