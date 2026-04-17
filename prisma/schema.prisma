@@ -57,7 +57,7 @@ model Order {
 model Compilation {
   id             String        @id @default(cuid())
   subscriptionId String
-  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   status         CompileStatus @default(PENDING)
   downloadUrl    String?
   createdAt      DateTime      @default(now())
