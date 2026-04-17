@@ -40,7 +40,7 @@ export default function Home() {
             <span className="disclaimer-icon">⚠️</span>
             <div className="disclaimer-text">
               <strong>Built exclusively for MetaTrader 5 (MT5).</strong>
-              <p>GoldBot cannot be installed on MT4. A valid MT5 account with your preferred broker (Broker Time must be GMT+3) is required for license locking.</p>
+              <p>GoldBot cannot be installed on MT4 or other trading platforms. A valid MT5 account with your preferred broker (Broker Time must be GMT+3) is required for license locking.</p>
             </div>
           </div>
         </motion.div>
@@ -82,46 +82,46 @@ export default function Home() {
           <button className="nav-arrow right-arrow" onClick={scrollRight}>›</button>
           <div className="testimonials-track-container" ref={scrollRef}>
             <div className="testimonials-track">
-            {[
-              "photo_2026-04-15 9.21.38 p.m..jpeg",
-              "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
-              "photo_2026-04-15 9.21.41 p.m..jpeg",
-              "photo_2026-04-15 9.21.49 p.m..jpeg",
-              "photo_2026-04-15 9.21.50 p.m..jpeg",
-              "photo_2026-04-15 9.21.56 p.m..jpeg",
-              "photo_2026-04-15 9.21.57 p.m..jpeg",
-              "photo_2026-04-15 9.21.58 p.m..jpeg"
-            ].map((img, idx) => (
-              <img 
-                key={idx} 
-                src={`/testimonials/${img}`} 
-                alt={`User Result ${idx}`} 
-                className="testimonial-img" 
-                style={{ cursor: "pointer" }}
-                onClick={() => setSelectedImage(img)}
-              />
-            ))}
-            {[
-              "photo_2026-04-15 9.21.38 p.m..jpeg",
-              "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
-              "photo_2026-04-15 9.21.41 p.m..jpeg",
-              "photo_2026-04-15 9.21.49 p.m..jpeg",
-              "photo_2026-04-15 9.21.50 p.m..jpeg",
-              "photo_2026-04-15 9.21.56 p.m..jpeg",
-              "photo_2026-04-15 9.21.57 p.m..jpeg",
-              "photo_2026-04-15 9.21.58 p.m..jpeg"
-            ].map((img, idx) => (
-              <img 
-                key={`dup-${idx}`} 
-                src={`/testimonials/${img}`} 
-                alt={`User Result ${idx}`} 
-                className="testimonial-img" 
-                style={{ cursor: "pointer" }}
-                onClick={() => setSelectedImage(img)}
-              />
-            ))}
+              {[
+                "photo_2026-04-15 9.21.38 p.m..jpeg",
+                "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
+                "photo_2026-04-15 9.21.41 p.m..jpeg",
+                "photo_2026-04-15 9.21.49 p.m..jpeg",
+                "photo_2026-04-15 9.21.50 p.m..jpeg",
+                "photo_2026-04-15 9.21.56 p.m..jpeg",
+                "photo_2026-04-15 9.21.57 p.m..jpeg",
+                "photo_2026-04-15 9.21.58 p.m..jpeg"
+              ].map((img, idx) => (
+                <img
+                  key={idx}
+                  src={`/testimonials/${img}`}
+                  alt={`User Result ${idx}`}
+                  className="testimonial-img"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+              {[
+                "photo_2026-04-15 9.21.38 p.m..jpeg",
+                "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
+                "photo_2026-04-15 9.21.41 p.m..jpeg",
+                "photo_2026-04-15 9.21.49 p.m..jpeg",
+                "photo_2026-04-15 9.21.50 p.m..jpeg",
+                "photo_2026-04-15 9.21.56 p.m..jpeg",
+                "photo_2026-04-15 9.21.57 p.m..jpeg",
+                "photo_2026-04-15 9.21.58 p.m..jpeg"
+              ].map((img, idx) => (
+                <img
+                  key={`dup-${idx}`}
+                  src={`/testimonials/${img}`}
+                  alt={`User Result ${idx}`}
+                  className="testimonial-img"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setSelectedImage(img)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
       </section>
 
       <section id="features" className="features-section">
