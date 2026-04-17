@@ -1,10 +1,23 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+const TESTIMONIALS = [
+  "photo_2026-04-15 9.21.38 p.m..jpeg",
+  "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
+  "photo_2026-04-15 9.21.41 p.m..jpeg",
+  "photo_2026-04-15 9.21.49 p.m..jpeg",
+  "photo_2026-04-15 9.21.50 p.m..jpeg",
+  "photo_2026-04-15 9.21.56 p.m..jpeg",
+  "photo_2026-04-15 9.21.57 p.m..jpeg",
+  "photo_2026-04-15 9.21.58 p.m..jpeg"
+];
+
+const ALL_IMAGES = [...TESTIMONIALS, ...TESTIMONIALS];
+
 export default function Home() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -13,6 +26,26 @@ export default function Home() {
 
   const scrollRight = () => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Auto-scroll track continually
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft += 1;
+      }
+    }, 25);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedIndex !== null) setSelectedIndex((selectedIndex + 1) % ALL_IMAGES.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedIndex !== null) setSelectedIndex((selectedIndex - 1 + ALL_IMAGES.length) % ALL_IMAGES.length);
   };
 
   return (
@@ -28,8 +61,7 @@ export default function Home() {
           transition={{ duration: 0.8 }}
         >
           <span className="hero-kicker">AI-ASSISTED MT5 EXECUTION ENGINE</span>
-          <h1>Deploy <span>GoldBot (EA)</span> and trade with disciplined automation.</h1>
-          <p>From checkout to live chart in under a minute. Your EA is uniquely compiled for your account, with built-in risk filters and recovery logic.</p>
+          <h1>Trade with disciplined automation using <span>GoldBot (EA)</span>.</h1>
 
           <div className="hero-actions">
             <a href="#pricing" className="btn-primary large">Get Started Now</a>
@@ -82,42 +114,14 @@ export default function Home() {
           <button className="nav-arrow right-arrow" onClick={scrollRight}>›</button>
           <div className="testimonials-track-container" ref={scrollRef}>
             <div className="testimonials-track">
-              {[
-                "photo_2026-04-15 9.21.38 p.m..jpeg",
-                "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
-                "photo_2026-04-15 9.21.41 p.m..jpeg",
-                "photo_2026-04-15 9.21.49 p.m..jpeg",
-                "photo_2026-04-15 9.21.50 p.m..jpeg",
-                "photo_2026-04-15 9.21.56 p.m..jpeg",
-                "photo_2026-04-15 9.21.57 p.m..jpeg",
-                "photo_2026-04-15 9.21.58 p.m..jpeg"
-              ].map((img, idx) => (
+              {ALL_IMAGES.map((img, idx) => (
                 <img
                   key={idx}
                   src={`/testimonials/${img}`}
                   alt={`User Result ${idx}`}
                   className="testimonial-img"
                   style={{ cursor: "pointer" }}
-                  onClick={() => setSelectedImage(img)}
-                />
-              ))}
-              {[
-                "photo_2026-04-15 9.21.38 p.m..jpeg",
-                "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
-                "photo_2026-04-15 9.21.41 p.m..jpeg",
-                "photo_2026-04-15 9.21.49 p.m..jpeg",
-                "photo_2026-04-15 9.21.50 p.m..jpeg",
-                "photo_2026-04-15 9.21.56 p.m..jpeg",
-                "photo_2026-04-15 9.21.57 p.m..jpeg",
-                "photo_2026-04-15 9.21.58 p.m..jpeg"
-              ].map((img, idx) => (
-                <img
-                  key={`dup-${idx}`}
-                  src={`/testimonials/${img}`}
-                  alt={`User Result ${idx}`}
-                  className="testimonial-img"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setSelectedImage(img)}
+                  onClick={() => setSelectedIndex(idx)}
                 />
               ))}
             </div>
@@ -244,11 +248,13 @@ export default function Home() {
         </div>
       </section>
 
-      {selectedImage && (
-        <div className="modal-overlay" onClick={() => setSelectedImage(null)}>
+      {selectedIndex !== null && (
+        <div className="modal-overlay" onClick={() => setSelectedIndex(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setSelectedImage(null)}>✕</button>
-            <img src={`/testimonials/${selectedImage}`} alt="Verified Result" className="modal-img" />
+            <button className="modal-arrow left" onClick={prevImage}>‹</button>
+            <button className="modal-arrow right" onClick={nextImage}>›</button>
+            <button className="modal-close-btn" onClick={() => setSelectedIndex(null)}>✕</button>
+            <img src={`/testimonials/${ALL_IMAGES[selectedIndex]}`} alt="Verified Result" className="modal-img" />
           </div>
         </div>
       )}
