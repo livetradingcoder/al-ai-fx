@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '6rem 2rem 4rem 2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <div className="admin-container">
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>Platform Overview</h1>
 
         <div className="features-grid" style={{ marginBottom: '4rem' }}>
@@ -70,7 +70,7 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        <div className="admin-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '2rem' }}>
+        <div className="admin-grid">
           <div className="glass-panel" style={{ overflowX: 'auto' }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Licenses Issued</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
