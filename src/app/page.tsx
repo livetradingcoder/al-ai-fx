@@ -1,8 +1,11 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function Home() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   return (
     <main className="main-content">
       <section className="hero">
@@ -24,6 +27,13 @@ export default function Home() {
             <Link href="/tutorials" className="btn-secondary large">Watch Tutorials</Link>
           </div>
 
+          <div className="disclaimer-banner">
+            <span className="disclaimer-icon">⚠️</span>
+            <div className="disclaimer-text">
+              <strong>Built exclusively for MetaTrader 5 (MT5).</strong>
+              <p>GoldBot cannot be installed on MT4. A valid MT5 account with your preferred broker (Broker Time must be GMT+3) is required for license locking.</p>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
@@ -70,7 +80,14 @@ export default function Home() {
               "photo_2026-04-15 9.21.57 p.m..jpeg",
               "photo_2026-04-15 9.21.58 p.m..jpeg"
             ].map((img, idx) => (
-              <img key={idx} src={`/testimonials/${img}`} alt={`User Result ${idx}`} className="testimonial-img" />
+              <img 
+                key={idx} 
+                src={`/testimonials/${img}`} 
+                alt={`User Result ${idx}`} 
+                className="testimonial-img" 
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedImage(img)}
+              />
             ))}
             {[
               "photo_2026-04-15 9.21.38 p.m..jpeg",
@@ -82,7 +99,14 @@ export default function Home() {
               "photo_2026-04-15 9.21.57 p.m..jpeg",
               "photo_2026-04-15 9.21.58 p.m..jpeg"
             ].map((img, idx) => (
-              <img key={`dup-${idx}`} src={`/testimonials/${img}`} alt={`User Result ${idx}`} className="testimonial-img" />
+              <img 
+                key={`dup-${idx}`} 
+                src={`/testimonials/${img}`} 
+                alt={`User Result ${idx}`} 
+                className="testimonial-img" 
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedImage(img)}
+              />
             ))}
           </div>
         </div>
@@ -206,6 +230,15 @@ export default function Home() {
           <Link href="/tutorials" className="btn-secondary large">See Setup Tutorials</Link>
         </div>
       </section>
+
+      {selectedImage && (
+        <div className="modal-overlay" onClick={() => setSelectedImage(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setSelectedImage(null)}>✕</button>
+            <img src={`/testimonials/${selectedImage}`} alt="Verified Result" className="modal-img" />
+          </div>
+        </div>
+      )}
 
     </main>
   );
