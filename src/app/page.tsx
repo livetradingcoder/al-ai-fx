@@ -122,6 +122,7 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
       </section>
 
       <section id="features" className="features-section">
