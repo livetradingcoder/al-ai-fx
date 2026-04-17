@@ -30,6 +30,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          if (user.isBlocked) {
+            console.log(`[Auth] User is blocked: ${email}`);
+            throw new Error("Your account has been restricted.");
+          }
+
           if (!user.passwordHash) {
             console.log(`[Auth] User has no password hash: ${email}`);
             return null;

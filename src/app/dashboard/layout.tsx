@@ -24,7 +24,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div style={{ marginBottom: '2rem' }}>
             <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' }}>Administration</h3>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              <li><a href="/dashboard/admin" style={{ color: 'var(--accent-accent)', fontWeight: '600' }}>Admin Center &rarr;</a></li>
+              <li><a href="/dashboard/admin" style={{ color: 'var(--accent-accent)', fontWeight: '600' }}>Overview</a></li>
+              <li><a href="/dashboard/admin/users" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>Manage Users &rarr;</a></li>
             </ul>
           </div>
         )}
