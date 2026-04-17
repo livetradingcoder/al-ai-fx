@@ -1,10 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
+  };
 
   return (
     <main className="main-content">
@@ -67,9 +76,12 @@ export default function Home() {
 
       <section className="testimonials-section">
         <h2>Verified Results</h2>
-        <p className="section-subtitle">Real performance from AL-ai-FX members.</p>
-        <div className="testimonials-track-container">
-          <div className="testimonials-track">
+        <p className="section-subtitle">Numbers matter more than word testimonials. Real performance from AL-ai-FX members.</p>
+        <div className="testimonials-wrapper">
+          <button className="nav-arrow left-arrow" onClick={scrollLeft}>‹</button>
+          <button className="nav-arrow right-arrow" onClick={scrollRight}>›</button>
+          <div className="testimonials-track-container" ref={scrollRef}>
+            <div className="testimonials-track">
             {[
               "photo_2026-04-15 9.21.38 p.m..jpeg",
               "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
