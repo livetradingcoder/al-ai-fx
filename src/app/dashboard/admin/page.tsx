@@ -70,10 +70,9 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        <div className="admin-grid">
-          <div className="glass-panel" style={{ overflowX: 'auto' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Licenses Issued</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+        <div className="glass-panel" style={{ overflowX: 'auto', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Licenses Issued</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
@@ -109,29 +108,28 @@ export default async function AdminDashboard() {
                 </tr>
               ))}
             </tbody>
-            </table>
-          </div>
+          </table>
+        </div>
 
-          <div className="glass-panel">
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>SMTP Configuration</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Host / Port</label>
-                <input disabled type="text" className="form-input" style={{opacity: 0.7}} value={`${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`} />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>From Name & Email</label>
-                <input disabled type="text" className="form-input" style={{opacity: 0.7}} value={`${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`} />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Username</label>
-                <input disabled type="text" className="form-input" style={{opacity: 0.7}} value={process.env.SMTP_USER || ''} />
-              </div>
+        <div className="glass-panel" style={{ marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>SMTP Configuration</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr)', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Host / Port</label>
+              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`} />
             </div>
-            <div style={{ marginTop: '2rem' }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* Note: To make modifications to these configurations, you must redeploy your server after updating the `env` file.</p>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>From Name & Email</label>
+              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`} />
             </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Username</label>
+              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={process.env.SMTP_USER || ''} />
+            </div>
+          </div>
+          <div style={{ marginTop: '2rem' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* Note: To make modifications to these configurations, you must redeploy your server after updating the `env` file.</p>
           </div>
         </div>
 
