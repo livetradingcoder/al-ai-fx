@@ -36,10 +36,10 @@ export async function deleteUser(userId: string) {
     throw new Error("You cannot delete your own account");
   }
 
-  // Because Subscription and Order have onDelete: Cascade for the User relation,
-  // deleting the user will cleanly remove those dependencies.
-  await prisma.user.delete({
+  // Perform a soft delete by marking the user as deleted in the database.
+  await prisma.user.update({
     where: { id: userId },
+    data: { isDeleted: true },
   });
 
   revalidatePath("/dashboard/admin/users");

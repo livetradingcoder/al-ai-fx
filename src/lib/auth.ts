@@ -35,6 +35,11 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Your account has been restricted.");
           }
 
+          if (user.isDeleted) {
+            console.log(`[Auth] User is deleted: ${email}`);
+            throw new Error("Your account has been deleted.");
+          }
+
           if (!user.passwordHash) {
             console.log(`[Auth] User has no password hash: ${email}`);
             return null;

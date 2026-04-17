@@ -15,6 +15,7 @@ interface UserData {
   email: string;
   role: string;
   isBlocked: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   subscriptions: Subscription[];
 }
@@ -80,21 +81,22 @@ export default function UsersTable({ users, currentUserId }: { users: UserData[]
               <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', backgroundColor: user.isBlocked ? 'rgba(255, 0, 0, 0.05)' : 'transparent' }}>
                 <td style={{ padding: '1.5rem 1rem' }}>
                   {user.email}
-                  {user.isBlocked && <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', backgroundColor: '#ef4444', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>BLOCKED</span>}
+                  {user.isDeleted && <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', backgroundColor: '#6b7280', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>DELETED</span>}
+                  {user.isBlocked && !user.isDeleted && <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', backgroundColor: '#ef4444', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>BLOCKED</span>}
                 </td>
-                <td style={{ padding: '1.5rem 1rem' }}>{user.role}</td>
-                <td style={{ padding: '1.5rem 1rem' }}>{activeSubs}</td>
-                <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                <td style={{ padding: '1.5rem 1rem', opacity: user.isDeleted ? 0.5 : 1 }}>{user.role}</td>
+                <td style={{ padding: '1.5rem 1rem', opacity: user.isDeleted ? 0.5 : 1 }}>{user.isDeleted ? 0 : activeSubs}</td>
+                <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', opacity: user.isDeleted ? 0.5 : 1 }}>
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td style={{ padding: '1.5rem 1rem' }}>
-                  <span style={{ color: user.isBlocked ? '#fca5a5' : 'var(--accent-accent)' }}>
-                    {user.isBlocked ? 'Restricted' : 'Granted'}
+                  <span style={{ color: user.isDeleted ? '#9ca3af' : user.isBlocked ? '#fca5a5' : 'var(--accent-accent)' }}>
+                    {user.isDeleted ? 'Deleted' : user.isBlocked ? 'Restricted' : 'Granted'}
                   </span>
                 </td>
                 <td style={{ padding: '1.5rem 1rem', textAlign: 'right' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    {!isSelf && (
+                    {!isSelf && !user.isDeleted && (
                       <button
                         onClick={() => handleToggleBlock(user.id, user.isBlocked)}
                         disabled={isLoading}
@@ -112,7 +114,7 @@ export default function UsersTable({ users, currentUserId }: { users: UserData[]
                         {user.isBlocked ? 'Unblock' : 'Block'}
                       </button>
                     )}
-                    {!isSelf && (
+                    {!isSelf && !user.isDeleted && (
                       <button
                         onClick={() => handleDelete(user.id)}
                         disabled={isLoading}
