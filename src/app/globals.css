@@ -841,14 +841,14 @@ h2 {
 }
 
 .pricing-grid.subs {
-  grid-template-columns: repeat(2, 1fr);
-  max-width: 800px;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .pricing-grid.passes {
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 1200px;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 800px;
   margin: 0 auto;
 }
 
