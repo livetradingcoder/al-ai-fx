@@ -49,24 +49,24 @@ export default async function AdminDashboard() {
   });
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>Platform Overview</h1>
 
         <div className="features-grid" style={{ marginBottom: '4rem' }}>
           <div className="feature-card">
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Total Active Users</h3>
-            <p style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit' }}>{totalUsers}</p>
+            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', marginTop: '0.5rem', color: 'var(--text-primary)' }}>{totalUsers}</div>
           </div>
           <div className="feature-card">
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Total Revenue Generated</h3>
-            <p style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', color: 'var(--accent-accent)' }}>
+            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', color: 'var(--accent-primary)', marginTop: '0.5rem' }}>
               ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
+            </div>
           </div>
           <div className="feature-card">
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>EA Compilations Today</h3>
-            <p style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit' }}>{todayCompilations}</p>
+            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', marginTop: '0.5rem', color: 'var(--text-primary)' }}>{todayCompilations}</div>
           </div>
         </div>
 
@@ -178,6 +178,6 @@ export default async function AdminDashboard() {
           </table>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

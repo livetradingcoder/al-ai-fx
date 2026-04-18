@@ -26,11 +26,11 @@ export default async function AdminUsersPage() {
   });
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>User Management</h1>
         <UsersTable users={users} currentUserId={session.user.id} />
       </div>
-    </main>
+    </div>
   );
 }
