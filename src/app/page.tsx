@@ -121,7 +121,7 @@ const SUBSCRIPTION_PLANS = [
   {
     id: "6-months",
     title: "Biannual",
-    price: "$450",
+    price: "$499",
     period: "per 6 months",
     note: "Lower maintenance cadence",
     features: [
@@ -149,7 +149,7 @@ const PASS_PLANS = [
   {
     id: "lifetime",
     title: "Lifetime",
-    price: "$1111",
+    price: "$999",
     period: "one-time",
     note: "Permanent access",
     features: [

@@ -71,8 +71,8 @@ export default function LicenseManager({ subscription, latestCompilation: initia
     }
   };
 
-  const statusColor = compilation?.status === "COMPLETED" ? "var(--accent-accent)" : 
-                    compilation?.status === "FAILED" ? "#ff4444" : "var(--accent-primary)";
+  const statusColor = compilation?.status === "COMPLETED" ? "var(--accent-accent)" :
+    compilation?.status === "FAILED" ? "#ff4444" : "var(--accent-primary)";
 
   return (
     <div className="glass-panel" style={{ marginBottom: "2rem" }}>
@@ -123,12 +123,12 @@ export default function LicenseManager({ subscription, latestCompilation: initia
 
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Download Latest Build</p>
-          
+
           {compilation?.status === "COMPLETED" && compilation.id ? (
-            <a 
-              href={`/api/compiler/download?jobId=${compilation.id}`} 
-              download 
-              className="btn-primary" 
+            <a
+              href={`/api/compiler/download?jobId=${compilation.id}`}
+              download
+              className="btn-primary"
               style={{ textAlign: "center", textDecoration: "none" }}
             >
               Download Latest .ex5
@@ -143,7 +143,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               {isPolling ? `Compiling... (${compilation?.status})` : "Compile & Download .ex5"}
             </button>
           )}
-          
+
           {compilation && (
             <p style={{ fontSize: "0.8rem", color: statusColor, marginTop: "0.5rem", fontWeight: 500 }}>
               Status: {compilation.status}
@@ -152,6 +152,22 @@ export default function LicenseManager({ subscription, latestCompilation: initia
           )}
         </div>
       </div>
+
+      {compilation?.status === "COMPLETED" && (
+        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+          <h4 style={{ color: 'var(--accent-accent)', marginBottom: '1rem', fontSize: '1rem' }}>✅ Compilation Successful! Next Steps:</h4>
+          <ul style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', paddingLeft: '1.2rem' }}>
+            <li><strong>Step 1:</strong> Download the <code>.ex5</code> file above.</li>
+            <li><strong>Step 2:</strong> Open your MT5 Terminal, go to <code>File  `{'>'}` Open Data Folder</code>.</li>
+            <li><strong>Step 3:</strong> Navigate to <code>MQL5  `{'>'}` Experts</code> and paste the file there.</li>
+            <li><strong>Step 4:</strong> Refresh the "Experts" list in your MT5 Navigator and drag the robot onto an XAUUSD chart.</li>
+            <li><strong>Step 5:</strong> In the inputs, ensure you set your <strong>Risk Percent</strong> and <strong>Trading Hours</strong> as per the PDF guide.</li>
+          </ul>
+          <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            ⚠️ Note: This build is locked to MT5 Account <strong>{subscription.mt5AccountNumber}</strong>. It will not execute on any other account number.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

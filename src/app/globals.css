@@ -2028,6 +2028,9 @@ button {
 }
 
 .nav-mobile-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 48px;
   height: 48px;
   border: 1px solid var(--border-color);
@@ -3363,6 +3366,18 @@ button {
 
   .landing-pill-row {
     gap: 10px;
+    justify-content: center;
+  }
+
+  .proof-chip-row {
+    justify-content: center;
+  }
+
+  .landing-eyebrow {
+    display: flex;
+    width: max-content;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .hero-disclaimer-card {
