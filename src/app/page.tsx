@@ -489,19 +489,6 @@ export default function Home() {
                 </span>
               ))}
             </div>
-
-            <div className="hero-disclaimer-card">
-              <GoldGlyph kind="shield" className="hero-disclaimer-glyph" />
-              <div>
-                <strong>Built exclusively for MetaTrader 5.</strong>
-                <p>
-                  GoldBot cannot be installed on MT4 or other trading
-                  platforms. A valid MT5 account with your preferred broker is
-                  required, and Broker Time must be set to GMT+3 for license
-                  locking.
-                </p>
-              </div>
-            </div>
           </motion.div>
 
           <motion.div
@@ -564,14 +551,11 @@ export default function Home() {
               Designed for performance
             </span>
             <h2 className="landing-proof-title">
-              Big typography.
-              <span> Calm execution.</span>
+              Built exclusively for
+              <span> MetaTrader 5.</span>
             </h2>
             <p className="landing-proof-text">
-              The hero now expands into the proof layer instead of collapsing
-              into a cut-off background. Every metric sits on the same visual
-              language: dark glass, warm gold, and space that breathes.
-            </p>
+              GoldBot cannot be installed on MT4 or other trading platforms. A valid MT5 account with your preferred broker is required, and Broker Time must be set to GMT+3 for license locking.</p>
             <SectionWireframe className="landing-proof-wireframe" />
           </motion.div>
 
@@ -616,7 +600,6 @@ export default function Home() {
             <div className="proof-chip-row">
               <span>Verified results</span>
               <span>Account-locked security</span>
-              <span>Fast provisioning</span>
               <span>MT5 exclusive</span>
             </div>
           </motion.div>
