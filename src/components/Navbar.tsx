@@ -1,61 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
-      <nav className="navbar">
+      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="nav-container">
-          <a href="/" className="logo" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-            <img src="/favicon.png" alt="GoldBot Logo" style={{width: '32px', height: '32px'}} />
-            GoldBot <span style={{fontSize: '0.8rem', fontWeight: 500, opacity: 0.8}}>by AL-ai-FX</span>
-          </a>
-          
+          <Link href="/" className="logo nav-brand" onClick={() => setIsOpen(false)}>
+            <span className="nav-logo-mark" aria-hidden="true">
+              <Image
+                src="/favicon.png"
+                alt=""
+                width={38}
+                height={38}
+                sizes="38px"
+              />
+            </span>
+            <span className="nav-brand-copy">
+              <strong>GoldBot</strong>
+              <span>by AL-ai-FX</span>
+            </span>
+          </Link>
+
           <div className="nav-links desktop-only">
-            <a href="/#features">Features</a>
-            <a href="/#pricing">Pricing</a>
-            <a href="/tutorials">Tutorials</a>
-            <a href="/faq">FAQ</a>
-            <a href="/login" className="btn-secondary" style={{ marginLeft: '1rem' }}>Login</a>
+            <Link href="/#features">Features</Link>
+            <Link href="/#pricing">Pricing</Link>
+            <Link href="/tutorials">Tutorials</Link>
+            <Link href="/faq">FAQ</Link>
           </div>
 
-          <button 
-            className="mobile-only" 
+          <div className="nav-actions desktop-only">
+            <Link href="/login" className="btn-secondary nav-login">
+              Login
+            </Link>
+            <Link href="/#pricing" className="btn-primary nav-cta">
+              Get Access
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            className="nav-mobile-toggle mobile-only"
             onClick={() => setIsOpen(!isOpen)}
-            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem' }}
+            aria-expanded={isOpen}
+            aria-controls="mobile-nav-panel"
+            aria-label={isOpen ? "Close navigation" : "Open navigation"}
           >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
+            {isOpen ? <X size={32} /> : <Menu size={32} />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: '70px',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'var(--bg-primary)',
-            zIndex: 999,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            paddingTop: '2rem',
-            gap: '2rem'
-          }}
-        >
-          <a href="/#features" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 500 }}>Features</a>
-          <a href="/#pricing" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 500 }}>Pricing</a>
-          <a href="/tutorials" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 500 }}>Tutorials</a>
-          <a href="/faq" onClick={() => setIsOpen(false)} style={{ fontSize: '1.2rem', fontWeight: 500 }}>FAQ</a>
-          <a href="/login" onClick={() => setIsOpen(false)} className="btn-primary" style={{ marginTop: '1rem', padding: '1rem 3rem' }}>Login to Dashboard</a>
+        <div id="mobile-nav-panel" className="mobile-menu-panel">
+          <div className="mobile-menu-shell">
+            <Link href="/#features" onClick={() => setIsOpen(false)}>
+              Features
+            </Link>
+            <Link href="/#pricing" onClick={() => setIsOpen(false)}>
+              Pricing
+            </Link>
+            <Link href="/tutorials" onClick={() => setIsOpen(false)}>
+              Tutorials
+            </Link>
+            <Link href="/faq" onClick={() => setIsOpen(false)}>
+              FAQ
+            </Link>
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="btn-secondary mobile-menu-button"
+            >
+              Login
+            </Link>
+            <Link
+              href="/#pricing"
+              onClick={() => setIsOpen(false)}
+              className="btn-primary mobile-menu-button"
+            >
+              Get Access
+            </Link>
+          </div>
         </div>
       )}
     </>

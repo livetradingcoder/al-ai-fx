@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Diagnostic script to test Vercel Blob storage connectivity.
  * Run with: node scripts/test-blob.js

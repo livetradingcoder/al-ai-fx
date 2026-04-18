@@ -41,7 +41,7 @@ export default function ForceResetPassword() {
       } else {
         setError(data.error || "Failed to update password.");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred.");
     } finally {
       setLoading(false);

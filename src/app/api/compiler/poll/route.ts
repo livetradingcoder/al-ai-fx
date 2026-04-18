@@ -32,7 +32,7 @@ export async function GET(req: Request) {
         expiresAt: job.subscription.expiresAt
       } 
     }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Database fail' }, { status: 500 });
   }
 }

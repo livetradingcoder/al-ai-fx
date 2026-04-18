@@ -1,9 +1,7 @@
-type Params = {
-  params: { id: string };
-};
+import Link from "next/link";
 
-export default function TutorialDetail({ params }: Params) {
-  const { id } = params;
+export default async function TutorialDetail({ params }: PageProps<"/tutorials/[id]">) {
+  const { id } = await params;
 
   const contentMap: Record<string, { title: string, type: string, duration: string, body: React.ReactNode }> = {
     "1": {
@@ -52,7 +50,7 @@ export default function TutorialDetail({ params }: Params) {
           </p>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', marginTop: '2rem' }}>Configuration Flags</h2>
           <p style={{ color: 'var(--text-secondary)' }}>
-            You can verify if the guard is active via the on-screen dashboard. Next to the "Holiday Status", it will read "Active" if today is a monitored holiday. You can force-bypass this in the inputs (<code>IgnoreHolidays = true</code>), but taking this risk invalidates our recommended setup.
+            You can verify if the guard is active via the on-screen dashboard. Next to the &quot;Holiday Status&quot;, it will read &quot;Active&quot; if today is a monitored holiday. You can force-bypass this in the inputs (<code>IgnoreHolidays = true</code>), but taking this risk invalidates our recommended setup.
           </p>
         </>
       )
@@ -64,7 +62,7 @@ export default function TutorialDetail({ params }: Params) {
   return (
     <main className="main-content" style={{ maxWidth: '900px', margin: '0 auto', padding: '6rem 2rem' }}>
       <div style={{ marginBottom: '3rem' }}>
-        <a href="/tutorials" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', marginBottom: '1rem', display: 'inline-block' }}>&larr; Back to Tutorials</a>
+        <Link href="/tutorials" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', marginBottom: '1rem', display: 'inline-block' }}>&larr; Back to Tutorials</Link>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
           <span className="badge" style={{ position: 'relative', top: 0, left: 0, transform: 'none' }}>{tutorial.type}</span>
           <span style={{ color: 'var(--text-muted)' }}>{tutorial.duration}</span>

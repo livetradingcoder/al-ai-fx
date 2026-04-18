@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Tool to promote a user to an administrative role in the database.
  * Run via: node scripts/promote-admin.js <email>

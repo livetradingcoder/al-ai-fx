@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
-
 import { put } from '@vercel/blob';
 
 const prisma = new PrismaClient();
+
+type CompilationCompletePayload = {
+  jobId?: string;
+  fileDataBase64?: string;
+  status?: string;
+};
 
 export async function POST(req: Request) {
   const authHeader = req.headers.get('authorization');
@@ -26,7 +29,11 @@ export async function POST(req: Request) {
     const rawBody = await req.text();
     console.log(`[Compiler Complete] Received body size: ${rawBody.length} bytes`);
     
-    const { jobId, fileDataBase64, status } = JSON.parse(rawBody);
+    const { jobId, fileDataBase64, status } = JSON.parse(rawBody) as CompilationCompletePayload;
+
+    if (!jobId || !status) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    }
 
     if (status === 'COMPLETED' && fileDataBase64) {
       const buffer = Buffer.from(fileDataBase64, 'base64');
@@ -52,11 +59,12 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ success: true, url: blob.url }, { status: 200 });
-      } catch (blobError: any) {
-        console.error("Vercel Blob put error:", blobError.message || blobError);
+      } catch (blobError) {
+        const details = blobError instanceof Error ? blobError.message : String(blobError);
+        console.error("Vercel Blob put error:", details);
         return NextResponse.json({ 
           error: 'Upload Failed', 
-          details: `Failed to upload to Vercel Blob: ${blobError.message}` 
+          details: `Failed to upload to Vercel Blob: ${details}` 
         }, { status: 500 });
       }
     } else {
@@ -66,8 +74,9 @@ export async function POST(req: Request) {
       });
       return NextResponse.json({ success: false }, { status: 200 });
     }
-  } catch (error: any) {
-    console.error("Compile completion error:", error.message || error);
-    return NextResponse.json({ error: 'Failed', details: error.message }, { status: 500 });
+  } catch (error) {
+    const details = error instanceof Error ? error.message : String(error);
+    console.error("Compile completion error:", details);
+    return NextResponse.json({ error: 'Failed', details }, { status: 500 });
   }
 }

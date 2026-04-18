@@ -14,7 +14,7 @@ interface LicenseManagerProps {
     id: string;
     status: string;
     downloadUrl: string | null;
-    updatedAt: string;
+    updatedAt: string | Date;
   } | null;
 }
 
@@ -64,7 +64,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
       } else {
         alert(data.error || "Failed to update MT5 account.");
       }
-    } catch (err) {
+    } catch {
       alert("Error updating MT5 account.");
     } finally {
       setIsUpdating(false);

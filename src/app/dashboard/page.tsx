@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export default async function DashboardOverview() {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
     redirect("/login");
@@ -59,9 +60,9 @@ export default async function DashboardOverview() {
           <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>
             {activeSub?.mt5AccountNumber || 'Not Linked'}
           </div>
-          <a href="/dashboard/licenses" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600' }}>
+          <Link href="/dashboard/licenses" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600' }}>
             {activeSub?.mt5AccountNumber ? 'Change Account' : 'Link Account Now'}
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -88,20 +89,20 @@ export default async function DashboardOverview() {
                   Download Build
                 </a>
               ) : (
-                <a href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
+                <Link href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
                   Manage & Download
-                </a>
+                </Link>
               )
             ) : (
-              <a href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
+              <Link href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
                 Setup License
-              </a>
+              </Link>
             )}
           </div>
         ) : (
           <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>You don't have an active subscription.</p>
-            <a href="/#pricing" className="btn-primary">View Pricing</a>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>You don&apos;t have an active subscription.</p>
+            <Link href="/#pricing" className="btn-primary">View Pricing</Link>
           </div>
         )}
       </section>

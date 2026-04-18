@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   
   if (!session?.user?.id || session?.user?.role !== "ADMIN") {
     redirect("/dashboard");
@@ -181,4 +181,3 @@ export default async function AdminDashboard() {
     </main>
   );
 }
-

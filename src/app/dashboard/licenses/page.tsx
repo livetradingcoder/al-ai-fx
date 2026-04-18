@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -5,7 +6,7 @@ import { redirect } from "next/navigation";
 import LicenseManager from "@/components/dashboard/LicenseManager";
 
 export default async function LicensesPage() {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
     redirect("/login");
@@ -36,7 +37,7 @@ export default async function LicensesPage() {
       </header>
 
       {activeSubs.length > 0 ? (
-        activeSubs.map((sub: any) => (
+        activeSubs.map((sub) => (
           <LicenseManager 
             key={sub.id} 
             subscription={sub} 
@@ -46,8 +47,8 @@ export default async function LicensesPage() {
       ) : (
         <div className="glass-panel" style={{ textAlign: 'center', padding: '4rem' }}>
           <h3 style={{ marginBottom: '1rem' }}>No Active Licenses</h3>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>You don't have any active GoldBot subscriptions yet.</p>
-          <a href="/#pricing" className="btn-primary">View Pricing Plans</a>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>You don&apos;t have any active GoldBot subscriptions yet.</p>
+          <Link href="/#pricing" className="btn-primary">View Pricing Plans</Link>
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PricingTier } from "@prisma/client";
 
 export default async function BillingPage() {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
   const orders = await prisma.order.findMany({

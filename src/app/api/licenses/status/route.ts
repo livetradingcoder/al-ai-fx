@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
       downloadUrl: job.downloadUrl,
       updatedAt: job.updatedAt
     }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Database fail' }, { status: 500 });
   }
 }

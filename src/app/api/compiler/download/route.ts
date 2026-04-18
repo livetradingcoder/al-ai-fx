@@ -1,11 +1,9 @@
-import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { head } from '@vercel/blob';
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
@@ -54,7 +52,7 @@ export async function GET(req: Request) {
         'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Download error:", error);
     return new Response('Internal Server Error', { status: 500 });
   }

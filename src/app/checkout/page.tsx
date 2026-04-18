@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -104,7 +105,7 @@ function CheckoutContent() {
               </div>
               <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>Account Activated!</h2>
               <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: "1.6" }}>
-                Success! Your GoldBot access is now active. We've sent an email to <strong>{email}</strong> with your login credentials and getting-started guide.
+                Success! Your GoldBot access is now active. We&apos;ve sent an email to <strong>{email}</strong> with your login credentials and getting-started guide.
               </p>
 
               <div style={{ background: "var(--bg-secondary)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid var(--border-color)", marginBottom: "2rem" }}>
@@ -113,13 +114,13 @@ function CheckoutContent() {
                 </p>
               </div>
 
-              <a
+              <Link
                 href="/login"
                 className="btn-primary fill"
                 style={{ display: "inline-block", textDecoration: "none", width: "100%" }}
               >
                 Go to Login
-              </a>
+              </Link>
             </div>
           ) : (
             <form

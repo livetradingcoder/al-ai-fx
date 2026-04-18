@@ -29,7 +29,7 @@ export default function ForgotPassword() {
       } else {
         setError(data.error || "Failed to process request.");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred.");
     } finally {
       setLoading(false);
@@ -37,62 +37,61 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "6rem auto" }}>
-      <div className="glass-panel" style={{ padding: "3rem" }}>
-        <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>Reset Password</h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", textAlign: "center", fontSize: "0.9rem" }}>
-          Enter your email and we'll send you a temporary password to regain access to your account.
+    <main className="main-content" style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '100vh',
+      background: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(41, 98, 255, 0.06) 0%, transparent 50%)'
+    }}>
+      <div className="card-glass" style={{ width: "100%", maxWidth: "480px", padding: "48px 40px" }}>
+        <h1 style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center", fontWeight: 800 }}>Reset Password</h1>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "2.5rem", textAlign: "center", fontSize: "1.05rem" }}>
+          Enter your email and we&apos;ll send you a temporary password to regain access to your account.
         </p>
 
         {!message ? (
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>Email Address</label>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <label style={{ fontSize: "0.95rem", color: "var(--text-secondary)", fontWeight: 600 }}>Email Address</label>
               <input
                 type="email"
-                placeholder="you@domain.com"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                  fontFamily: "inherit",
-                }}
+                className="form-input"
               />
             </div>
 
-            {error && <p style={{ color: "#fca5a5", fontSize: "0.85rem", textAlign: "center" }}>{error}</p>}
+            {error && <p style={{ color: "#ef4444", fontSize: "0.95rem", textAlign: "center", fontWeight: 600 }}>{error}</p>}
 
             <button
               type="submit"
               className="btn-primary fill"
               disabled={loading}
-              style={{ marginTop: "1rem" }}
+              style={{ marginTop: "0.5rem" }}
             >
               {loading ? "Sending..." : "Send Reset Email"}
             </button>
           </form>
         ) : (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✉️</div>
-            <p style={{ color: "#4ade80", marginBottom: "1.5rem" }}>{message}</p>
+            <div style={{ fontSize: "4rem", marginBottom: "1.5rem" }}>✉️</div>
+            <p style={{ color: "#10b981", marginBottom: "2rem", fontSize: "1.05rem", fontWeight: 600 }}>{message}</p>
             <Link href="/login" className="btn-primary fill" style={{ textDecoration: "none", display: "inline-block", width: "100%" }}>
               Back to Login
             </Link>
           </div>
         )}
 
-        <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.9rem" }}>
-          <span>Remember your password? </span>
+        <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.95rem" }}>
+          <span style={{ color: "var(--text-muted)" }}>Remember your password? </span>
           <Link href="/login" style={{ color: "var(--accent-primary)", textDecoration: "none", fontWeight: "600" }}>
             Log in
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

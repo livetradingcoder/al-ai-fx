@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function toggleBlockUser(userId: string, currentBlockStatus: boolean) {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
     throw new Error("Unauthorized");
   }
@@ -26,7 +26,7 @@ export async function toggleBlockUser(userId: string, currentBlockStatus: boolea
 }
 
 export async function deleteUser(userId: string) {
-  const session = await getServerSession(authOptions) as any;
+  const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
     throw new Error("Unauthorized");
   }

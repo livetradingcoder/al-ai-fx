@@ -23,14 +23,18 @@ interface UserData {
 export default function UsersTable({ users, currentUserId }: { users: UserData[], currentUserId: string }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    return error instanceof Error ? error.message : fallback;
+  };
+
   async function handleToggleBlock(userId: string, currentStatus: boolean) {
     if (userId === currentUserId) return alert("You cannot block yourself.");
     
     setLoadingId(userId);
     try {
       await toggleBlockUser(userId, currentStatus);
-    } catch (e: any) {
-      alert(e.message || "Failed to update block status");
+    } catch (error) {
+      alert(getErrorMessage(error, "Failed to update block status"));
     } finally {
       setLoadingId(null);
     }
@@ -43,8 +47,8 @@ export default function UsersTable({ users, currentUserId }: { users: UserData[]
     setLoadingId(userId);
     try {
       await deleteUser(userId);
-    } catch (e: any) {
-      alert(e.message || "Failed to delete user");
+    } catch (error) {
+      alert(getErrorMessage(error, "Failed to delete user"));
     } finally {
       setLoadingId(null);
     }
