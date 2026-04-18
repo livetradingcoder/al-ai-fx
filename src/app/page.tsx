@@ -462,12 +462,12 @@ export default function Home() {
             </span>
 
             <h1 className="landing-hero-title">
-              GoldBot is built for traders who want
+              GoldBot — built for traders who want
               <span> disciplined automation, not dashboard theater.</span>
             </h1>
 
             <p className="landing-hero-lead">
-              Wide-entry typography, account-bound cloud compilation, and
+              GoldBot is an MT5 EA with account-bound cloud compilation, and
               risk-aware execution logic designed for controlled MetaTrader 5
               deployment.
             </p>
@@ -482,13 +482,13 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="landing-pill-row" aria-label="GoldBot highlights">
+            {/* <div className="landing-pill-row" aria-label="GoldBot highlights">
               {HERO_PILLS.map((pill) => (
                 <span key={pill} className="landing-pill">
                   {pill}
                 </span>
               ))}
-            </div>
+            </div> */}
           </motion.div>
 
           <motion.div
@@ -518,13 +518,13 @@ export default function Home() {
                 <GoldGlyph kind="signal" className="hero-floating-glyph" />
               </div>
 
-              <div className="hero-floating-card hero-floating-card-bottom">
+              {/* <div className="hero-floating-card hero-floating-card-bottom">
                 <div className="hero-floating-meta">
                   <span>Risk posture</span>
                   <strong>Adaptive shield on</strong>
                 </div>
                 <GoldGlyph kind="shield" className="hero-floating-glyph" />
-              </div>
+              </div> */}
 
               <div className="hero-stage-caption">
                 <span className="hero-caption-kicker">Execution Character</span>
