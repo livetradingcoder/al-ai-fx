@@ -62,7 +62,7 @@ export async function findOrCreateUser(email: string) {
       },
     });
 
-    console.log(`[Subscription Service] Created new user: ${email}. Temporary Password: ${tempPassword}`);
+    console.log(`[Subscription Service] Created new user: ${email}`);
     try {
       await sendWelcomeEmail(email, tempPassword);
     } catch (error) {

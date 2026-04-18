@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { validateEmail } from "@/lib/validation";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
@@ -21,6 +23,14 @@ type CreateSessionPayload = {
 };
 
 export async function POST(req: Request) {
+  // Rate limiting
+  const identifier = getClientIdentifier(req);
+  const { success } = await checkApiRateLimit(identifier);
+  
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   try {
     const body = (await req.json()) as CreateSessionPayload;
     const tier = (body.tier || "1-month") as TierId;
@@ -28,8 +38,10 @@ export async function POST(req: Request) {
     const provider = (body.provider || "").trim().toLowerCase();
     const currency = (body.currency || "USD").trim().toUpperCase();
 
-    if (!email || !email.includes("@")) {
-      return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      return NextResponse.json({ error: emailValidation.error }, { status: 400 });
     }
 
     if (!Object.prototype.hasOwnProperty.call(TIER_AMOUNTS, tier)) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { put } from '@vercel/blob';
+import { validateFileSize } from '@/lib/validation';
 
 const prisma = new PrismaClient();
 
@@ -36,10 +37,25 @@ export async function POST(req: Request) {
     }
 
     if (status === 'COMPLETED' && fileDataBase64) {
+      // Validate file size before processing
+      const fileSizeValidation = validateFileSize(fileDataBase64, 10); // 10MB max
+      if (!fileSizeValidation.valid) {
+        console.error(`[Compiler Complete] File too large: ${fileSizeValidation.error}`);
+        return NextResponse.json({ error: fileSizeValidation.error }, { status: 413 });
+      }
+
       const buffer = Buffer.from(fileDataBase64, 'base64');
+      
+      // Additional validation on decoded buffer
+      const bufferSizeMB = buffer.length / (1024 * 1024);
+      if (bufferSizeMB > 5) {
+        console.error(`[Compiler Complete] Decoded file too large: ${bufferSizeMB.toFixed(2)}MB`);
+        return NextResponse.json({ error: 'Compiled file exceeds 5MB limit' }, { status: 413 });
+      }
+
       const fileName = `AL-ai-FX_GoldBot_${jobId}.ex5`;
       
-      console.log(`[Compiler Complete] Uploading ${fileName} to Vercel Blob...`);
+      console.log(`[Compiler Complete] Uploading ${fileName} (${bufferSizeMB.toFixed(2)}MB) to Vercel Blob...`);
       
       try {
         const blob = await put(`compiled/${fileName}`, buffer, {

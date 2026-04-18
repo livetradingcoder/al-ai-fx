@@ -14,8 +14,29 @@ export default function ForceResetPassword() {
     e.preventDefault();
     setError(null);
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+    // Client-side validation
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters long.");
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain at least one lowercase letter.");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter.");
+      return;
+    }
+
+    if (!/\d/.test(password)) {
+      setError("Password must contain at least one number.");
+      return;
+    }
+
+    if (!/[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+      setError("Password must contain at least one special character.");
       return;
     }
 
@@ -55,6 +76,25 @@ export default function ForceResetPassword() {
         <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", textAlign: "center", fontSize: "0.9rem" }}>
           For security reasons, you must change your temporary password before accessing your dashboard.
         </p>
+
+        <div style={{ 
+          background: "var(--bg-secondary)", 
+          padding: "1rem", 
+          borderRadius: "var(--radius-sm)", 
+          marginBottom: "1.5rem",
+          border: "1px solid var(--border-color)"
+        }}>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem", fontWeight: "600" }}>
+            Password Requirements:
+          </p>
+          <ul style={{ fontSize: "0.8rem", color: "var(--text-muted)", paddingLeft: "1.5rem", margin: 0 }}>
+            <li>At least 12 characters long</li>
+            <li>One uppercase letter (A-Z)</li>
+            <li>One lowercase letter (a-z)</li>
+            <li>One number (0-9)</li>
+            <li>One special character (@$!%*?&#, etc.)</li>
+          </ul>
+        </div>
 
         <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>

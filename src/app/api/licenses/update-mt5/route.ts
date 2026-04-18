@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { validateMT5Account } from "@/lib/validation";
 
 type UpdateMt5Payload = {
   subscriptionId?: string;
@@ -19,6 +20,12 @@ export async function PUT(req: Request) {
 
     if (!subscriptionId || !mt5AccountNumber) {
       return NextResponse.json({ error: 'Missing subscriptionId or mt5AccountNumber' }, { status: 400 });
+    }
+
+    // Validate MT5 account number
+    const mt5Validation = validateMT5Account(mt5AccountNumber);
+    if (!mt5Validation.valid) {
+      return NextResponse.json({ error: mt5Validation.error }, { status: 400 });
     }
 
     const subscription = await prisma.subscription.findUnique({
