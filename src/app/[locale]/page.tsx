@@ -739,7 +739,7 @@ export default function Home() {
                   </div>
                   <p className="pricing-tier-note">{plan.note}</p>
                   <ul className="pricing-tier-list">
-                    {plan.features.map((feature) => (
+                    {plan.features.map((feature: string) => (
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
@@ -771,7 +771,7 @@ export default function Home() {
                   </div>
                   <p className="pricing-tier-note">{plan.note}</p>
                   <ul className="pricing-tier-list">
-                    {plan.features.map((feature) => (
+                    {plan.features.map((feature: string) => (
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
