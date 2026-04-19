@@ -1,7 +1,11 @@
-import "./globals.css";
+import "../globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
+import {NextIntlClientProvider} from 'next-intl';
+import {getMessages} from 'next-intl/server';
+import {routing} from '../../i18n/routing';
+import {notFound} from 'next/navigation';
 
 export const metadata: Metadata = {
   title: "GoldBot by AL-ai-FX | Advanced Algorithmic Trading",
@@ -12,15 +16,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+  const messages = await getMessages();
+  const dir = locale === 'ar' || locale === 'ur' ? 'rtl' : 'ltr';
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={dir}>
       <body>
-        <Navbar />
+        <NextIntlClientProvider messages={messages}>
+          <Navbar />
         {children}
         <footer className="footer">
           <div className="footer-grid">
@@ -48,6 +62,7 @@ export default function RootLayout({
             Terms & Conditions, and Refund Policy.
           </p>
         </footer>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

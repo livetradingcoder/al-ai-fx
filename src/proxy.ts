@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { withAuth } from "next-auth/middleware";
+import createIntlMiddleware from 'next-intl/middleware';
+import {routing} from './i18n/routing';
+
+const intlMiddleware = createIntlMiddleware(routing);
 
 // CSRF Protection Middleware
 function csrfMiddleware(request: NextRequest) {
@@ -52,6 +56,12 @@ export default withAuth(
     if (csrfResponse.status === 403) {
       return csrfResponse;
     }
+    
+    // Skip next-intl for API routes
+    if (!req.nextUrl.pathname.startsWith('/api/')) {
+      return intlMiddleware(req);
+    }
+    
     return NextResponse.next();
   },
   {
@@ -74,8 +84,9 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/api/:path*',
-    '/dashboard/:path*',
-    '/admin/:path*'
+    '/',
+    '/(en|hi|bn|ur|ar|de|es)/:path*',
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+    '/api/:path*'
   ],
 };

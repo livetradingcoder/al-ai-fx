@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("Auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export default function LoginPage() {
         redirect: true 
       });
     } catch {
-      setError("An unexpected error occurred");
+      setError(t("unexpectedError"));
     }
   };
 
@@ -32,8 +34,8 @@ export default function LoginPage() {
       background: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(41, 98, 255, 0.06) 0%, transparent 50%)'
     }}>
       <div className="card-glass" style={{ width: '100%', maxWidth: '480px', padding: '48px 40px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.75rem', textAlign: 'center', fontWeight: 800 }}>Secure Login</h1>
-        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '2.5rem', fontSize: '1.05rem' }}>Access your GoldBot Dashboard</p>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.75rem', textAlign: 'center', fontWeight: 800 }}>{t("secureLogin")}</h1>
+        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '2.5rem', fontSize: '1.05rem' }}>{t("accessDashboard")}</p>
         
         {error && (
           <div style={{ 
@@ -53,7 +55,7 @@ export default function LoginPage() {
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>Email</label>
+            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>{t("email")}</label>
             <input 
               type="email" 
               value={email}
@@ -64,7 +66,7 @@ export default function LoginPage() {
             />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>Password</label>
+            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>{t("password")}</label>
             <input 
               type="password" 
               value={password}
@@ -74,15 +76,15 @@ export default function LoginPage() {
               required 
             />
           </div>
-          <button type="submit" className="btn-primary fill" style={{ marginTop: '0.5rem' }}>Sign In</button>
+          <button type="submit" className="btn-primary fill" style={{ marginTop: '0.5rem' }}>{t("signIn")}</button>
           <div style={{ textAlign: "center", marginTop: "-0.75rem" }}>
             <Link href="/forgot-password" style={{ color: "var(--text-secondary)", fontSize: "0.95rem", textDecoration: "none", transition: 'color 0.2s' }}>
-              Forgot Password?
+              {t("forgotPassword")}
             </Link>
           </div>
         </form>
         <p style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-          Don&apos;t have an account? <Link href="/#pricing" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Buy GoldBot</Link>
+          {t("noAccount")} <Link href="/#pricing" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{t("buyGoldBot")}</Link>
         </p>
       </div>
     </main>

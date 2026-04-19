@@ -106,18 +106,14 @@ export default function LicenseManager({ subscription, latestCompilation: initia
                 width: "100%",
               }}
             />
-            {isEditing ? (
+            {isEditing && (
               <button className="btn-primary" onClick={handleUpdateMt5} disabled={isUpdating}>
-                {isUpdating ? "Saving..." : "Save"}
-              </button>
-            ) : (
-              <button className="btn-secondary" onClick={() => setIsEditing(true)}>
-                Edit
+                {isUpdating ? "Saving..." : "Save & Lock"}
               </button>
             )}
           </div>
           <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
-            {isEditing ? "Important: Updating this account triggers a new compilation." : "MT5 account locked for this build."}
+            {isEditing ? "Important: You can only set this number once. It cannot be changed later." : "MT5 account is permanently locked for this license."}
           </p>
         </div>
 

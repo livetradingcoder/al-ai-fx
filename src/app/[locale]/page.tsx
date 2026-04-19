@@ -9,6 +9,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
 
@@ -82,7 +83,7 @@ const FEATURE_PANELS = [
     layout: "feature-panel-compact",
   },
   {
-    eyebrow: "Execution Character",
+    eyebrow: "{t('executionCharacter')}",
     title: "Built for traders who want calm automation, not noisy theatrics.",
     body:
       "Every section of the product is aimed at disciplined execution: fast provisioning, clear risk posture, and a setup path that gets you live without chaos.",
@@ -389,6 +390,8 @@ function SectionWireframe(props: SVGProps<SVGSVGElement>) {
 }
 
 export default function Home() {
+  const t = useTranslations("Landing");
+
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -458,12 +461,12 @@ export default function Home() {
           >
             <span className="landing-eyebrow">
               <GoldGlyph kind="halo" className="landing-eyebrow-icon" />
-              AI-assisted MT5 execution engine
+              {t('heroEyebrow')}
             </span>
 
             <h1 className="landing-hero-title">
-              GoldBot — built for traders who want
-              <span> disciplined automation, not dashboard theater.</span>
+              {t('heroTitlePrefix')}
+              <span>{t('heroTitleSuffix')}</span>
             </h1>
 
             <p className="landing-hero-lead">
@@ -474,11 +477,11 @@ export default function Home() {
 
             <div className="landing-hero-actions">
               <Link href="/#pricing" className="btn-primary large">
-                Get Access
+                {t('getAccess')}
                 <ArrowRight size={18} />
               </Link>
               <Link href="/tutorials" className="btn-secondary large">
-                Watch Tutorials
+                {t('watchTutorials')}
               </Link>
             </div>
 
@@ -527,8 +530,8 @@ export default function Home() {
               </div> */}
 
               <div className="hero-stage-caption">
-                <span className="hero-caption-kicker">Execution Character</span>
-                <h2>Built for controlled deployment.</h2>
+                <span className="hero-caption-kicker">{t('executionCharacter')}</span>
+                <h2>{t('builtForControlled')}</h2>
                 <p>
                   Consistent decision rules, protective recovery logic, and
                   account-level security are designed into the experience from
@@ -548,11 +551,11 @@ export default function Home() {
             transition={{ duration: 0.7 }}
           >
             <span className="landing-eyebrow landing-eyebrow-muted">
-              Designed for performance
+              {t('designedForPerformance')}
             </span>
             <h2 className="landing-proof-title">
-              Built exclusively for
-              <span> MetaTrader 5.</span>
+              {t('builtExclusivelyFor')}
+              <span>{t('metaTraderSuffix')}</span>
             </h2>
             <p className="landing-proof-text">
               GoldBot cannot be installed on MT4 or other trading platforms. A valid MT5 account with your preferred broker is required, and Broker Time must be set to GMT+3 for license locking.</p>

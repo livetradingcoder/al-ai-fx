@@ -4,8 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslations } from "next-intl";
 
 export default function Navbar() {
+  const t = useTranslations("Navbar");
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,24 +36,25 @@ export default function Navbar() {
               />
             </span>
             <span className="nav-brand-copy">
-              <strong>GoldBot</strong>
-              <span>by AL-ai-FX</span>
+              <strong>{t("brandPrefix")}</strong>
+              <span>{t("brandSuffix")}</span>
             </span>
           </Link>
 
           <div className="nav-links desktop-only">
-            <Link href="/#features">Features</Link>
-            <Link href="/#pricing">Pricing</Link>
-            <Link href="/tutorials">Tutorials</Link>
-            <Link href="/faq">FAQ</Link>
+            <Link href="/#features">{t("features")}</Link>
+            <Link href="/#pricing">{t("pricing")}</Link>
+            <Link href="/tutorials">{t("tutorials")}</Link>
+            <Link href="/faq">{t("faq")}</Link>
           </div>
 
           <div className="nav-actions desktop-only">
+            <LanguageSwitcher />
             <Link href="/login" className="btn-secondary nav-login">
-              Login
+              {t("login")}
             </Link>
             <Link href="/#pricing" className="btn-primary nav-cta">
-              Get Access
+              {t("getAccess")}
             </Link>
           </div>
 
@@ -70,31 +74,32 @@ export default function Navbar() {
       {isOpen && (
         <div id="mobile-nav-panel" className="mobile-menu-panel">
           <div className="mobile-menu-shell">
+            <div style={{ padding: '1rem' }}><LanguageSwitcher /></div>
             <Link href="/#features" onClick={() => setIsOpen(false)}>
-              Features
+              {t("features")}
             </Link>
             <Link href="/#pricing" onClick={() => setIsOpen(false)}>
-              Pricing
+              {t("pricing")}
             </Link>
             <Link href="/tutorials" onClick={() => setIsOpen(false)}>
-              Tutorials
+              {t("tutorials")}
             </Link>
             <Link href="/faq" onClick={() => setIsOpen(false)}>
-              FAQ
+              {t("faq")}
             </Link>
             <Link
               href="/login"
               onClick={() => setIsOpen(false)}
               className="btn-secondary mobile-menu-button"
             >
-              Login
+              {t("login")}
             </Link>
             <Link
               href="/#pricing"
               onClick={() => setIsOpen(false)}
               className="btn-primary mobile-menu-button"
             >
-              Get Access
+              {t("getAccess")}
             </Link>
           </div>
         </div>

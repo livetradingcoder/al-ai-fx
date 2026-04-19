@@ -1,9 +1,11 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PricingTier } from "@prisma/client";
+import { PrismaClient, PricingTier } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 
 export default async function BillingPage() {
+  const t = await getTranslations("Dashboard");
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
@@ -27,23 +29,23 @@ export default async function BillingPage() {
   return (
     <div style={{ maxWidth: '900px' }}>
       <header style={{ marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Billing & Payments</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>View your transaction history and manage payment methods via Paygate.to.</p>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{t("billingPayments")}</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>{t("billingSubtitle")}</p>
       </header>
 
       <div className="glass-panel" style={{ marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>Transaction History</h2>
+        <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>{t("transactionHistory")}</h2>
         
         {orders.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)', padding: '1rem 0' }}>No transactions found for your account.</p>
+          <p style={{ color: 'var(--text-secondary)', padding: '1rem 0' }}>{t("noTransactions")}</p>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Plan</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
-                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
+                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>{t("date")}</th>
+                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>{t("plan")}</th>
+                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>{t("amount")}</th>
+                <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>{t("status")}</th>
               </tr>
             </thead>
             <tbody>
