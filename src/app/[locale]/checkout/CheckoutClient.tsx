@@ -1,14 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+
+import {
+  storePendingCheckout,
+  trackBeginCheckout,
+  trackViewContent,
+} from "@/lib/marketing-client";
+import { buildCheckoutThankYouPath } from "@/lib/marketing";
 
 type TierId = "free-trial" | "1-month" | "6-months" | "lifetime" | "secret-test";
 
 function CheckoutContent() {
   const t = useTranslations("Checkout");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const tier = (searchParams?.get("tier") || "1-month") as TierId;
 
@@ -28,6 +36,31 @@ function CheckoutContent() {
   const selectedPlan = planDetails[tier] || planDetails["1-month"];
   const isFreeTrial = tier === "free-trial";
 
+  async function openThankYouFlow(input: {
+    amount: number;
+    checkoutUrl: string;
+    currency: string;
+    orderRef: string;
+    tier: TierId;
+  }) {
+    storePendingCheckout({
+      amount: input.amount,
+      checkoutUrl: input.checkoutUrl,
+      currency: input.currency,
+      orderRef: input.orderRef,
+      tier: input.tier,
+    });
+
+    trackBeginCheckout({
+      amount: input.amount,
+      currency: input.currency,
+      orderRef: input.orderRef,
+      tier: input.tier,
+    });
+
+    window.location.assign(buildCheckoutThankYouPath(locale, input.orderRef));
+  }
+
   async function handlePaygateRedirect() {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
@@ -36,6 +69,11 @@ function CheckoutContent() {
 
     setIsSubmitting(true);
     setCheckoutError(null);
+
+    const paymentWindow =
+      !isFreeTrial && typeof window !== "undefined"
+        ? window.open("", "_blank", "noopener,noreferrer")
+        : null;
 
     try {
       if (isFreeTrial) {
@@ -65,19 +103,55 @@ function CheckoutContent() {
         }),
       });
 
-      const data = (await response.json()) as { checkoutUrl?: string; error?: string };
+      const data = (await response.json()) as {
+        amount?: number | string;
+        checkoutUrl?: string;
+        currency?: string;
+        error?: string;
+        orderRef?: string;
+      };
 
       if (!response.ok || !data.checkoutUrl) {
         throw new Error(data.error || "Unable to initialize Paygate checkout.");
       }
 
-      window.location.assign(data.checkoutUrl);
+      const orderRef = "orderRef" in data && typeof data.orderRef === "string" ? data.orderRef : "";
+      const amount = "amount" in data ? Number.parseFloat(String(data.amount)) : Number.NaN;
+      const currency = "currency" in data && typeof data.currency === "string" ? data.currency : "USD";
+
+      if (!orderRef || Number.isNaN(amount)) {
+        throw new Error("Unable to create a valid checkout session.");
+      }
+
+      if (paymentWindow && !paymentWindow.closed) {
+        paymentWindow.location.assign(data.checkoutUrl);
+      }
+
+      await openThankYouFlow({
+        amount,
+        checkoutUrl: data.checkoutUrl,
+        currency,
+        orderRef,
+        tier,
+      });
     } catch (error) {
+      if (paymentWindow && !paymentWindow.closed) {
+        paymentWindow.close();
+      }
       const message = error instanceof Error ? error.message : "Unexpected checkout error.";
       setCheckoutError(message);
       setIsSubmitting(false);
     }
   }
+
+  useEffect(() => {
+    trackViewContent({
+      contentName: selectedPlan.name,
+      contentType: "checkout",
+      currency: "USD",
+      value: Number.parseFloat(selectedPlan.amount),
+    });
+  }, [selectedPlan.amount, selectedPlan.name]);
 
   return (
     <main

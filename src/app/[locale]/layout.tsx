@@ -6,6 +6,8 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import {routing} from '../../i18n/routing';
 import {notFound} from 'next/navigation';
+import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
+import MarketingScripts from "@/components/marketing/MarketingScripts";
 import { getPageMetadata, SITE_URL } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -43,6 +45,8 @@ export default async function RootLayout({
     <html lang={locale} dir={dir}>
       <body>
         <NextIntlClientProvider messages={messages}>
+          <MarketingScripts />
+          <MarketingPageTracker />
           <Navbar />
         {children}
         <footer className="footer">
