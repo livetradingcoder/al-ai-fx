@@ -589,7 +589,7 @@ export default function Home() {
             <span className="landing-eyebrow">Verified proof</span>
             <h2 className="section-title">
               Screenshots over slogans.
-              <span> Real member performance, framed properly.</span>
+              <span> Real member performance.</span>
             </h2>
             <p className="section-copy">
               Social proof does not need fake avatars and generic microcards.
