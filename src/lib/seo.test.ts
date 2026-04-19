@@ -41,10 +41,11 @@ test("faq metadata exposes locale alternates and x-default", () => {
 
 test("home metadata uses a share-safe og image", () => {
   const metadata = getPageMetadata("home", "en");
-  const image = metadata.openGraph?.images?.[0];
+  const images = metadata.openGraph?.images;
+  const image = Array.isArray(images) ? images[0] : images;
 
-  assert.equal(typeof image === "string" ? image : image?.url, "https://www.al-ai-fx.xyz/goldbot-social.png");
-  assert.equal(metadata.twitter?.card, "summary_large_image");
+  assert.equal(typeof image === "string" ? image : (image as any)?.url, "https://www.al-ai-fx.xyz/goldbot-social.png");
+  assert.equal((metadata.twitter as any)?.card, "summary_large_image");
 });
 
 test("public sitemap entries cover every locale and public page", () => {
