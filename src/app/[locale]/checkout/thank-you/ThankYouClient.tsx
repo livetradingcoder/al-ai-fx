@@ -216,8 +216,8 @@ export default function ThankYouClient() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <Link href="/login" className="btn-primary" style={{ alignSelf: "center" }}>
-              Go to login
+            <Link href="/" className="btn-primary" style={{ alignSelf: "center" }}>
+              Back to home
             </Link>
             <Link href="/support" className="btn-secondary" style={{ alignSelf: "center" }}>
               Contact support

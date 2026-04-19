@@ -1,16 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 export default function Navbar() {
   const t = useTranslations("Navbar");
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isLoggedIn = Boolean(session?.user?.id);
+  const accountHref = isLoggedIn ? "/dashboard" : "/login";
+  const accountLabel = isLoggedIn ? "Dashboard" : t("login");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,8 +55,8 @@ export default function Navbar() {
 
           <div className="nav-actions desktop-only">
             <LanguageSwitcher />
-            <Link href="/login" className="btn-secondary nav-login">
-              {t("login")}
+            <Link href={accountHref} className="btn-secondary nav-login">
+              {accountLabel}
             </Link>
             <Link href="/#pricing" className="btn-primary nav-cta">
               {t("getAccess")}
@@ -88,11 +93,11 @@ export default function Navbar() {
               {t("faq")}
             </Link>
             <Link
-              href="/login"
+              href={accountHref}
               onClick={() => setIsOpen(false)}
               className="btn-secondary mobile-menu-button"
             >
-              {t("login")}
+              {accountLabel}
             </Link>
             <Link
               href="/#pricing"

@@ -1,7 +1,7 @@
 import { PricingTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import { sendWelcomeEmail, sendPurchaseConfirmationEmail } from "@/lib/mail";
+import { sendPurchaseConfirmationEmail } from "@/lib/mail";
+import { buildMagicLinkUrl, createMagicLinkToken } from "@/lib/magic-links";
 
 export function mapTier(tierRaw: string): PricingTier {
   switch (tierRaw.toLowerCase()) {
@@ -46,37 +46,59 @@ export function computeExpirationDate(tier: PricingTier): Date {
 
 export async function findOrCreateUser(email: string) {
   let user = await prisma.user.findUnique({ where: { email } });
-  let tempPassword = null;
-  let emailSuccess = true;
+  const emailSuccess = true;
 
   if (!user) {
-    tempPassword = Math.random().toString(36).slice(-10);
-    const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
     user = await prisma.user.create({
       data: {
         email,
-        passwordHash: hashedPassword,
         name: email.split("@")[0],
-        shouldResetPassword: true,
       },
     });
 
     console.log(`[Subscription Service] Created new user: ${email}`);
-    try {
-      await sendWelcomeEmail(email, tempPassword);
-    } catch (error) {
-      console.error(`[Subscription Service] Failed to send welcome email to ${email}:`, error);
-      emailSuccess = false;
-    }
   }
 
-  return { user, tempPassword, emailSuccess };
+  return { user, emailSuccess };
 }
 
-export async function provisionSubscription(email: string, tierRaw: string, paygateId?: string, amount?: number, currency?: string) {
+function formatTierLabel(tier: PricingTier) {
+  return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function createUserMagicLink(input: { email: string; userId: string }) {
+  const secret = process.env.NEXTAUTH_SECRET;
+  const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
+
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET is required to issue magic links.");
+  }
+
+  const token = createMagicLinkToken(
+    {
+      email: input.email,
+      purpose: "login",
+      userId: input.userId,
+    },
+    secret,
+  );
+
+  return buildMagicLinkUrl({
+    baseUrl,
+    locale: "en",
+    token,
+  });
+}
+
+export async function provisionSubscription(
+  email: string,
+  tierRaw: string,
+  paygateId?: string,
+  amount?: number,
+  currency?: string,
+) {
   const tier = mapTier(tierRaw);
-  const { user, tempPassword, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
+  const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
 
   if (paygateId) {
@@ -132,7 +154,14 @@ export async function provisionSubscription(email: string, tierRaw: string, payg
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)
   try {
-    await sendPurchaseConfirmationEmail(email, tier, expiresAt, tempPassword);
+    const magicLinkUrl = createUserMagicLink({ email, userId: user.id });
+
+    await sendPurchaseConfirmationEmail(
+      email,
+      formatTierLabel(tier),
+      expiresAt,
+      magicLinkUrl,
+    );
   } catch (error) {
     console.error(`[Subscription Service] Failed to send confirmation email to ${email}:`, error);
     overallEmailSuccess = false;

@@ -1022,6 +1022,44 @@ h2 {
   gap: 3rem;
 }
 
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.checkout-inline-note {
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-color);
+  background: rgba(255, 246, 227, 0.02);
+  text-align: center;
+}
+
+.checkout-action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: var(--bg-secondary);
+  padding: 1.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.checkout-provider-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(244, 220, 162, 0.08);
+  border: 1px solid rgba(244, 220, 162, 0.14);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -3442,6 +3480,21 @@ button {
   .footer-grid {
     grid-template-columns: 1fr;
   }
+
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem 1.25rem 1rem;
+  }
+
+  .dashboard-main {
+    padding: 1.5rem 1.25rem 2rem;
+  }
 }
 
 @media (max-width: 520px) {
@@ -3459,6 +3512,27 @@ button {
   .landing-hero-actions .btn-secondary,
   .mobile-menu-button {
     width: 100%;
+  }
+
+  .mobile-menu-panel {
+    padding: 14px 14px 28px;
+  }
+
+  .mobile-menu-shell {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .checkout-grid {
+    gap: 1.25rem;
+  }
+
+  .checkout-action-panel {
+    padding: 1.1rem;
+  }
+
+  .checkout-provider-chip {
+    font-size: 0.78rem;
   }
 
   .hero-stage-image-shell {

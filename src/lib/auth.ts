@@ -3,6 +3,7 @@ import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { verifyMagicLinkToken } from "@/lib/magic-links";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -72,6 +73,46 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
       }
+    }),
+    CredentialsProvider({
+      id: "magic-link",
+      name: "Magic Link",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token || !process.env.NEXTAUTH_SECRET) {
+          return null;
+        }
+
+        try {
+          const payload = verifyMagicLinkToken(credentials.token, process.env.NEXTAUTH_SECRET);
+          const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+          });
+
+          if (!user || user.email !== payload.email || user.isBlocked || user.isDeleted) {
+            return null;
+          }
+
+          if (user.shouldResetPassword) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { shouldResetPassword: false },
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("[Auth] Invalid magic link token:", error);
+          return null;
+        }
+      },
     })
   ],
   callbacks: {

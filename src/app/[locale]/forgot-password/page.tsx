@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+
+import { Link } from "@/i18n/routing";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -45,9 +46,9 @@ export default function ForgotPassword() {
       background: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(41, 98, 255, 0.06) 0%, transparent 50%)'
     }}>
       <div className="card-glass" style={{ width: "100%", maxWidth: "480px", padding: "48px 40px" }}>
-        <h1 style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center", fontWeight: 800 }}>Reset Password</h1>
+        <h1 style={{ fontSize: "2.5rem", marginBottom: "0.75rem", textAlign: "center", fontWeight: 800 }}>Email Me a Magic Link</h1>
         <p style={{ color: "var(--text-secondary)", marginBottom: "2.5rem", textAlign: "center", fontSize: "1.05rem" }}>
-          Enter your email and we&apos;ll send you a temporary password to regain access to your account.
+          Enter your email and we&apos;ll send you a secure sign-in link so you can access your GoldBot dashboard without resetting to a temporary password.
         </p>
 
         {!message ? (
@@ -72,7 +73,7 @@ export default function ForgotPassword() {
               disabled={loading}
               style={{ marginTop: "0.5rem" }}
             >
-              {loading ? "Sending..." : "Send Reset Email"}
+              {loading ? "Sending..." : "Send Magic Link"}
             </button>
           </form>
         ) : (
@@ -86,7 +87,7 @@ export default function ForgotPassword() {
         )}
 
         <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.95rem" }}>
-          <span style={{ color: "var(--text-muted)" }}>Remember your password? </span>
+          <span style={{ color: "var(--text-muted)" }}>Prefer your password instead? </span>
           <Link href="/login" style={{ color: "var(--accent-primary)", textDecoration: "none", fontWeight: "600" }}>
             Log in
           </Link>

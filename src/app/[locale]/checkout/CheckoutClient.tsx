@@ -192,7 +192,8 @@ function CheckoutContent() {
                   lineHeight: "1.6",
                 }}
               >
-                {t("successMessage1")} <strong>{email}</strong> {t("successMessage2")}
+                Your GoldBot access is active. We sent a secure dashboard sign-in link to{" "}
+                <strong>{email}</strong>.
               </p>
 
               <div
@@ -205,21 +206,21 @@ function CheckoutContent() {
                 }}
               >
                 <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                  <strong>{t("nextStep")}</strong> {t("nextStepDetails")}
+                  <strong>{t("nextStep")}</strong> Check your inbox and spam folder, then use the magic link in the email to open your dashboard securely.
                 </p>
               </div>
 
               <Link
-                href="/login"
+                href="/"
                 className="btn-primary fill"
                 style={{ display: "inline-block", textDecoration: "none", width: "100%" }}
               >
-                {t("goToLogin")}
+                Back to home
               </Link>
             </div>
           ) : (
             <form
-              style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+              className="checkout-form"
               onSubmit={(event) => {
                 event.preventDefault();
                 void handlePaygateRedirect();
@@ -245,15 +246,7 @@ function CheckoutContent() {
                 />
               </div>
 
-              <div
-                style={{
-                  padding: "1rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px dashed var(--border-color)",
-                  background: "var(--bg-secondary)",
-                  textAlign: "center",
-                }}
-              >
+              <div className="checkout-inline-note">
                 <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", margin: 0 }}>
                   {t("setMt5Later")}
                 </p>
@@ -267,30 +260,16 @@ function CheckoutContent() {
                 }}
               />
 
-              <div
-                style={{
-                  background: "var(--bg-secondary)",
-                  padding: "1.5rem",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-color)",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "1rem",
-                    marginBottom: "1rem",
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>{t("paygateIntegration")}</span>
-                  <span style={{ color: "var(--accent-accent)" }}>🔒 {t("secure")}</span>
-                </h3>
+              <div className="checkout-action-panel">
+                <div className="checkout-provider-chip">
+                  <span aria-hidden="true">★</span>
+                  <span>Supported by Paygate</span>
+                </div>
                 <p
                   style={{
                     color: "var(--text-secondary)",
                     fontSize: "0.9rem",
-                    marginBottom: "1rem",
+                    marginBottom: "0.85rem",
                   }}
                 >
                   {isFreeTrial ? t("freeTrialAction") : t("paygateRedirect")}
@@ -317,7 +296,7 @@ function CheckoutContent() {
                 <button
                   type="submit"
                   className="btn-primary fill"
-                  style={{ border: "none", margin: "0", opacity: isSubmitting ? 0.75 : 1 }}
+                  style={{ border: "none", margin: "0.25rem 0 0", opacity: isSubmitting ? 0.75 : 1 }}
                   disabled={isSubmitting}
                 >
                   {isFreeTrial

@@ -1,11 +1,13 @@
 "use client";
-import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+
+import { Link } from "@/i18n/routing";
 
 export default function LoginPage() {
   const t = useTranslations("Auth");
+  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,7 @@ export default function LoginPage() {
       await signIn("credentials", { 
         email, 
         password, 
-        callbackUrl: "/dashboard",
+        callbackUrl: locale === "en" ? "/dashboard" : `/${locale}/dashboard`,
         redirect: true 
       });
     } catch {
@@ -79,7 +81,7 @@ export default function LoginPage() {
           <button type="submit" className="btn-primary fill" style={{ marginTop: '0.5rem' }}>{t("signIn")}</button>
           <div style={{ textAlign: "center", marginTop: "-0.75rem" }}>
             <Link href="/forgot-password" style={{ color: "var(--text-secondary)", fontSize: "0.95rem", textDecoration: "none", transition: 'color 0.2s' }}>
-              {t("forgotPassword")}
+              Email me a magic link
             </Link>
           </div>
         </form>
