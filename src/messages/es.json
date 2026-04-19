@@ -271,7 +271,7 @@
     "successStep2": "Abra su Terminal MT5, vaya a Archivo > Abrir carpeta de datos.",
     "successStep3": "Navegue hasta MQL5 > Expertos y pegue el archivo allí.",
     "successStep4": "Actualice la lista de 'Expertos' en su Navegador MT5 y arrastre el robot a un gráfico XAUUSD.",
-    "successStep5": "En las entradas, asegúrese de configurar su porcentaje de riesgo y horario de negociación según la guía en PDF.",
+    "successStep5": "En las entradas, asegúrese de configurar su porcentaje de riesgo y horario de negociación según la <tutorialLink>guía en PDF</tutorialLink>.",
     "successNote": "Nota: Esta compilación está bloqueada en la cuenta MT5 {cuenta}. No se ejecutará en ningún otro número de cuenta."
   }
 }

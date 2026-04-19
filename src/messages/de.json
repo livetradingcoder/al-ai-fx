@@ -271,7 +271,7 @@
     "successStep2": "Öffnen Sie Ihr MT5-Terminal und gehen Sie zu Datei > Datenordner öffnen.",
     "successStep3": "Navigieren Sie zu MQL5 > Experten und fügen Sie die Datei dort ein.",
     "successStep4": "Aktualisieren Sie die „Experten“-Liste in Ihrem MT5-Navigator und ziehen Sie den Roboter auf ein XAUUSD-Diagramm.",
-    "successStep5": "Stellen Sie bei den Eingaben sicher, dass Sie Ihren Risikoprozentsatz und Ihre Handelszeiten gemäß dem PDF-Leitfaden festlegen.",
+    "successStep5": "Stellen Sie bei den Eingaben sicher, dass Sie Ihren Risikoprozentsatz und Ihre Handelszeiten gemäß dem <tutorialLink>PDF-Leitfaden</tutorialLink> festlegen.",
     "successNote": "Hinweis: Dieser Build ist an das MT5-Konto {account} gebunden. Es wird nicht auf einer anderen Kontonummer ausgeführt."
   }
 }

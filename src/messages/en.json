@@ -271,7 +271,7 @@
     "successStep2": "Open your MT5 Terminal, go to File > Open Data Folder.",
     "successStep3": "Navigate to MQL5 > Experts and paste the file there.",
     "successStep4": "Refresh the 'Experts' list in your MT5 Navigator and drag the robot onto an XAUUSD chart.",
-    "successStep5": "In the inputs, ensure you set your Risk Percent and Trading Hours as per the PDF guide.",
+    "successStep5": "In the inputs, ensure you set your Risk Percent and Trading Hours as per the <tutorialLink>PDF guide</tutorialLink>.",
     "successNote": "Note: This build is locked to MT5 Account {account}. It will not execute on any other account number."
   }
 }

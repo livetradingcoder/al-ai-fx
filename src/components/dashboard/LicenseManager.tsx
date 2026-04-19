@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 interface LicenseManagerProps {
   subscription: {
@@ -164,7 +165,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
             <li><strong>Step 2:</strong> {t("successStep2")}</li>
             <li><strong>Step 3:</strong> {t("successStep3")}</li>
             <li><strong>Step 4:</strong> {t("successStep4")}</li>
-            <li><strong>Step 5:</strong> {t("successStep5")}</li>
+            <li><strong>Step 5:</strong> {t.rich("successStep5", { tutorialLink: (chunks) => <Link href="/tutorials/2" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>{chunks}</Link> })}</li>
           </ul>
           <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             ⚠️ {t("successNote", { account: subscription.mt5AccountNumber || "" })}
