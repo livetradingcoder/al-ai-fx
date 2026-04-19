@@ -32,207 +32,203 @@ const HERO_PILLS = [
   "Account-locked cloud builds",
 ];
 
-const PROOF_METRICS = [
+const getProofMetrics = (t: any) => [
   {
     value: "< 15s",
-    label: "Personalized compile",
-    detail: "From MT5 account lock to download-ready package.",
+    label: t("metric1Label"),
+    detail: t("metric1Detail"),
   },
   {
     value: "1:1",
-    label: "License binding",
-    detail: "One GoldBot build per approved MT5 account.",
+    label: t("metric2Label"),
+    detail: t("metric2Detail"),
   },
   {
     value: "24/7",
-    label: "Automated ruleset",
-    detail: "Execution logic that stays on plan around the clock.",
+    label: t("metric3Label"),
+    detail: t("metric3Detail"),
   },
 ];
 
-const FEATURE_PANELS = [
+const getFeaturePanels = (t: any) => [
   {
-    eyebrow: "Adaptive Recovery",
-    title: "Smart hedging that protects structure when the market gets violent.",
-    body:
-      "Recovery logic is designed to react with discipline, not panic. GoldBot stays focused on position structure, exposure control, and controlled re-entry instead of brute-force escalation.",
+    eyebrow: t("adaptiveRecovery"),
+    title: t("adaptiveRecoveryTitle"),
+    body: t("adaptiveRecoveryBody"),
     bullets: [
-      "Structured hedge handling",
-      "Drawdown-aware exposure logic",
-      "Cleaner prop-firm behavior",
+      t("structuredHedge"),
+      t("drawdownAware"),
+      t("cleanerPropFirm"),
     ],
     glyph: "signal",
     layout: "feature-panel-large",
   },
   {
-    eyebrow: "Liquidity Guard",
-    title: "Holiday filters cut the dead hours before they damage performance.",
-    body:
-      "UK, US, DE, FR, and IT holiday conditions are screened automatically so the EA stays away from thin, distorted sessions.",
-    bullets: ["Bank-holiday screening", "Session-aware execution"],
+    eyebrow: t("liquidityGuard"),
+    title: t("liquidityGuardTitle"),
+    body: t("liquidityGuardBody"),
+    bullets: [t("bankHoliday"), t("sessionAware")],
     glyph: "shield",
     layout: "feature-panel-tall",
   },
   {
-    eyebrow: "Private Build",
-    title: "Cloud compiled for your account instead of shipped like public slop.",
-    body:
-      "GoldBot is compiled uniquely for the MT5 account you authorize, avoiding the usual slow web-request license traps inside the EA.",
-    bullets: ["Account-specific executable", "No laggy in-bot license ping"],
+    eyebrow: t("privateBuild"),
+    title: t("privateBuildTitle"),
+    body: t("privateBuildBody"),
+    bullets: [t("accountSpecific"), t("noLaggy")],
     glyph: "vault",
     layout: "feature-panel-compact",
   },
   {
-    eyebrow: "{t('executionCharacter')}",
-    title: "Built for traders who want calm automation, not noisy theatrics.",
-    body:
-      "Every section of the product is aimed at disciplined execution: fast provisioning, clear risk posture, and a setup path that gets you live without chaos.",
-    bullets: ["Fast deployment", "Clear setup path", "MT5-native workflow"],
+    eyebrow: t("executionCharacter"),
+    title: t("executionCharacterTitle"),
+    body: t("executionCharacterBody"),
+    bullets: [t("fastDeployment"), t("clearSetup"), t("mt5Native")],
     glyph: "halo",
     layout: "feature-panel-wide",
   },
 ];
 
-const SUBSCRIPTION_PLANS = [
+const getSubscriptionPlans = (t: any) => [
   {
     id: "10-days",
-    title: "10 Days",
+    title: t("10DaysTitle"),
     price: "$51",
-    period: "for 10 days",
-    note: "Fast validation window",
+    period: t("for10Days"),
+    note: t("fastValidation"),
     features: [
-      "Basic feature set",
-      "Standard recovery profile",
-      "Automated delivery",
+      t("basicFeatureSet"),
+      t("standardRecovery"),
+      t("automatedDelivery"),
     ],
   },
   {
     id: "1-month",
-    title: "Monthly",
+    title: t("monthlyTitle"),
     price: "$149",
-    period: "per month",
-    note: "Best place to start",
+    period: t("perMonth"),
+    note: t("bestPlaceToStart"),
     featured: true,
     features: [
-      "Unlimited downloads",
-      "All strategy features",
-      "Automated delivery",
+      t("unlimitedDownloads"),
+      t("allStrategyFeatures"),
+      t("automatedDelivery"),
     ],
   },
   {
     id: "6-months",
-    title: "Biannual",
+    title: t("biannualTitle"),
     price: "$499",
-    period: "per 6 months",
-    note: "Lower maintenance cadence",
+    period: t("per6Months"),
+    note: t("lowerMaintenance"),
     features: [
-      "Unlimited downloads",
-      "All strategy features",
-      "Priority Liquid Guard",
-      "Automated delivery",
+      t("unlimitedDownloads"),
+      t("allStrategyFeatures"),
+      t("priorityLiquidGuard"),
+      t("automatedDelivery"),
     ],
   },
 ];
 
-const PASS_PLANS = [
+const getPassPlans = (t: any) => [
   {
     id: "free-trial",
-    title: "Free Trial",
+    title: t("freeTrialTitle"),
     price: "$0",
-    period: "for 3 days",
-    note: "Short hands-on test",
+    period: t("for3days"),
+    note: t("shortHandsOn"),
     features: [
-      "Basic feature set",
-      "Standard recovery profile",
-      "Automated delivery",
+      t("basicFeatureSet"),
+      t("standardRecovery"),
+      t("automatedDelivery"),
     ],
   },
   {
     id: "lifetime",
-    title: "Lifetime",
+    title: t("lifetimeTitle"),
     price: "$999",
-    period: "one-time",
-    note: "Permanent access",
+    period: t("oneTime"),
+    note: t("permanentAccess"),
     features: [
-      "Unlimited source copies",
-      "All strategy features",
-      "VIP setup support",
-      "Automated delivery",
+      t("unlimitedSourceCopies"),
+      t("allStrategyFeatures"),
+      t("vipSetupSupport"),
+      t("automatedDelivery"),
     ],
   },
 ];
 
-const EXECUTION_FLOW = [
+const getExecutionFlow = (t: any) => [
   {
-    title: "Choose a plan",
-    copy: "Pick the access window that matches your trading cadence and clear checkout securely.",
-    eta: "ETA 1 min",
+    title: t("flow1Title"),
+    copy: t("flow1Copy"),
+    eta: t("flow1Eta"),
     glyph: "wallet",
   },
   {
-    title: "Create dashboard access",
-    copy: "Your dashboard account is provisioned immediately against the purchase email you used.",
-    eta: "Instant",
+    title: t("flow2Title"),
+    copy: t("flow2Copy"),
+    eta: t("flow2Eta"),
     glyph: "halo",
   },
   {
-    title: "Bind your MT5 account",
-    copy: "Enter the MT5 account number that should own the build and keep licensing clean.",
-    eta: "ETA 30 sec",
+    title: t("flow3Title"),
+    copy: t("flow3Copy"),
+    eta: t("flow3Eta"),
     glyph: "vault",
   },
   {
-    title: "Compile in the cloud",
-    copy: "GoldBot is compiled into a personalized executable package tuned to that approved account.",
-    eta: "ETA < 15 sec",
+    title: t("flow4Title"),
+    copy: t("flow4Copy"),
+    eta: t("flow4Eta"),
     glyph: "signal",
   },
   {
-    title: "Install and launch",
-    copy: "Drop the file into MT5, attach it to chart, set your risk profile, and go live.",
-    eta: "ETA 2 min",
+    title: t("flow5Title"),
+    copy: t("flow5Copy"),
+    eta: t("flow5Eta"),
     glyph: "launch",
   },
 ];
 
-const OPS_PILLARS = [
+const getOpsPillars = (t: any) => [
   {
-    title: "Liquidity guard",
-    copy: "Execution is restricted during low-liquidity holiday windows and fragile sessions.",
+    title: t("ops1Title"),
+    copy: t("ops1Copy"),
     glyph: "shield",
   },
   {
-    title: "Account-level locking",
-    copy: "Each build is tied to your MT5 account so licensing stays clean and distribution stays controlled.",
+    title: t("ops2Title"),
+    copy: t("ops2Copy"),
     glyph: "vault",
   },
   {
-    title: "Fast deployment",
-    copy: "Provisioning and compilation are engineered to be quick enough that setup does not drag on.",
+    title: t("ops3Title"),
+    copy: t("ops3Copy"),
     glyph: "launch",
   },
 ];
 
-const COMPARE_ROWS = [
+const getCompareRows = (t: any) => [
   {
-    capability: "Account-specific executable",
-    goldbot: "Included by default",
-    typical: "Rare or missing",
+    capability: t("comp1Cap"),
+    goldbot: t("comp1Gb"),
+    typical: t("comp1Typ"),
   },
   {
-    capability: "Holiday liquidity protection",
-    goldbot: "Built into the workflow",
-    typical: "Usually manual",
+    capability: t("comp2Cap"),
+    goldbot: t("comp2Gb"),
+    typical: t("comp2Typ"),
   },
   {
-    capability: "Provisioning speed",
-    goldbot: "Ready in minutes",
-    typical: "Hours or days",
+    capability: t("comp3Cap"),
+    goldbot: t("comp3Gb"),
+    typical: t("comp3Typ"),
   },
   {
-    capability: "License integrity",
-    goldbot: "Cloud compiled + account bound",
-    typical: "Shared files and weak checks",
+    capability: t("comp4Cap"),
+    goldbot: t("comp4Gb"),
+    typical: t("comp4Typ"),
   },
 ];
 
@@ -563,7 +559,7 @@ export default function Home() {
           </motion.div>
 
           <div className="landing-metric-grid">
-            {PROOF_METRICS.map((metric, index) => (
+            {getProofMetrics(t).map((metric: any, index: number) => (
               <motion.article
                 key={metric.label}
                 className="landing-metric-card"
@@ -674,7 +670,7 @@ export default function Home() {
           </motion.div>
 
           <div className="feature-mosaic">
-            {FEATURE_PANELS.map((panel, index) => (
+            {getFeaturePanels(t).map((panel: any, index: number) => (
               <motion.article
                 key={panel.title}
                 className={`feature-panel ${panel.layout}`}
@@ -690,7 +686,7 @@ export default function Home() {
                 <h3>{panel.title}</h3>
                 <p>{panel.body}</p>
                 <ul className="feature-panel-bullets">
-                  {panel.bullets.map((bullet) => (
+                  {panel.bullets.map((bullet: string) => (
                     <li key={bullet}>{bullet}</li>
                   ))}
                 </ul>
@@ -729,7 +725,7 @@ export default function Home() {
             </div>
 
             <div className="pricing-showcase-grid pricing-showcase-grid-three">
-              {SUBSCRIPTION_PLANS.map((plan) => (
+              {getSubscriptionPlans(t).map((plan: any) => (
                 <article
                   key={plan.id}
                   className={`pricing-tier ${plan.featured ? "pricing-tier-featured" : ""}`}
@@ -765,7 +761,7 @@ export default function Home() {
             </div>
 
             <div className="pricing-showcase-grid pricing-showcase-grid-two">
-              {PASS_PLANS.map((plan) => (
+              {getPassPlans(t).map((plan: any) => (
                 <article key={plan.id} className="pricing-tier pricing-tier-secondary">
                   <GoldGlyph kind="vault" className="pricing-tier-glyph" />
                   <span className="pricing-tier-label">{plan.title}</span>
@@ -812,7 +808,7 @@ export default function Home() {
           <SectionWireframe className="process-wireframe" />
 
           <div className="process-grid">
-            {EXECUTION_FLOW.map((step, index) => (
+            {getExecutionFlow(t).map((step: any, index: number) => (
               <motion.article
                 key={step.title}
                 className="process-card"
@@ -858,7 +854,7 @@ export default function Home() {
           </motion.div>
 
           <div className="ops-pillar-stack">
-            {OPS_PILLARS.map((pillar, index) => (
+            {getOpsPillars(t).map((pillar: any, index: number) => (
               <motion.article
                 key={pillar.title}
                 className="ops-pillar-card"
@@ -898,12 +894,12 @@ export default function Home() {
 
           <div className="compare-board">
             <div className="compare-board-head">
-              <span>Capability</span>
-              <span>GoldBot</span>
-              <span>Typical public EA</span>
+              <span>{t("compHead1")}</span>
+              <span>{t("compHead2")}</span>
+              <span>{t("compHead3")}</span>
             </div>
 
-            {COMPARE_ROWS.map((row) => (
+            {getCompareRows(t).map((row: any) => (
               <div key={row.capability} className="compare-board-row">
                 <span className="compare-board-capability">{row.capability}</span>
                 <span className="compare-board-good">{row.goldbot}</span>

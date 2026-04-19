@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function ForceResetPassword() {
+  const t = useTranslations("Auth");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,32 +18,32 @@ export default function ForceResetPassword() {
 
     // Client-side validation
     if (password.length < 12) {
-      setError("Password must be at least 12 characters long.");
+      setError(t("errPassLength"));
       return;
     }
 
     if (!/[a-z]/.test(password)) {
-      setError("Password must contain at least one lowercase letter.");
+      setError(t("errPassLower"));
       return;
     }
 
     if (!/[A-Z]/.test(password)) {
-      setError("Password must contain at least one uppercase letter.");
+      setError(t("errPassUpper"));
       return;
     }
 
     if (!/\d/.test(password)) {
-      setError("Password must contain at least one number.");
+      setError(t("errPassNumber"));
       return;
     }
 
     if (!/[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-      setError("Password must contain at least one special character.");
+      setError(t("errPassSpecial"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("errPassMismatch"));
       return;
     }
 
@@ -60,10 +62,10 @@ export default function ForceResetPassword() {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError(data.error || "Failed to update password.");
+        setError(data.error || t("errPassFailed"));
       }
     } catch {
-      setError("An unexpected error occurred.");
+      setError(t("unexpectedError"));
     } finally {
       setLoading(false);
     }
@@ -72,9 +74,9 @@ export default function ForceResetPassword() {
   return (
     <div style={{ maxWidth: "450px", margin: "4rem auto" }}>
       <div className="glass-panel" style={{ padding: "3rem" }}>
-        <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>Reset Your Password</h1>
+        <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>{t("resetYourPassword")}</h1>
         <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", textAlign: "center", fontSize: "0.9rem" }}>
-          For security reasons, you must change your temporary password before accessing your dashboard.
+          {t("resetPasswordSubtitle")}
         </p>
 
         <div style={{ 
@@ -85,23 +87,23 @@ export default function ForceResetPassword() {
           border: "1px solid var(--border-color)"
         }}>
           <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem", fontWeight: "600" }}>
-            Password Requirements:
+            {t("passRequirements")}:
           </p>
           <ul style={{ fontSize: "0.8rem", color: "var(--text-muted)", paddingLeft: "1.5rem", margin: 0 }}>
-            <li>At least 12 characters long</li>
-            <li>One uppercase letter (A-Z)</li>
-            <li>One lowercase letter (a-z)</li>
-            <li>One number (0-9)</li>
-            <li>One special character (@$!%*?&#, etc.)</li>
+            <li>{t("reqLength")}</li>
+            <li>{t("reqUpper")}</li>
+            <li>{t("reqLower")}</li>
+            <li>{t("reqNumber")}</li>
+            <li>{t("reqSpecial")}</li>
           </ul>
         </div>
 
         <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>New Password</label>
+            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{t("newPassword")}</label>
             <input
               type="password"
-              placeholder="Min 8 characters"
+              placeholder={t("min8Chars")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -116,10 +118,10 @@ export default function ForceResetPassword() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>Confirm New Password</label>
+            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{t("confirmNewPassword")}</label>
             <input
               type="password"
-              placeholder="Repeat password"
+              placeholder={t("repeatPassword")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -141,7 +143,7 @@ export default function ForceResetPassword() {
             disabled={loading}
             style={{ marginTop: "1rem" }}
           >
-            {loading ? "Updating..." : "Update Password & Continue"}
+            {loading ? t("updating") : t("updatePasswordContinue")}
           </button>
         </form>
       </div>

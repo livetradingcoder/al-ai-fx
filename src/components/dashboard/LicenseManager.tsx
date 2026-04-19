@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface LicenseManagerProps {
   subscription: {
@@ -25,6 +26,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
   const [compilation, setCompilation] = useState(initialCompilation);
   const [isPolling, setIsPolling] = useState(initialCompilation?.status === "PENDING" || initialCompilation?.status === "PROCESSING");
   const router = useRouter();
+  const t = useTranslations("Dashboard");
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -79,7 +81,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "1rem" }}>
         <div>
           <h3 style={{ fontSize: "1.2rem", color: "var(--text-primary)" }}>GoldBot_v2.0_{subscription.tier}</h3>
-          <p style={{ color: "var(--accent-primary)", fontSize: "0.9rem", fontWeight: 600 }}>{subscription.tier.replace("_", " ")} Access</p>
+          <p style={{ color: "var(--accent-primary)", fontSize: "0.9rem", fontWeight: 600 }}>{subscription.tier.replace("_", " ")} {t("access")}</p>
         </div>
         <div>
           <span className="badge" style={{ position: "relative", top: 0, left: 0, transform: "none", background: "var(--accent-accent)" }}>{subscription.status}</span>
@@ -88,14 +90,14 @@ export default function LicenseManager({ subscription, latestCompilation: initia
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
         <div>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Locked MT5 Account</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("lockedMt5Account")}</p>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <input
               type="text"
               value={mt5Account}
               onChange={(e) => setMt5Account(e.target.value)}
               disabled={!isEditing}
-              placeholder="Enter MT5 Account ID"
+              placeholder={t("enterMt5Id")}
               style={{
                 padding: "0.8rem",
                 borderRadius: "var(--radius-sm)",
@@ -108,17 +110,17 @@ export default function LicenseManager({ subscription, latestCompilation: initia
             />
             {isEditing && (
               <button className="btn-primary" onClick={handleUpdateMt5} disabled={isUpdating}>
-                {isUpdating ? "Saving..." : "Save & Lock"}
+                {isUpdating ? t("saving") : t("saveAndLock")}
               </button>
             )}
           </div>
           <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
-            {isEditing ? "Important: You can only set this number once. It cannot be changed later." : "MT5 account is permanently locked for this license."}
+            {isEditing ? t("importantSetOnce") : t("mt5LockedPermanently")}
           </p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Download Latest Build</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("downloadLatestBuild")}</p>
 
           {compilation?.status === "COMPLETED" && compilation.id ? (
             <a
@@ -127,7 +129,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               className="btn-primary"
               style={{ textAlign: "center", textDecoration: "none" }}
             >
-              Download Latest .ex5
+              {t("downloadLatestEx5")}
             </a>
           ) : (
             <button
@@ -136,14 +138,14 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               style={{ border: "none", alignSelf: "flex-start", opacity: (isPolling || !mt5Account || isEditing) ? 0.6 : 1 }}
               onClick={handleUpdateMt5}
             >
-              {isPolling ? `Compiling... (${compilation?.status})` : "Compile & Download .ex5"}
+              {isPolling ? t("compiling", { status: compilation?.status }) : t("compileAndDownloadEx5")}
             </button>
           )}
 
           {compilation && (
             <p style={{ fontSize: "0.8rem", color: statusColor, marginTop: "0.5rem", fontWeight: 500 }}>
-              Status: {compilation.status}
-              {compilation.status === "FAILED" && " - Check dashboard again later."}
+              {t("status")}: {compilation.status}
+              {compilation.status === "FAILED" && t("failedCheckLater")}
             </p>
           )}
         </div>
@@ -151,16 +153,16 @@ export default function LicenseManager({ subscription, latestCompilation: initia
 
       {compilation?.status === "COMPLETED" && (
         <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-          <h4 style={{ color: 'var(--accent-accent)', marginBottom: '1rem', fontSize: '1rem' }}>✅ Compilation Successful! Next Steps:</h4>
+          <h4 style={{ color: 'var(--accent-accent)', marginBottom: '1rem', fontSize: '1rem' }}>{t("successSteps")}</h4>
           <ul style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', paddingLeft: '1.2rem' }}>
-            <li><strong>Step 1:</strong> Download the <code>.ex5</code> file above.</li>
-            <li><strong>Step 2:</strong> Open your MT5 Terminal, go to <code>File  `{'>'}` Open Data Folder</code>.</li>
-            <li><strong>Step 3:</strong> Navigate to <code>MQL5  `{'>'}` Experts</code> and paste the file there.</li>
-            <li><strong>Step 4:</strong> Refresh the "Experts" list in your MT5 Navigator and drag the robot onto an XAUUSD chart.</li>
-            <li><strong>Step 5:</strong> In the inputs, ensure you set your <strong>Risk Percent</strong> and <strong>Trading Hours</strong> as per the PDF guide.</li>
+            <li><strong>Step 1:</strong> {t("successStep1")}</li>
+            <li><strong>Step 2:</strong> {t("successStep2")}</li>
+            <li><strong>Step 3:</strong> {t("successStep3")}</li>
+            <li><strong>Step 4:</strong> {t("successStep4")}</li>
+            <li><strong>Step 5:</strong> {t("successStep5")}</li>
           </ul>
           <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            ⚠️ Note: This build is locked to MT5 Account <strong>{subscription.mt5AccountNumber}</strong>. It will not execute on any other account number.
+            ⚠️ {t("successNote", { account: subscription.mt5AccountNumber })}
           </p>
         </div>
       )}
