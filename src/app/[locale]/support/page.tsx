@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+import { getPageMetadata } from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata("support", locale);
+}
+
 export default function SupportPage() {
   return (
     <main className="main-content" style={{ maxWidth: '800px', margin: '0 auto', padding: '6rem 2rem' }}>

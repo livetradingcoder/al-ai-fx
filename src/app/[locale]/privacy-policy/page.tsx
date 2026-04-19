@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+import { getPageMetadata } from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata("privacy-policy", locale);
+}
+
 export default function PrivacyPolicyPage() {
   return (
     <main className="legal-page">

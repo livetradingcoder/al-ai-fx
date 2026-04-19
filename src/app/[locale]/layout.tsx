@@ -6,15 +6,24 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import {routing} from '../../i18n/routing';
 import {notFound} from 'next/navigation';
+import { getPageMetadata, SITE_URL } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "GoldBot by AL-ai-FX | Advanced Algorithmic Trading",
-  description:
-    "Automate your MT5 trading with GoldBot by AL-ai-FX. Subscribe, customize, and compile your exclusive Expert Advisor directly from our cloud service.",
-  icons: {
-    icon: "/favicon.png",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const metadata = getPageMetadata("home", locale);
+
+  return {
+    ...metadata,
+    metadataBase: new URL(SITE_URL),
+    icons: {
+      icon: "/favicon.png",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -24,7 +33,7 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
   const messages = await getMessages();
