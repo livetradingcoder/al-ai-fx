@@ -84,7 +84,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
           <p style={{ color: "var(--accent-primary)", fontSize: "0.9rem", fontWeight: 600 }}>{subscription.tier.replace("_", " ")} {t("access")}</p>
         </div>
         <div>
-          <span className="badge" style={{ position: "relative", top: 0, left: 0, transform: "none", background: "var(--accent-accent)" }}>{subscription.status}</span>
+          <span className="badge" style={{ position: "relative", top: 0, left: 0, transform: "none" }}>{subscription.status}</span>
         </div>
       </div>
 
@@ -109,9 +109,9 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               }}
             />
             {isEditing && (
-              <button 
-                className="btn-primary" 
-                onClick={handleUpdateMt5} 
+              <button
+                className="btn-primary"
+                onClick={handleUpdateMt5}
                 disabled={isUpdating}
                 style={{ whiteSpace: "nowrap", padding: "0.8rem 1.5rem" }}
               >
