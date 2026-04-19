@@ -109,7 +109,12 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               }}
             />
             {isEditing && (
-              <button className="btn-primary" onClick={handleUpdateMt5} disabled={isUpdating}>
+              <button 
+                className="btn-primary" 
+                onClick={handleUpdateMt5} 
+                disabled={isUpdating}
+                style={{ whiteSpace: "nowrap", padding: "0.8rem 1.5rem" }}
+              >
                 {isUpdating ? t("saving") : t("saveAndLock")}
               </button>
             )}
