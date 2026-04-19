@@ -1,9 +1,25 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getServerSession } from "next-auth";
 import { getTranslations } from 'next-intl/server';
+import { redirect } from "next/navigation";
+
+import { authOptions } from "@/lib/auth";
+import { buildLoginRedirectPath } from "@/lib/auth-redirects";
 
 export default async function TutorialDetail({ params }: { params: Promise<{ id: string; locale: string }> }) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    redirect(
+      buildLoginRedirectPath(
+        locale,
+        locale === "en" ? `/tutorials/${id}` : `/${locale}/tutorials/${id}`,
+      ),
+    );
+  }
+
   const t = await getTranslations("Tutorials");
 
   const contentMap: Record<string, { title: string, type: string, duration: string, body: React.ReactNode }> = {
@@ -101,7 +117,12 @@ export default async function TutorialDetail({ params }: { params: Promise<{ id:
   return (
     <main className="main-content" style={{ maxWidth: '900px', margin: '0 auto', padding: '6rem 2rem' }}>
       <div style={{ marginBottom: '3rem' }}>
-        <Link href="/tutorials" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', marginBottom: '1rem', display: 'inline-block' }}>&larr; {t("backToTutorials")}</Link>
+        <Link
+          href={locale === "en" ? "/tutorials" : `/${locale}/tutorials`}
+          style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', marginBottom: '1rem', display: 'inline-block' }}
+        >
+          &larr; {t("backToTutorials")}
+        </Link>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
           <span className="badge" style={{ position: 'relative', top: 0, left: 0, transform: 'none' }}>{tutorial.type}</span>
           <span style={{ color: 'var(--text-muted)' }}>{tutorial.duration}</span>

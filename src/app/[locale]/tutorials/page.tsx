@@ -1,7 +1,23 @@
-import { useTranslations } from "next-intl";
+import { getServerSession } from "next-auth";
+import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
-export default function Tutorials() {
-  const t = useTranslations("Tutorials");
+import { authOptions } from "@/lib/auth";
+import { buildLoginRedirectPath } from "@/lib/auth-redirects";
+
+export default async function Tutorials({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    redirect(buildLoginRedirectPath(locale, locale === "en" ? "/tutorials" : `/${locale}/tutorials`));
+  }
+
+  const t = await getTranslations("Tutorials");
   const tutorials = [
     {
       id: 1,
@@ -44,7 +60,13 @@ export default function Tutorials() {
             </div>
             <h3 style={{ marginBottom: '1rem' }}>{tut.title}</h3>
             <p style={{ color: 'var(--text-secondary)', flexGrow: '1', marginBottom: '2rem' }}>{tut.desc}</p>
-            <a href={`/tutorials/${tut.id}`} className="btn-secondary" style={{ textAlign: 'center' }}>{t("readArticle")}</a>
+            <a
+              href={locale === "en" ? `/tutorials/${tut.id}` : `/${locale}/tutorials/${tut.id}`}
+              className="btn-secondary"
+              style={{ textAlign: 'center' }}
+            >
+              {t("readArticle")}
+            </a>
           </div>
         ))}
       </div>
