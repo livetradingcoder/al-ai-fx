@@ -32,7 +32,9 @@ export default function LanguageSwitcher() {
         cursor: 'pointer',
         fontSize: '0.9rem',
         marginRight: '1rem',
-        outline: 'none'
+        outline: 'none',
+        paddingRight: '10px',
+        paddingLeft: '10px'
       }}
     >
       <option value="en">🇪🇺 EN</option>
