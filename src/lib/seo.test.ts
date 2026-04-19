@@ -19,10 +19,14 @@ test("buildLocalizedUrl prefixes non-default locales", () => {
 
 test("checkout metadata is crawlable but not indexable", () => {
   const metadata = getPageMetadata("checkout", "es");
+  const robots =
+    metadata.robots && typeof metadata.robots === "object" && !Array.isArray(metadata.robots)
+      ? metadata.robots
+      : null;
 
   assert.equal(metadata.alternates?.canonical, "https://www.al-ai-fx.xyz/es/checkout");
-  assert.equal((metadata.robots as any)?.index, false);
-  assert.equal((metadata.robots as any)?.follow, true);
+  assert.equal(robots?.index, false);
+  assert.equal(robots?.follow, true);
 });
 
 test("faq metadata exposes locale alternates and x-default", () => {
@@ -33,6 +37,14 @@ test("faq metadata exposes locale alternates and x-default", () => {
   assert.equal(languages?.de, "https://www.al-ai-fx.xyz/de/faq");
   assert.equal(languages?.en, "https://www.al-ai-fx.xyz/faq");
   assert.equal(languages?.["x-default"], "https://www.al-ai-fx.xyz/faq");
+});
+
+test("home metadata uses a share-safe og image", () => {
+  const metadata = getPageMetadata("home", "en");
+  const image = metadata.openGraph?.images?.[0];
+
+  assert.equal(typeof image === "string" ? image : image?.url, "https://www.al-ai-fx.xyz/goldbot-social.png");
+  assert.equal(metadata.twitter?.card, "summary_large_image");
 });
 
 test("public sitemap entries cover every locale and public page", () => {
