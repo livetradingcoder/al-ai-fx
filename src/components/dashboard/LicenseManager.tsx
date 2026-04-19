@@ -138,7 +138,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               style={{ border: "none", alignSelf: "flex-start", opacity: (isPolling || !mt5Account || isEditing) ? 0.6 : 1 }}
               onClick={handleUpdateMt5}
             >
-              {isPolling ? t("compiling", { status: compilation?.status }) : t("compileAndDownloadEx5")}
+              {isPolling ? t("compiling", { status: compilation?.status || "" }) : t("compileAndDownloadEx5")}
             </button>
           )}
 
@@ -162,7 +162,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
             <li><strong>Step 5:</strong> {t("successStep5")}</li>
           </ul>
           <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            ⚠️ {t("successNote", { account: subscription.mt5AccountNumber })}
+            ⚠️ {t("successNote", { account: subscription.mt5AccountNumber || "" })}
           </p>
         </div>
       )}

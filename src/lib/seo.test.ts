@@ -21,8 +21,8 @@ test("checkout metadata is crawlable but not indexable", () => {
   const metadata = getPageMetadata("checkout", "es");
 
   assert.equal(metadata.alternates?.canonical, "https://www.al-ai-fx.xyz/es/checkout");
-  assert.equal(metadata.robots?.index, false);
-  assert.equal(metadata.robots?.follow, true);
+  assert.equal((metadata.robots as any)?.index, false);
+  assert.equal((metadata.robots as any)?.follow, true);
 });
 
 test("faq metadata exposes locale alternates and x-default", () => {

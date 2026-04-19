@@ -33,7 +33,7 @@ export function buildGoogleAdsSendTo(id?: string | null, label?: string | null) 
   return `${cleanId}/${cleanLabel}`;
 }
 
-export function getMarketingConfig(env: MarketingEnv = process.env): MarketingConfig {
+export function getMarketingConfig(env: MarketingEnv = process.env as unknown as MarketingEnv): MarketingConfig {
   const googleAdsId = cleanEnvValue(env.NEXT_PUBLIC_GOOGLE_ADS_ID);
   const beginCheckoutLabel = cleanEnvValue(
     env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_BEGIN_CHECKOUT,
