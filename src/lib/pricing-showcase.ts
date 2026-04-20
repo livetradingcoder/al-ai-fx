@@ -90,50 +90,80 @@ export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
   ];
 }
 
-export function buildComingSoonProducts(): ComingSoonProduct[] {
+export function buildComingSoonProducts(t: Translate): ComingSoonProduct[] {
   return [
     {
-      title: "GoldGap",
-      status: "Coming Soon",
-      eyebrow: "Gold session engine",
-      description:
-        "A sharper gold-specific system focused on gap behavior, opening range dislocations, and cleaner reaction windows around session transitions.",
+      title: t("comingSoonGoldGapTitle", { fallback: "GoldGap" }),
+      status: t("comingSoonGoldGapStatus", { fallback: "Coming Soon" }),
+      eyebrow: t("comingSoonGoldGapEyebrow", { fallback: "Gold session engine" }),
+      description: t("comingSoonGoldGapDescription", {
+        fallback:
+          "A sharper gold-specific system focused on gap behavior, opening range dislocations, and cleaner reaction windows around session transitions.",
+      }),
       bullets: [
-        "Built specifically for gold volatility structure",
-        "Tighter session-led setup logic",
-        "Designed for premium short-window deployment",
+        t("comingSoonGoldGapBullet1", {
+          fallback: "Built specifically for gold volatility structure",
+        }),
+        t("comingSoonGoldGapBullet2", {
+          fallback: "Tighter session-led setup logic",
+        }),
+        t("comingSoonGoldGapBullet3", {
+          fallback: "Designed for premium short-window deployment",
+        }),
       ],
-      surfaceLabel: "MT5 native",
+      surfaceLabel: t("comingSoonGoldGapSurface", { fallback: "MT5 native" }),
       accent: "gold",
       glyph: "halo",
     },
     {
-      title: "GoldBot for TradingView",
-      status: "Signal Stack",
-      eyebrow: "TradingView workflow",
-      description:
-        "The GoldBot logic translated into a signal-first environment for traders who want alerts, chart-native structure, and a cleaner discretionary overlay.",
+      title: t("comingSoonTradingViewTitle", {
+        fallback: "GoldBot for TradingView",
+      }),
+      status: t("comingSoonTradingViewStatus", { fallback: "Signal Stack" }),
+      eyebrow: t("comingSoonTradingViewEyebrow", {
+        fallback: "TradingView workflow",
+      }),
+      description: t("comingSoonTradingViewDescription", {
+        fallback:
+          "The GoldBot logic translated into a signal-first environment for traders who want alerts, chart-native structure, and a cleaner discretionary overlay.",
+      }),
       bullets: [
-        "Signal delivery for TradingView users",
-        "Alert-led workflow instead of terminal lock-in",
-        "Built for cleaner chart review and decision support",
+        t("comingSoonTradingViewBullet1", {
+          fallback: "Signal delivery for TradingView users",
+        }),
+        t("comingSoonTradingViewBullet2", {
+          fallback: "Alert-led workflow instead of terminal lock-in",
+        }),
+        t("comingSoonTradingViewBullet3", {
+          fallback: "Built for cleaner chart review and decision support",
+        }),
       ],
-      surfaceLabel: "Alerts + scripts",
+      surfaceLabel: t("comingSoonTradingViewSurface", {
+        fallback: "Alerts + scripts",
+      }),
       accent: "signal",
       glyph: "signal",
     },
     {
-      title: "GoldBot for cTrader",
-      status: "Execution Stack",
-      eyebrow: "cTrader expansion",
-      description:
-        "A cTrader edition aimed at traders who want the same disciplined GoldBot posture inside a cleaner, more institutional execution environment.",
+      title: t("comingSoonCTraderTitle", { fallback: "GoldBot for cTrader" }),
+      status: t("comingSoonCTraderStatus", { fallback: "Execution Stack" }),
+      eyebrow: t("comingSoonCTraderEyebrow", { fallback: "cTrader expansion" }),
+      description: t("comingSoonCTraderDescription", {
+        fallback:
+          "A cTrader edition aimed at traders who want the same disciplined GoldBot posture inside a cleaner, more institutional execution environment.",
+      }),
       bullets: [
-        "Adapted for cTrader execution flow",
-        "Institutional-feeling UI and order handling",
-        "Same premium strategy language, different terminal",
+        t("comingSoonCTraderBullet1", {
+          fallback: "Adapted for cTrader execution flow",
+        }),
+        t("comingSoonCTraderBullet2", {
+          fallback: "Institutional-feeling UI and order handling",
+        }),
+        t("comingSoonCTraderBullet3", {
+          fallback: "Same premium strategy language, different terminal",
+        }),
       ],
-      surfaceLabel: "cTrader build",
+      surfaceLabel: t("comingSoonCTraderSurface", { fallback: "cTrader build" }),
       accent: "platform",
       glyph: "vault",
     },

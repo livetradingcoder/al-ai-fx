@@ -48,7 +48,7 @@ test("pass plans include the free trial card before paid lifetime options", () =
 });
 
 test("coming soon products are ordered for the next gold expansion wave", () => {
-  const products = buildComingSoonProducts();
+  const products = buildComingSoonProducts(t);
 
   assert.deepEqual(
     products.map((product) => product.title),

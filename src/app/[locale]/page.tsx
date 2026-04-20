@@ -325,7 +325,7 @@ export default function Home() {
   const t = useTranslations("Landing");
   const subscriptionPlans = buildSubscriptionPlans(t);
   const passPlans = buildPassPlans(t);
-  const comingSoonProducts = buildComingSoonProducts();
+  const comingSoonProducts = buildComingSoonProducts(t);
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -597,7 +597,7 @@ export default function Home() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="landing-eyebrow">Why GoldBot</span>
+            <span className="landing-eyebrow">{t("whyGoldBot")}</span>
             <h2 className="section-title">
               A bigger, more modern surface for the reasons traders actually care.
             </h2>
@@ -735,31 +735,26 @@ export default function Home() {
           >
             <div className="coming-soon-header">
               <div className="coming-soon-copy">
-                <span className="landing-eyebrow">Coming Soon</span>
+                <span className="landing-eyebrow">{t("comingSoonEyebrow")}</span>
                 <h2 className="section-title section-title-left">
-                  The Gold lineup is expanding beyond one premium robot.
+                  {t("comingSoonTitle")}
                 </h2>
                 <p className="section-copy section-copy-left">
-                  We are building the next wave around gold-specific execution,
-                  TradingView-native signal flow, and a cTrader release for traders
-                  who want a cleaner institutional feel.
+                  {t("comingSoonCopy")}
                 </p>
               </div>
 
               <div className="coming-soon-summary">
-                <span className="coming-soon-summary-label">Roadmap status</span>
-                <strong>3 premium releases in development</strong>
-                <p>
-                  Same gold-first strategy language, expanded across new surfaces
-                  and workflows.
-                </p>
+                <span className="coming-soon-summary-label">{t("comingSoonSummaryLabel")}</span>
+                <strong>{t("comingSoonSummaryTitle")}</strong>
+                <p>{t("comingSoonSummaryCopy")}</p>
               </div>
             </div>
 
             <div className="coming-soon-board-head">
-              <span>Product</span>
-              <span>Surface</span>
-              <span>Status</span>
+              <span>{t("comingSoonBoardProduct")}</span>
+              <span>{t("comingSoonBoardSurface")}</span>
+              <span>{t("comingSoonBoardStatus")}</span>
             </div>
 
             <div className="coming-soon-grid">
@@ -856,7 +851,7 @@ export default function Home() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="landing-eyebrow">Risk-aware automation</span>
+            <span className="landing-eyebrow">{t("riskAwareAutomation")}</span>
             <h2 className="section-title section-title-left">
               Built for traders who want clean behavior across changing market conditions.
             </h2>
@@ -896,7 +891,7 @@ export default function Home() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="landing-eyebrow">Comparison</span>
+            <span className="landing-eyebrow">{t("comparisonEyebrow")}</span>
             <h2 className="section-title">
               The last comparison block is rebuilt into a proper modern board.
             </h2>
@@ -935,7 +930,7 @@ export default function Home() {
             transition={{ duration: 0.7 }}
           >
             <GoldGlyph kind="halo" className="final-cta-glyph" />
-            <span className="landing-eyebrow">Deploy GoldBot</span>
+            <span className="landing-eyebrow">{t("deployGoldBot")}</span>
             <h2 className="section-title">
               Ready to move from checkout to chart execution in minutes?
             </h2>
