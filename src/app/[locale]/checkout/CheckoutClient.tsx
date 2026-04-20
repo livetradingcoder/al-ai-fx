@@ -11,8 +11,7 @@ import {
   trackViewContent,
 } from "@/lib/marketing-client";
 import { buildCheckoutThankYouPath } from "@/lib/marketing";
-
-type TierId = "free-trial" | "1-month" | "6-months" | "lifetime" | "secret-test";
+import { TierId, PRICING_TIERS } from "@/config/pricing";
 
 function CheckoutContent() {
   const t = useTranslations("Checkout");
@@ -26,11 +25,14 @@ function CheckoutContent() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const planDetails = {
-    "free-trial": { name: "3-Day Free Trial", price: "$0", amount: "0.00" },
-    "1-month": { name: "Monthly Plan", price: "$149", amount: "149.00" },
-    "6-months": { name: "Biannual Plan", price: "$499", amount: "499.00" },
-    lifetime: { name: "Lifetime Access", price: "$999", amount: "999.00" },
-    "secret-test": { name: "Secret Test Tier", price: "$10", amount: "10.00" },
+    "free-trial": { name: "3-Day Free Trial", price: PRICING_TIERS["free-trial"].priceString, amount: PRICING_TIERS["free-trial"].amount.toFixed(2) },
+    "10-days": { name: t("plan10Days", { fallback: "10-Day Plan" }), price: PRICING_TIERS["10-days"].priceString, amount: PRICING_TIERS["10-days"].amount.toFixed(2) },
+    "1-month": { name: t("plan1Month", { fallback: "Monthly Plan" }), price: PRICING_TIERS["1-month"].priceString, amount: PRICING_TIERS["1-month"].amount.toFixed(2) },
+    "6-months": { name: t("plan6Months", { fallback: "Biannual Plan" }), price: PRICING_TIERS["6-months"].priceString, amount: PRICING_TIERS["6-months"].amount.toFixed(2) },
+    "1-year": { name: t("plan1Year", { fallback: "Yearly Plan" }), price: PRICING_TIERS["1-year"].priceString, amount: PRICING_TIERS["1-year"].amount.toFixed(2) },
+    lifetime: { name: t("planLifetime", { fallback: "Lifetime Access" }), price: PRICING_TIERS["lifetime"].priceString, amount: PRICING_TIERS["lifetime"].amount.toFixed(2) },
+    "lifetime-source": { name: t("planLifetimeSource", { fallback: "Lifetime + Source" }), price: PRICING_TIERS["lifetime-source"].priceString, amount: PRICING_TIERS["lifetime-source"].amount.toFixed(2) },
+    "secret-test": { name: "Secret Test Tier", price: PRICING_TIERS["secret-test"].priceString, amount: PRICING_TIERS["secret-test"].amount.toFixed(2) },
   };
 
   const selectedPlan = planDetails[tier] || planDetails["1-month"];

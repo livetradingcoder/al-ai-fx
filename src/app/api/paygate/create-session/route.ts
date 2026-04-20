@@ -5,15 +5,7 @@ import { validateEmail } from "@/lib/validation";
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
 
-type TierId = "free-trial" | "1-month" | "6-months" | "lifetime" | "secret-test";
-
-const TIER_AMOUNTS: Record<TierId, number> = {
-  "free-trial": 0,
-  "1-month": 149,
-  "6-months": 499,
-  "lifetime": 999,
-  "secret-test": 10,
-};
+import { TierId, PRICING_TIERS } from "@/config/pricing";
 
 type CreateSessionPayload = {
   email?: string;
@@ -44,7 +36,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: emailValidation.error }, { status: 400 });
     }
 
-    if (!Object.prototype.hasOwnProperty.call(TIER_AMOUNTS, tier)) {
+    if (!Object.prototype.hasOwnProperty.call(PRICING_TIERS, tier)) {
       return NextResponse.json({ error: "Invalid tier." }, { status: 400 });
     }
 
@@ -60,7 +52,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const amount = TIER_AMOUNTS[tier].toFixed(2);
+    const amount = PRICING_TIERS[tier].amount.toFixed(2);
     const orderRef = crypto.randomUUID();
     const requestUrl = new URL(req.url);
     const callbackBase =

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
+import { PRICING_TIERS } from "@/config/pricing";
 
 const TESTIMONIALS = [
   "photo_2026-04-15 9.21.38 p.m..jpeg",
@@ -92,10 +93,10 @@ const getFeaturePanels = (t: any) => [
 const getSubscriptionPlans = (t: any) => [
   {
     id: "10-days",
-    title: t("10DaysTitle"),
-    price: "$51",
-    period: t("for10Days"),
-    note: t("fastValidation"),
+    title: t("10DaysTitle", { fallback: "10 Days" }),
+    price: PRICING_TIERS["10-days"].priceString,
+    period: t("for10Days", { fallback: "for 10 days" }),
+    note: t("fastValidation", { fallback: "Fast validation window" }),
     features: [
       t("basicFeatureSet"),
       t("standardRecovery"),
@@ -104,11 +105,10 @@ const getSubscriptionPlans = (t: any) => [
   },
   {
     id: "1-month",
-    title: t("monthlyTitle"),
-    price: "$149",
-    period: t("perMonth"),
-    note: t("bestPlaceToStart"),
-    featured: true,
+    title: t("monthlyTitle", { fallback: "Monthly" }),
+    price: PRICING_TIERS["1-month"].priceString,
+    period: t("perMonth", { fallback: "per month" }),
+    note: t("bestPlaceToStart", { fallback: "Best place to start" }),
     features: [
       t("unlimitedDownloads"),
       t("allStrategyFeatures"),
@@ -117,10 +117,24 @@ const getSubscriptionPlans = (t: any) => [
   },
   {
     id: "6-months",
-    title: t("biannualTitle"),
-    price: "$499",
-    period: t("per6Months"),
-    note: t("lowerMaintenance"),
+    title: t("biannualTitle", { fallback: "Biannual" }),
+    price: PRICING_TIERS["6-months"].priceString,
+    period: t("per6Months", { fallback: "per 6 months" }),
+    note: t("calcPerMonth", { price: `$${(PRICING_TIERS["6-months"].amount / 6).toFixed(0)}`, fallback: `($125 / month)` }),
+    features: [
+      t("unlimitedDownloads"),
+      t("allStrategyFeatures"),
+      t("priorityLiquidGuard"),
+      t("automatedDelivery"),
+    ],
+  },
+  {
+    id: "1-year",
+    title: t("1YearTitle", { fallback: "1 Year" }),
+    price: PRICING_TIERS["1-year"].priceString,
+    period: t("for1Year", { fallback: "for 1 year" }),
+    note: t("calcPerMonth", { price: `$${(PRICING_TIERS["1-year"].amount / 12).toFixed(2)}`, fallback: `($112.50 / month)` }),
+    featured: true,
     features: [
       t("unlimitedDownloads"),
       t("allStrategyFeatures"),
@@ -132,26 +146,27 @@ const getSubscriptionPlans = (t: any) => [
 
 const getPassPlans = (t: any) => [
   {
-    id: "free-trial",
-    title: t("freeTrialTitle"),
-    price: "$0",
-    period: t("for3days"),
-    note: t("shortHandsOn"),
+    id: "lifetime",
+    title: t("lifetimeTitle", { fallback: "Lifetime" }),
+    price: PRICING_TIERS["lifetime"].priceString,
+    period: t("oneTime", { fallback: "one-time" }),
+    note: t("permanentAccess", { fallback: "Permanent access" }),
     features: [
-      t("basicFeatureSet"),
-      t("standardRecovery"),
+      t("unlimitedSourceCopies"),
+      t("allStrategyFeatures"),
+      t("vipSetupSupport"),
       t("automatedDelivery"),
     ],
   },
   {
-    id: "lifetime",
-    title: t("lifetimeTitle"),
-    price: "$999",
-    period: t("oneTime"),
-    note: t("permanentAccess"),
+    id: "lifetime-source",
+    title: t("lifetimeSourceTitle", { fallback: "Lifetime + Source" }),
+    price: PRICING_TIERS["lifetime-source"].priceString,
+    period: t("oneTime", { fallback: "one-time" }),
+    note: t("lifetimeSourceNote", { fallback: "Full EA package + unprotected source code" }),
     features: [
-      t("unlimitedSourceCopies"),
-      t("allStrategyFeatures"),
+      t("sourceCodeAccess", { fallback: "Unprotected .mq5 source code" }),
+      t("modifyAndResell", { fallback: "Full rights to modify and rebrand" }),
       t("vipSetupSupport"),
       t("automatedDelivery"),
     ],
@@ -724,7 +739,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-three">
+            <div className="pricing-showcase-grid pricing-showcase-grid-four">
               {getSubscriptionPlans(t).map((plan: any) => (
                 <article
                   key={plan.id}
