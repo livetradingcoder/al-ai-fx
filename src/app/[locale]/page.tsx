@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
-import { PRICING_TIERS } from "@/config/pricing";
+import { buildPassPlans, buildSubscriptionPlans } from "@/lib/pricing-showcase";
 
 const TESTIMONIALS = [
   "photo_2026-04-15 9.21.38 p.m..jpeg",
@@ -87,89 +87,6 @@ const getFeaturePanels = (t: any) => [
     bullets: [t("fastDeployment"), t("clearSetup"), t("mt5Native")],
     glyph: "halo",
     layout: "feature-panel-wide",
-  },
-];
-
-const getSubscriptionPlans = (t: any) => [
-  {
-    id: "10-days",
-    title: t("10DaysTitle", { fallback: "10 Days" }),
-    price: PRICING_TIERS["10-days"].priceString,
-    period: t("for10Days", { fallback: "for 10 days" }),
-    note: t("fastValidation", { fallback: "Fast validation window" }),
-    features: [
-      t("basicFeatureSet"),
-      t("standardRecovery"),
-      t("automatedDelivery"),
-    ],
-  },
-  {
-    id: "1-month",
-    title: t("monthlyTitle", { fallback: "Monthly" }),
-    price: PRICING_TIERS["1-month"].priceString,
-    period: t("perMonth", { fallback: "per month" }),
-    note: t("bestPlaceToStart", { fallback: "Best place to start" }),
-    features: [
-      t("unlimitedDownloads"),
-      t("allStrategyFeatures"),
-      t("automatedDelivery"),
-    ],
-  },
-  {
-    id: "6-months",
-    title: t("biannualTitle", { fallback: "Biannual" }),
-    price: PRICING_TIERS["6-months"].priceString,
-    period: t("per6Months", { fallback: "per 6 months" }),
-    note: t("calcPerMonth", { price: `$${(PRICING_TIERS["6-months"].amount / 6).toFixed(0)}`, fallback: `($125 / month)` }),
-    features: [
-      t("unlimitedDownloads"),
-      t("allStrategyFeatures"),
-      t("priorityLiquidGuard"),
-      t("automatedDelivery"),
-    ],
-  },
-  {
-    id: "1-year",
-    title: t("1YearTitle", { fallback: "1 Year" }),
-    price: PRICING_TIERS["1-year"].priceString,
-    period: t("for1Year", { fallback: "for 1 year" }),
-    note: t("calcPerMonth", { price: `$${(PRICING_TIERS["1-year"].amount / 12).toFixed(2)}`, fallback: `($112.50 / month)` }),
-    featured: true,
-    features: [
-      t("unlimitedDownloads"),
-      t("allStrategyFeatures"),
-      t("priorityLiquidGuard"),
-      t("automatedDelivery"),
-    ],
-  },
-];
-
-const getPassPlans = (t: any) => [
-  {
-    id: "lifetime",
-    title: t("lifetimeTitle", { fallback: "Lifetime" }),
-    price: PRICING_TIERS["lifetime"].priceString,
-    period: t("oneTime", { fallback: "one-time" }),
-    note: t("permanentAccess", { fallback: "Permanent access" }),
-    features: [
-      t("unlimitedSourceCopies"),
-      t("allStrategyFeatures"),
-      t("vipSetupSupport"),
-      t("automatedDelivery"),
-    ],
-  },
-  {
-    id: "lifetime-source",
-    title: t("lifetimeSourceTitle", { fallback: "Lifetime + Source" }),
-    price: PRICING_TIERS["lifetime-source"].priceString,
-    period: t("oneTime", { fallback: "one-time" }),
-    note: t("lifetimeSourceNote", { fallback: "Full EA package + unprotected source code" }),
-    features: [
-      t("sourceCodeAccess", { fallback: "Unprotected .mq5 source code" }),
-      t("modifyAndResell", { fallback: "Full rights to modify and rebrand" }),
-      t("vipSetupSupport"),
-      t("automatedDelivery"),
-    ],
   },
 ];
 
@@ -402,6 +319,8 @@ function SectionWireframe(props: SVGProps<SVGSVGElement>) {
 
 export default function Home() {
   const t = useTranslations("Landing");
+  const subscriptionPlans = buildSubscriptionPlans(t);
+  const passPlans = buildPassPlans(t);
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -740,7 +659,7 @@ export default function Home() {
             </div>
 
             <div className="pricing-showcase-grid pricing-showcase-grid-four">
-              {getSubscriptionPlans(t).map((plan: any) => (
+              {subscriptionPlans.map((plan) => (
                 <article
                   key={plan.id}
                   className={`pricing-tier ${plan.featured ? "pricing-tier-featured" : ""}`}
@@ -775,8 +694,8 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-two">
-              {getPassPlans(t).map((plan: any) => (
+            <div className="pricing-showcase-grid pricing-showcase-grid-three">
+              {passPlans.map((plan) => (
                 <article key={plan.id} className="pricing-tier pricing-tier-secondary">
                   <GoldGlyph kind="vault" className="pricing-tier-glyph" />
                   <span className="pricing-tier-label">{plan.title}</span>
