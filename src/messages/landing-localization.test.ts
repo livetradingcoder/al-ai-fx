@@ -5,6 +5,7 @@ import path from "node:path";
 
 const requiredLandingKeys = [
   "calcPerMonth",
+  "heroTitle",
   "lifetimeSourceTitle",
   "lifetimeSourceNote",
   "sourceCodeAccess",

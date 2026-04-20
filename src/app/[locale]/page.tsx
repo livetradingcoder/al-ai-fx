@@ -402,14 +402,13 @@ export default function Home() {
             </span>
 
             <h1 className="landing-hero-title">
-              {t('heroTitlePrefix')}
-              <span>{t('heroTitleSuffix')}</span>
+              {t.rich("heroTitle", {
+                accent: (chunks) => <span>{chunks}</span>,
+              })}
             </h1>
 
             <p className="landing-hero-lead">
-              GoldBot is an MT5 EA with account-bound cloud compilation, and
-              risk-aware execution logic designed for controlled MetaTrader 5
-              deployment.
+              {t("heroSubtitle")}
             </p>
 
             <div className="landing-hero-actions">
