@@ -17,6 +17,17 @@ export interface PricingShowcasePlan {
   featured?: boolean;
 }
 
+export interface ComingSoonProduct {
+  title: string;
+  status: string;
+  eyebrow: string;
+  description: string;
+  bullets: string[];
+  surfaceLabel: string;
+  accent: "gold" | "signal" | "platform";
+  glyph: string;
+}
+
 export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
   return [
     {
@@ -50,7 +61,7 @@ export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
       period: t("per6Months", { fallback: "per 6 months" }),
       note: t("calcPerMonth", {
         price: `$${(PRICING_TIERS["6-months"].amount / 6).toFixed(0)}`,
-        fallback: "($125 / month)",
+        fallback: "($167 / month)",
       }),
       features: [
         t("unlimitedDownloads"),
@@ -66,7 +77,7 @@ export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
       period: t("for1Year", { fallback: "for 1 year" }),
       note: t("calcPerMonth", {
         price: `$${(PRICING_TIERS["1-year"].amount / 12).toFixed(2)}`,
-        fallback: "($112.50 / month)",
+        fallback: "($149.92 / month)",
       }),
       featured: true,
       features: [
@@ -75,6 +86,56 @@ export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
         t("priorityLiquidGuard"),
         t("automatedDelivery"),
       ],
+    },
+  ];
+}
+
+export function buildComingSoonProducts(): ComingSoonProduct[] {
+  return [
+    {
+      title: "GoldGap",
+      status: "Coming Soon",
+      eyebrow: "Gold session engine",
+      description:
+        "A sharper gold-specific system focused on gap behavior, opening range dislocations, and cleaner reaction windows around session transitions.",
+      bullets: [
+        "Built specifically for gold volatility structure",
+        "Tighter session-led setup logic",
+        "Designed for premium short-window deployment",
+      ],
+      surfaceLabel: "MT5 native",
+      accent: "gold",
+      glyph: "halo",
+    },
+    {
+      title: "GoldBot for TradingView",
+      status: "Signal Stack",
+      eyebrow: "TradingView workflow",
+      description:
+        "The GoldBot logic translated into a signal-first environment for traders who want alerts, chart-native structure, and a cleaner discretionary overlay.",
+      bullets: [
+        "Signal delivery for TradingView users",
+        "Alert-led workflow instead of terminal lock-in",
+        "Built for cleaner chart review and decision support",
+      ],
+      surfaceLabel: "Alerts + scripts",
+      accent: "signal",
+      glyph: "signal",
+    },
+    {
+      title: "GoldBot for cTrader",
+      status: "Execution Stack",
+      eyebrow: "cTrader expansion",
+      description:
+        "A cTrader edition aimed at traders who want the same disciplined GoldBot posture inside a cleaner, more institutional execution environment.",
+      bullets: [
+        "Adapted for cTrader execution flow",
+        "Institutional-feeling UI and order handling",
+        "Same premium strategy language, different terminal",
+      ],
+      surfaceLabel: "cTrader build",
+      accent: "platform",
+      glyph: "vault",
     },
   ];
 }

@@ -12,7 +12,11 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
-import { buildPassPlans, buildSubscriptionPlans } from "@/lib/pricing-showcase";
+import {
+  buildComingSoonProducts,
+  buildPassPlans,
+  buildSubscriptionPlans,
+} from "@/lib/pricing-showcase";
 
 const TESTIMONIALS = [
   "photo_2026-04-15 9.21.38 p.m..jpeg",
@@ -321,6 +325,7 @@ export default function Home() {
   const t = useTranslations("Landing");
   const subscriptionPlans = buildSubscriptionPlans(t);
   const passPlans = buildPassPlans(t);
+  const comingSoonProducts = buildComingSoonProducts();
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -716,6 +721,82 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="landing-section coming-soon-section">
+        <div className="landing-container">
+          <motion.div
+            className="coming-soon-shell"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="coming-soon-header">
+              <div className="coming-soon-copy">
+                <span className="landing-eyebrow">Coming Soon</span>
+                <h2 className="section-title section-title-left">
+                  The Gold lineup is expanding beyond one premium robot.
+                </h2>
+                <p className="section-copy section-copy-left">
+                  We are building the next wave around gold-specific execution,
+                  TradingView-native signal flow, and a cTrader release for traders
+                  who want a cleaner institutional feel.
+                </p>
+              </div>
+
+              <div className="coming-soon-summary">
+                <span className="coming-soon-summary-label">Roadmap status</span>
+                <strong>3 premium releases in development</strong>
+                <p>
+                  Same gold-first strategy language, expanded across new surfaces
+                  and workflows.
+                </p>
+              </div>
+            </div>
+
+            <div className="coming-soon-board-head">
+              <span>Product</span>
+              <span>Surface</span>
+              <span>Status</span>
+            </div>
+
+            <div className="coming-soon-grid">
+              {comingSoonProducts.map((product, index) => (
+                <motion.article
+                  key={product.title}
+                  className={`coming-soon-card coming-soon-card-${product.accent}`}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.6, delay: index * 0.08 }}
+                >
+                  <div className="coming-soon-card-top">
+                    <span className="coming-soon-surface">{product.surfaceLabel}</span>
+                    <span className="coming-soon-status">{product.status}</span>
+                  </div>
+
+                  <div className="coming-soon-card-head">
+                    <GoldGlyph kind={product.glyph} className="coming-soon-card-glyph" />
+
+                    <div>
+                      <span className="coming-soon-card-eyebrow">{product.eyebrow}</span>
+                      <h3>{product.title}</h3>
+                    </div>
+                  </div>
+
+                  <p className="coming-soon-card-copy">{product.description}</p>
+
+                  <ul className="coming-soon-card-list">
+                    {product.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                </motion.article>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 

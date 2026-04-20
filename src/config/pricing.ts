@@ -7,11 +7,11 @@ export interface PricingTier {
 
 export const PRICING_TIERS: Record<TierId, PricingTier> = {
   "free-trial": { amount: 0, priceString: "$0" },
-  "10-days": { amount: 50, priceString: "$50" },
-  "1-month": { amount: 155, priceString: "$155" },
-  "6-months": { amount: 750, priceString: "$750" },
-  "1-year": { amount: 1350, priceString: "$1,350" },
-  "lifetime": { amount: 5555, priceString: "$5,555" },
-  "lifetime-source": { amount: 55555, priceString: "$55,555" },
+  "10-days": { amount: 69, priceString: "$69" },
+  "1-month": { amount: 199, priceString: "$199" },
+  "6-months": { amount: 999, priceString: "$999" },
+  "1-year": { amount: 1799, priceString: "$1,799" },
+  "lifetime": { amount: 7999, priceString: "$7,999" },
+  "lifetime-source": { amount: 79999, priceString: "$79,999" },
   "secret-test": { amount: 10, priceString: "$10" },
 };
