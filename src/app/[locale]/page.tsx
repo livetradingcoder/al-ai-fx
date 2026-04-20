@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
 import {
   buildComingSoonProducts,
+  buildContactOffers,
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
@@ -325,6 +326,7 @@ export default function Home() {
   const t = useTranslations("Landing");
   const subscriptionPlans = buildSubscriptionPlans(t);
   const passPlans = buildPassPlans(t);
+  const contactOffers = buildContactOffers(t);
   const comingSoonProducts = buildComingSoonProducts(t);
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -692,14 +694,16 @@ export default function Home() {
 
           <div className="pricing-group-shell pricing-group-shell-secondary">
             <div className="pricing-group-head">
-              <span>Passes & lifetime</span>
+              <span>{t("freeTrialTitle")}</span>
               <p>
-                One-time payment options for short validation or permanent
-                access.
+                {t("freeTrialActionCopy", {
+                  fallback:
+                    "Take a short hands-on pass through the GoldBot experience before moving into a full recurring plan.",
+                })}
               </p>
             </div>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-three">
+            <div className="pricing-showcase-grid pricing-showcase-grid-single">
               {passPlans.map((plan) => (
                 <article key={plan.id} className="pricing-tier pricing-tier-secondary">
                   <GoldGlyph kind="vault" className="pricing-tier-glyph" />
@@ -721,6 +725,64 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="landing-section private-access-section">
+        <div className="landing-container">
+          <motion.div
+            className="private-access-shell"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="private-access-header">
+              <div className="private-access-copy">
+                <span className="landing-eyebrow">{t("customAccessEyebrow")}</span>
+                <h2 className="section-title section-title-left">
+                  {t("customAccessTitle")}
+                </h2>
+                <p className="section-copy section-copy-left">
+                  {t("customAccessCopy")}
+                </p>
+              </div>
+
+              <div className="private-access-actions">
+                <Link href="/support" className="btn-primary large">
+                  {t("customAccessPrimaryCta")}
+                </Link>
+                <a href="mailto:support@AL-ai-FX.com" className="btn-secondary large">
+                  {t("customAccessSecondaryCta")}
+                </a>
+              </div>
+            </div>
+
+            <div className="private-access-grid">
+              {contactOffers.map((offer, index) => (
+                <motion.article
+                  key={offer.title}
+                  className={`private-access-card private-access-card-${offer.accent}`}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.6, delay: index * 0.08 }}
+                >
+                  <GoldGlyph kind={offer.glyph} className="private-access-glyph" />
+                  <h3>{offer.title}</h3>
+                  <p>{offer.description}</p>
+                  <ul className="private-access-list">
+                    {offer.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                  <Link href="/support" className="btn-secondary fill">
+                    {offer.cta}
+                  </Link>
+                </motion.article>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 

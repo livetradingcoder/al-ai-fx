@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildComingSoonProducts,
+  buildContactOffers,
   buildPassPlans,
   buildSubscriptionPlans,
 } from "./pricing-showcase";
@@ -34,17 +35,14 @@ test("subscription plans keep the yearly plan featured", () => {
   assert.equal(plans[3]?.note, "($149.92 / month)");
 });
 
-test("pass plans include the free trial card before paid lifetime options", () => {
+test("pass plans keep only the free trial public", () => {
   const plans = buildPassPlans(t);
 
   assert.deepEqual(
     plans.map((plan) => plan.id),
-    ["free-trial", "lifetime", "lifetime-source"],
+    ["free-trial"],
   );
-  assert.deepEqual(
-    plans.map((plan) => plan.price),
-    ["$0", "$7,999", "$79,999"],
-  );
+  assert.equal(plans[0]?.price, "$0");
 });
 
 test("coming soon products are ordered for the next gold expansion wave", () => {
@@ -57,5 +55,18 @@ test("coming soon products are ordered for the next gold expansion wave", () => 
   assert.deepEqual(
     products.map((product) => product.status),
     ["Coming Soon", "Signal Stack", "Execution Stack"],
+  );
+});
+
+test("contact offers replace public lifetime pricing with concierge paths", () => {
+  const offers = buildContactOffers(t);
+
+  assert.deepEqual(
+    offers.map((offer) => offer.title),
+    ["Lifetime Access", "Source Code Licensing", "Private Deployment"],
+  );
+  assert.deepEqual(
+    offers.map((offer) => offer.cta),
+    ["Contact Us", "Contact Us", "Contact Us"],
   );
 });

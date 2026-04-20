@@ -28,6 +28,15 @@ export interface ComingSoonProduct {
   glyph: string;
 }
 
+export interface ContactOffer {
+  title: string;
+  description: string;
+  bullets: string[];
+  cta: string;
+  accent: "concierge" | "licensing" | "deployment";
+  glyph: string;
+}
+
 export function buildSubscriptionPlans(t: Translate): PricingShowcasePlan[] {
   return [
     {
@@ -170,6 +179,74 @@ export function buildComingSoonProducts(t: Translate): ComingSoonProduct[] {
   ];
 }
 
+export function buildContactOffers(t: Translate): ContactOffer[] {
+  return [
+    {
+      title: t("customAccessCard1Title", { fallback: "Lifetime Access" }),
+      description: t("customAccessCard1Copy", {
+        fallback:
+          "For traders who want permanent GoldBot access without listing a mass-market lifetime price on the page.",
+      }),
+      bullets: [
+        t("customAccessCard1Bullet1", {
+          fallback: "Private quote based on access scope",
+        }),
+        t("customAccessCard1Bullet2", {
+          fallback: "Best suited for long-horizon buyers",
+        }),
+        t("customAccessCard1Bullet3", {
+          fallback: "Handled through direct team contact",
+        }),
+      ],
+      cta: t("contactUs", { fallback: "Contact Us" }),
+      accent: "concierge",
+      glyph: "halo",
+    },
+    {
+      title: t("customAccessCard2Title", { fallback: "Source Code Licensing" }),
+      description: t("customAccessCard2Copy", {
+        fallback:
+          "For buyers, partners, or firms who need source-code rights, private licensing terms, or broader commercial scope.",
+      }),
+      bullets: [
+        t("customAccessCard2Bullet1", {
+          fallback: "Custom licensing conversations",
+        }),
+        t("customAccessCard2Bullet2", {
+          fallback: "Rebranding and usage-scope discussion",
+        }),
+        t("customAccessCard2Bullet3", {
+          fallback: "Quoted privately rather than publicly",
+        }),
+      ],
+      cta: t("contactUs", { fallback: "Contact Us" }),
+      accent: "licensing",
+      glyph: "vault",
+    },
+    {
+      title: t("customAccessCard3Title", { fallback: "Private Deployment" }),
+      description: t("customAccessCard3Copy", {
+        fallback:
+          "For higher-touch buyers who want onboarding, rollout planning, or a more tailored GoldBot deployment path.",
+      }),
+      bullets: [
+        t("customAccessCard3Bullet1", {
+          fallback: "Direct setup and rollout guidance",
+        }),
+        t("customAccessCard3Bullet2", {
+          fallback: "Private support-led delivery path",
+        }),
+        t("customAccessCard3Bullet3", {
+          fallback: "Built for premium contact-first deals",
+        }),
+      ],
+      cta: t("contactUs", { fallback: "Contact Us" }),
+      accent: "deployment",
+      glyph: "signal",
+    },
+  ];
+}
+
 export function buildPassPlans(t: Translate): PricingShowcasePlan[] {
   return [
     {
@@ -181,34 +258,6 @@ export function buildPassPlans(t: Translate): PricingShowcasePlan[] {
       features: [
         t("basicFeatureSet"),
         t("standardRecovery"),
-        t("automatedDelivery"),
-      ],
-    },
-    {
-      id: "lifetime",
-      title: t("lifetimeTitle", { fallback: "Lifetime" }),
-      price: PRICING_TIERS["lifetime"].priceString,
-      period: t("oneTime", { fallback: "one-time" }),
-      note: t("permanentAccess", { fallback: "Permanent access" }),
-      features: [
-        t("unlimitedSourceCopies"),
-        t("allStrategyFeatures"),
-        t("vipSetupSupport"),
-        t("automatedDelivery"),
-      ],
-    },
-    {
-      id: "lifetime-source",
-      title: t("lifetimeSourceTitle", { fallback: "Lifetime + Source" }),
-      price: PRICING_TIERS["lifetime-source"].priceString,
-      period: t("oneTime", { fallback: "one-time" }),
-      note: t("lifetimeSourceNote", {
-        fallback: "Full EA package + unprotected source code",
-      }),
-      features: [
-        t("sourceCodeAccess", { fallback: "Unprotected .mq5 source code" }),
-        t("modifyAndResell", { fallback: "Full rights to modify and rebrand" }),
-        t("vipSetupSupport"),
         t("automatedDelivery"),
       ],
     },
