@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getCompiledFilename } from "@/lib/compiler-filename";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -44,7 +45,7 @@ export async function GET(req: Request) {
     }
 
     const blob = await response.blob();
-    const fileName = `GoldBot_v2.0_${jobId}.ex5`;
+    const fileName = getCompiledFilename(jobId);
 
     return new Response(blob, {
       headers: {

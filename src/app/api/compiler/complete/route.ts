@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
-import { validateFileSize } from '@/lib/validation';
+import { MAX_ATTEMPTS } from '@/lib/compiler-config';
 
-type CompilationCompletePayload = {
+type CompletePayload = {
   jobId?: string;
-  fileDataBase64?: string;
-  status?: string;
+  status?: 'COMPLETED' | 'FAILED';
+  blobUrl?: string;
+  sha256?: string;
+  sizeBytes?: number;
+  errorMessage?: string;
 };
 
 export async function POST(req: Request) {
@@ -15,82 +17,63 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  let body: CompletePayload;
   try {
-    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!blobToken) {
-      console.error("[Compiler Complete] ERROR: BLOB_READ_WRITE_TOKEN is missing from environment variables.");
-      return NextResponse.json({ 
-        error: 'Configuration Error', 
-        details: 'Vercel Blob storage is not configured. BLOB_READ_WRITE_TOKEN is missing.' 
-      }, { status: 500 });
-    }
-
-    const rawBody = await req.text();
-    console.log(`[Compiler Complete] Received body size: ${rawBody.length} bytes`);
-    
-    const { jobId, fileDataBase64, status } = JSON.parse(rawBody) as CompilationCompletePayload;
-
-    if (!jobId || !status) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
-
-    if (status === 'COMPLETED' && fileDataBase64) {
-      // Validate file size before processing
-      const fileSizeValidation = validateFileSize(fileDataBase64, 10); // 10MB max
-      if (!fileSizeValidation.valid) {
-        console.error(`[Compiler Complete] File too large: ${fileSizeValidation.error}`);
-        return NextResponse.json({ error: fileSizeValidation.error }, { status: 413 });
-      }
-
-      const buffer = Buffer.from(fileDataBase64, 'base64');
-      
-      // Additional validation on decoded buffer
-      const bufferSizeMB = buffer.length / (1024 * 1024);
-      if (bufferSizeMB > 5) {
-        console.error(`[Compiler Complete] Decoded file too large: ${bufferSizeMB.toFixed(2)}MB`);
-        return NextResponse.json({ error: 'Compiled file exceeds 5MB limit' }, { status: 413 });
-      }
-
-      const fileName = `AL-ai-FX_GoldBot_${jobId}.ex5`;
-      
-      console.log(`[Compiler Complete] Uploading ${fileName} (${bufferSizeMB.toFixed(2)}MB) to Vercel Blob...`);
-      
-      try {
-        const blob = await put(`compiled/${fileName}`, buffer, {
-          access: 'private',
-          contentType: 'application/octet-stream',
-          token: blobToken // Explicitly pass the token
-        });
-
-        console.log(`[Compiler Complete] Upload successful: ${blob.url}`);
-
-        await prisma.compilation.update({
-          where: { id: jobId },
-          data: { 
-            status: 'COMPLETED',
-            downloadUrl: blob.url
-          }
-        });
-
-        return NextResponse.json({ success: true, url: blob.url }, { status: 200 });
-      } catch (blobError) {
-        const details = blobError instanceof Error ? blobError.message : String(blobError);
-        console.error("Vercel Blob put error:", details);
-        return NextResponse.json({ 
-          error: 'Upload Failed', 
-          details: `Failed to upload to Vercel Blob: ${details}` 
-        }, { status: 500 });
-      }
-    } else {
-      await prisma.compilation.update({
-        where: { id: jobId },
-        data: { status: 'FAILED' }
-      });
-      return NextResponse.json({ success: false }, { status: 200 });
-    }
-  } catch (error) {
-    const details = error instanceof Error ? error.message : String(error);
-    console.error("Compile completion error:", details);
-    return NextResponse.json({ error: 'Failed', details }, { status: 500 });
+    body = (await req.json()) as CompletePayload;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+
+  const { jobId, status, blobUrl, sha256, sizeBytes, errorMessage } = body;
+
+  if (!jobId || (status !== 'COMPLETED' && status !== 'FAILED')) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  const job = await prisma.compilation.findUnique({ where: { id: jobId } });
+  if (!job) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  if (status === 'COMPLETED') {
+    if (!blobUrl) {
+      return NextResponse.json({ error: 'Missing blobUrl' }, { status: 400 });
+    }
+    await prisma.compilation.update({
+      where: { id: jobId },
+      data: {
+        status: 'COMPLETED',
+        downloadUrl: blobUrl,
+        sha256: sha256 ?? null,
+        sizeBytes: sizeBytes ?? null,
+        errorMessage: null,
+      },
+    });
+    return NextResponse.json({ success: true }, { status: 200 });
+  }
+
+  // FAILED path: bounded retry via attemptCount vs MAX_ATTEMPTS.
+  const nextAttempt = job.attemptCount + 1;
+  if (nextAttempt < MAX_ATTEMPTS) {
+    await prisma.compilation.update({
+      where: { id: jobId },
+      data: {
+        status: 'PENDING',
+        attemptCount: nextAttempt,
+        attemptedAt: null,
+        errorMessage: errorMessage ?? null,
+      },
+    });
+    return NextResponse.json({ success: false, requeued: true, attempt: nextAttempt }, { status: 200 });
+  }
+
+  await prisma.compilation.update({
+    where: { id: jobId },
+    data: {
+      status: 'FAILED',
+      attemptCount: nextAttempt,
+      errorMessage: errorMessage ?? null,
+    },
+  });
+  return NextResponse.json({ success: false, requeued: false, attempt: nextAttempt }, { status: 200 });
 }
