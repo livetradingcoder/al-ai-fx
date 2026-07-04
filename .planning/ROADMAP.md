@@ -12,7 +12,7 @@ This milestone takes AL-ai-FX from a single-robot GoldBot pipeline with an offli
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Restore Compile Delivery** - Bring the Windows compile server back online, kill stuck-job orphans, and make the pipeline retry-safe on the existing single robot
+- [x] **Phase 1: Restore Compile Delivery** ✓ 2026-07-04 — Windows daemon + reaper as NSSM services; atomic dequeue (FOR UPDATE SKIP LOCKED); heartbeat singleton; bounded retry via reaper + /complete FAILED path; direct-to-Blob upload; COMPILER_SECRET rotated; admin status widget; client-poll cap. Follow-up: VM MetaTrader stdlib path (Trade.mqh missing under LocalSystem).
 - [ ] **Phase 2: Payment + Pricing Launch Blockers** - Fix silent tier downgrade and fail-open Paygate webhook before real revenue arrives
 - [ ] **Phase 3: Multi-Robot Schema Foundation** - Land the `Robot` entity, wire `robotId` through subscriptions/compilations, move sources to encrypted Blob storage
 - [ ] **Phase 4: Robot-Aware Compile Pipeline** - Thread robot identity through poll/complete/download; source fetched by short-lived signed URL, never logged
