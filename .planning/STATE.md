@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 ## Current Position
 
 Phase: 1 of 7 (Restore Compile Delivery)
-Plan: 3 of 4 in current phase
-Status: In progress (Wave 2 complete; only Plan 01-04 remains in Phase 1)
-Last activity: 2026-07-04 — Completed 01-03-heartbeat-atomic-reaper-PLAN.md (parallel with 01-02)
+Plan: 4 of 4 in current phase
+Status: **Phase 1 complete** (all four plans landed; two non-blocking follow-ups noted in Blockers/Concerns)
+Last activity: 2026-07-04 — Completed 01-04-admin-visibility-client-cap-PLAN.md
 
-Progress: [███░░░░░░░░░░░░░░░░░░░░░░░░░] 11% (3/28 plans across all phases; 3/4 in Phase 1)
+Progress: [████░░░░░░░░░░░░░░░░░░░░░░] 15% (4/26 plans across all phases; 4/4 in Phase 1)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6m 28s
-- Total execution time: 19m 24s
+- Total plans completed: 4
+- Average duration: 6m 15s
+- Total execution time: 24m 57s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 - Restore Compile Delivery | 3/4 | 19m 24s | 6m 28s |
+| 1 - Restore Compile Delivery | 4/4 | 24m 57s | 6m 15s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 21s), 01-02 (8m 30s), 01-03 (8m 33s)
-- Trend: ↑ (Wave 2 plans larger — real infra work — but well under phase budgets)
+- Last 5 plans: 01-01 (2m 21s), 01-02 (8m 30s), 01-03 (8m 33s), 01-04 (5m 33s)
+- Trend: → (velocity steady; 01-04 was 3 tasks vs Wave 2's real infra work)
 
 *Updated after each plan completion*
 
@@ -61,6 +61,10 @@ Recent decisions affecting current work:
 - 01-03: Hobby-plan-safe cron: second NSSM service `al-ai-fx-reaper` on the same VM as `al-ai-fx-daemon`, independent lifetime; Pro-upgrade path is a one-line `vercel.json` crons entry + `nssm stop`.
 - 01-03: Reaper `attemptedAt = null` on requeue-to-PENDING so the cutoff scan does not immediately re-match the row on the next tick.
 - 01-03: Heartbeat upsert is best-effort (try/catch, non-fatal) — job dequeue matters more than observability.
+- 01-04: Alert cooldown lives at module scope in `/api/compiler/reap` (per-warm-instance `lastAlertAt` map, 15 min) — not persisted. Cold starts may cause one duplicate email per event; acceptable vs adding a schema table for Phase 1.
+- 01-04: `sendAdminCompilerAlertEmail` is silent-no-op on missing `MAILTRAP_TOKEN`/`SMTP_PASS` or missing `ADMIN_ALERT_EMAIL`/`SMTP_FROM_EMAIL` — never throws; alert path must never fail the request.
+- 01-04: `TIMED_OUT` is a client-only React state (LicenseManager), NOT a Prisma `CompileStatus` enum value — avoids schema migration for pure UX transition. Server still emits PENDING/PROCESSING/COMPLETED/FAILED only.
+- 01-04: Admin JSON endpoint gate uses `session?.user?.role !== 'ADMIN'` → 403 (distinct from page-level `redirect('/dashboard')`). Anonymous callers also get 403.
 
 ### Pending Todos
 
@@ -73,9 +77,11 @@ None yet.
 - **`prisma/migrations/` directory is not in the repo** — Phase 3 must decide migration strategy before schema changes land.
 - **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
 - **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
+- **`MAILTRAP_TOKEN` + `ADMIN_ALERT_EMAIL` not set in Vercel (surfaced by 01-04)** — verified via `vercel env ls`. Admin alert emails (retry-exhausted FAILED + stale-heartbeat) log a warning and no-op until the token lands. Non-blocking for Phase 1 completion; provisioning tracked as orchestrator Task #13. Add via `vercel env add MAILTRAP_TOKEN production` (paste API token from Mailtrap dashboard) + `vercel env add ADMIN_ALERT_EMAIL production`, then redeploy. No code change needed.
 
 ## Session Continuity
 
 Last session: 2026-07-04
-Stopped at: Completed 01-03-heartbeat-atomic-reaper-PLAN.md (in parallel with 01-02). Phase 1 Wave 2 complete; only Wave 3 (Plan 01-04 admin visibility + client cap) remains in Phase 1.
+Stopped at: Completed 01-04-admin-visibility-client-cap-PLAN.md. **Phase 1 complete (4/4 plans).** Two non-blocking follow-ups tracked in Blockers/Concerns: (a) provision `MAILTRAP_TOKEN` + `ADMIN_ALERT_EMAIL` in Vercel; (b) fix VM MetaTrader stdlib include path so real .ex5 delivery works end-to-end.
+Resume file: Phase 2 kick-off — `.planning/phases/02-payment-pricing/` (not yet created; will need `/gsd:plan-phase 2`).
 Resume file: `.planning/phases/01-restore-compile-delivery/01-04-admin-visibility-client-cap-PLAN.md`
