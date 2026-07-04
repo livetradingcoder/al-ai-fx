@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { put } from '@vercel/blob';
+import { prisma } from '@/lib/prisma';
 import { validateFileSize } from '@/lib/validation';
-
-const prisma = new PrismaClient();
 
 type CompilationCompletePayload = {
   jobId?: string;
