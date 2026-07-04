@@ -162,3 +162,70 @@ export async function sendResetPasswordEmail(email: string, magicLinkUrl: string
   });
   console.log(`[Mail] Password reset email sent to ${email}`);
 }
+
+type AdminAlertKind =
+  | { kind: "stale-heartbeat"; lastSeenAgoSeconds: number | null }
+  | { kind: "job-failed"; jobId: string; attempts: number; errorMessage?: string };
+
+/**
+ * Fires the admin alert email via Mailtrap. Recipient is ADMIN_ALERT_EMAIL
+ * (env), falling back to SMTP_FROM_EMAIL. Silent (no throw) if
+ * MAILTRAP_TOKEN / SMTP_PASS is missing — callers must not fail the request
+ * just because email failed. Best-effort side effect only.
+ */
+export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
+  if (!client) {
+    console.warn("[Mail] Mailtrap client not initialized. Skipping admin alert.");
+    return;
+  }
+  const to = (process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || "").toLowerCase();
+  if (!to) {
+    console.warn("[Mail] No ADMIN_ALERT_EMAIL or SMTP_FROM_EMAIL configured. Skipping admin alert.");
+    return;
+  }
+
+  const isStale = payload.kind === "stale-heartbeat";
+  const title = isStale ? "Compile server offline" : "Compile job exhausted retries";
+  const eyebrow = "Compiler alert";
+  const intro = isStale
+    ? `The Windows compile worker has not sent a heartbeat for ${payload.lastSeenAgoSeconds ?? "?"} seconds. Users cannot receive their .ex5 until the worker is restored.`
+    : `Compilation job ${payload.jobId} has failed permanently after ${payload.attempts} attempts.${payload.errorMessage ? " Last error: " + payload.errorMessage : ""}`;
+  const detailLines = isStale
+    ? [
+        "Check the VM: ssh alfx",
+        "Service status: nssm.exe status al-ai-fx-daemon",
+        "Recent logs: tail C:\\ProgramData\\al-ai-fx\\logs\\al-ai-fx-daemon.err.log",
+      ]
+    : [
+        `Job ID: ${payload.jobId}`,
+        `Total attempts: ${payload.attempts}`,
+        payload.errorMessage
+          ? `Last error: ${payload.errorMessage.slice(0, 200)}`
+          : "No error message recorded.",
+      ];
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Open Admin Dashboard",
+    buttonUrl: "https://www.al-ai-fx.xyz/dashboard/admin",
+    eyebrow,
+    intro,
+    title,
+    detailLines,
+  });
+
+  try {
+    await client.send({
+      from: sender,
+      to: [{ email: to }],
+      subject: isStale
+        ? "[AL-ai-FX] Compile server offline"
+        : "[AL-ai-FX] Compile job failed (retries exhausted)",
+      html,
+      text,
+      category: "AdminAlert",
+    });
+    console.log(`[Mail] Admin alert sent (${payload.kind}) to ${to}`);
+  } catch (err) {
+    console.error("[Mail] Admin alert send failed:", err);
+  }
+}
