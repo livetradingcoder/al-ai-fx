@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -62,8 +62,21 @@ model Compilation {
   subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   status         CompileStatus @default(PENDING)
   downloadUrl    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+
+  // Retry + reaper state (Phase 1)
+  attemptCount Int       @default(0)
+  attemptedAt  DateTime?
+  errorMessage String?
+
+  // Upload metadata written by /complete route (Phase 1 direct-to-Blob path)
+  sha256    String?
+  sizeBytes Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([status, attemptedAt])
 }
 
 enum PricingTier {
@@ -91,4 +104,11 @@ enum CompileStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+model WorkerHeartbeat {
+  id            String   @id // singleton row keyed "compiler"
+  lastSeenAt    DateTime
+  workerVersion String?
+  updatedAt     DateTime @updatedAt
 }
