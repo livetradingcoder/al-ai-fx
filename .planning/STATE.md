@@ -50,6 +50,13 @@ Recent decisions affecting current work:
 - 01-01: `WorkerHeartbeat.id` is a plain String @id (no default) — singleton row keyed `"compiler"` for the entire compile daemon fleet (one worker for now).
 - 01-01: `db push` (not `migrate dev`) is the Phase 1 stopgap; formal migrations arrive in Phase 3.
 - 01-01: Timing thresholds live in `src/lib/compiler-config.ts` as named `export const`s — never inline in poll/complete/reaper/LicenseManager code.
+- 01-02: Blob access mode is `'public'` for Phase 1 — hardening to `'private'` (signed URLs) scoped for Phase 4 source-hardening.
+- 01-02: Daemon uploads with `addRandomSuffix:false` + `allowOverwrite:true` → deterministic Blob pathname `compiled/AL-ai-FX_GoldBot_${jobId}.ex5` derivable from jobId alone.
+- 01-02: Bounded-retry decision lives in `/api/compiler/complete`'s FAILED path, not the daemon. Daemon reports FAILED; server decides requeue vs terminal via `attemptCount + 1 < MAX_ATTEMPTS`.
+- 01-02: Daemon cleanup runs only on `uploadedOk==true` — failed artifacts (.mq5, .ex5 if any, .log) retained for post-mortem.
+- 01-02: `getCompiledFilename(jobId, {robotSlug?})` in `src/lib/compiler-filename.ts` is the single source of truth for `/complete` write path (Blob pathname) and `/download` read path (Content-Disposition) — never drift again.
+- 01-02: Windows daemon fails fast (`process.exit(1)`) on missing `API_URL`, `COMPILER_SECRET`, or `BLOB_READ_WRITE_TOKEN` — no hardcoded fallbacks anywhere.
+- 01-02: MetaEditor success = (exit==0) AND (.ex5 size > 0) AND (no `\berror\b|\bError\b` marker in UTF-16 log). Never trust exit code alone.
 - 01-03: Atomic dequeue via Postgres `FOR UPDATE SKIP LOCKED` inside `prisma.$transaction` using `$queryRaw` (Prisma issue #5983 — no native SKIP LOCKED support). Standard pattern for any future queue in this DB.
 - 01-03: Hobby-plan-safe cron: second NSSM service `al-ai-fx-reaper` on the same VM as `al-ai-fx-daemon`, independent lifetime; Pro-upgrade path is a one-line `vercel.json` crons entry + `nssm stop`.
 - 01-03: Reaper `attemptedAt = null` on requeue-to-PENDING so the cutoff scan does not immediately re-match the row on the next tick.
@@ -61,7 +68,8 @@ None yet.
 
 ### Blockers/Concerns
 
-- **Windows compile server** — RESOLVED by Wave 2. `al-ai-fx-daemon` (from 01-02) uploads directly to Blob; `al-ai-fx-reaper` (from 01-03) auto-heals stuck rows every 60s. End-to-end retry loop validated live during 01-02.
+- **Windows compile server pipeline** — RESOLVED by Wave 2. `al-ai-fx-daemon` (from 01-02) uploads directly to Blob with fail-fast env checks + triple-check MetaEditor success detection + bounded-retry via `/complete`; `al-ai-fx-reaper` (from 01-03) auto-heals stuck rows every 60s. End-to-end retry loop validated live during 01-02.
+- **NEW BLOCKER (surfaced by 01-02 end-to-end test): VM MetaTrader stdlib include path is broken.** MetaEditor reports `error 106: file 'C:\Windows\system32\config\systemprofile\...\MQL5\Include\Trade\Trade.mqh' not found` when running as LocalSystem. Pipeline correctly handles the failure (triple-check catches it, bounded-retry burns to FAILED with errorMessage populated), but no real user will get a working .ex5 until this is fixed. **This is now the single remaining blocker between "pipeline works" and "user receives a real .ex5".** Fix options: (a) reinstall MetaTrader under LocalSystem, (b) copy `MQL5\Include\` dir into LocalSystem's `%APPDATA%\MetaQuotes\Terminal\<terminal-id>\`, (c) reconfigure NSSM to run as Administrator instead of LocalSystem.
 - **`prisma/migrations/` directory is not in the repo** — Phase 3 must decide migration strategy before schema changes land.
 - **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
 - **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
