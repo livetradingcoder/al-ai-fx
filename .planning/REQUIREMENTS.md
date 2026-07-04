@@ -118,56 +118,65 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Empty until roadmap creation. Populated by roadmapper.
+Populated by roadmapper on 2026-07-04.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CMPL-01 | — | Pending |
-| CMPL-02 | — | Pending |
-| CMPL-03 | — | Pending |
-| CMPL-04 | — | Pending |
-| CMPL-05 | — | Pending |
-| CMPL-06 | — | Pending |
-| DLVR-01 | — | Pending |
-| DLVR-02 | — | Pending |
-| DLVR-03 | — | Pending |
-| DLVR-04 | — | Pending |
-| CTLG-01 | — | Pending |
-| CTLG-02 | — | Pending |
-| CTLG-03 | — | Pending |
-| CTLG-04 | — | Pending |
-| CTLG-05 | — | Pending |
-| CTLG-06 | — | Pending |
-| CTLG-07 | — | Pending |
-| CTLG-08 | — | Pending |
-| SRCE-01 | — | Pending |
-| SRCE-02 | — | Pending |
-| SRCE-03 | — | Pending |
-| ADMN-01 | — | Pending |
-| ADMN-02 | — | Pending |
-| ADMN-03 | — | Pending |
-| ADMN-04 | — | Pending |
-| ADMN-05 | — | Pending |
-| PRIC-01 | — | Pending |
-| PRIC-02 | — | Pending |
-| PRIC-03 | — | Pending |
-| PRIC-04 | — | Pending |
-| TRIL-01 | — | Pending |
-| TRIL-02 | — | Pending |
-| TRIL-03 | — | Pending |
-| SECR-01 | — | Pending |
-| SECR-02 | — | Pending |
-| SECR-03 | — | Pending |
-| ONBD-01 | — | Pending |
-| ONBD-02 | — | Pending |
-| ONBD-03 | — | Pending |
-| ONBD-04 | — | Pending |
+| CMPL-01 | Phase 1 | Pending |
+| CMPL-02 | Phase 1 | Pending |
+| CMPL-03 | Phase 1 | Pending |
+| CMPL-04 | Phase 1 | Pending |
+| CMPL-05 | Phase 1 | Pending |
+| CMPL-06 | Phase 1 | Pending |
+| DLVR-01 | Phase 5 | Pending |
+| DLVR-02 | Phase 5 | Pending |
+| DLVR-03 | Phase 5 | Pending |
+| DLVR-04 | Phase 5 | Pending |
+| CTLG-01 | Phase 3 | Pending |
+| CTLG-02 | Phase 6 | Pending |
+| CTLG-03 | Phase 6 | Pending |
+| CTLG-04 | Phase 3 | Pending |
+| CTLG-05 | Phase 3 | Pending |
+| CTLG-06 | Phase 4 | Pending |
+| CTLG-07 | Phase 4 | Pending |
+| CTLG-08 | Phase 4 | Pending |
+| SRCE-01 | Phase 3 | Pending |
+| SRCE-02 | Phase 4 | Pending |
+| SRCE-03 | Phase 4 | Pending |
+| ADMN-01 | Phase 5 | Pending |
+| ADMN-02 | Phase 5 | Pending |
+| ADMN-03 | Phase 5 | Pending |
+| ADMN-04 | Phase 5 | Pending |
+| ADMN-05 | Phase 5 | Pending |
+| PRIC-01 | Phase 6 | Pending |
+| PRIC-02 | Phase 2 | Pending |
+| PRIC-03 | Phase 6 | Pending |
+| PRIC-04 | Phase 6 | Pending |
+| TRIL-01 | Phase 6 | Pending |
+| TRIL-02 | Phase 6 | Pending |
+| TRIL-03 | Phase 6 | Pending |
+| SECR-01 | Phase 2 | Pending |
+| SECR-02 | Phase 2 | Pending |
+| SECR-03 | Phase 2 | Pending |
+| ONBD-01 | Phase 7 | Pending |
+| ONBD-02 | Phase 7 | Pending |
+| ONBD-03 | Phase 7 | Pending |
+| ONBD-04 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 40 total
-- Mapped to phases: 0 (roadmap not yet built)
-- Unmapped: 40 ⚠️
+- Mapped to phases: 40 (100%)
+- Unmapped: 0
+
+**Per-phase counts:**
+- Phase 1 (Restore Compile Delivery): 6 requirements (CMPL-01 through CMPL-06)
+- Phase 2 (Payment + Pricing Launch Blockers): 4 requirements (PRIC-02, SECR-01, SECR-02, SECR-03)
+- Phase 3 (Multi-Robot Schema Foundation): 4 requirements (CTLG-01, CTLG-04, CTLG-05, SRCE-01)
+- Phase 4 (Robot-Aware Compile Pipeline): 5 requirements (CTLG-06, CTLG-07, CTLG-08, SRCE-02, SRCE-03)
+- Phase 5 (Admin Catalog + Delivery Loop): 9 requirements (ADMN-01 through ADMN-05, DLVR-01 through DLVR-04)
+- Phase 6 (Public Catalog, Per-Robot Pricing, Free Trials): 8 requirements (CTLG-02, CTLG-03, PRIC-01, PRIC-03, PRIC-04, TRIL-01, TRIL-02, TRIL-03)
+- Phase 7 (Onboard 3 New Robots + End-to-End Validation): 4 requirements (ONBD-01, ONBD-02, ONBD-03, ONBD-04)
 
 ---
 *Requirements defined: 2026-07-04*
-*Last updated: 2026-07-04 after initialization*
+*Traceability populated: 2026-07-04 by roadmapper*
