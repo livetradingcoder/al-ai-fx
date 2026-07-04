@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -68,6 +69,7 @@ export default async function AdminDashboard() {
             <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>EA Compilations Today</h3>
             <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', marginTop: '0.5rem', color: 'var(--text-primary)' }}>{todayCompilations}</div>
           </div>
+          <CompileServerStatus />
         </div>
 
         <div className="glass-panel" style={{ overflowX: 'auto', marginBottom: '2rem' }}>
