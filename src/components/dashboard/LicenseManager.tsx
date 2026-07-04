@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import {
+  CLIENT_POLL_INITIAL_MS,
+  CLIENT_POLL_MAX_MS,
+  CLIENT_POLL_TIMEOUT_MS,
+} from "@/lib/compiler-config";
 
 interface LicenseManagerProps {
   subscription: {
@@ -26,31 +31,59 @@ export default function LicenseManager({ subscription, latestCompilation: initia
   const [isUpdating, setIsUpdating] = useState(false);
   const [compilation, setCompilation] = useState(initialCompilation);
   const [isPolling, setIsPolling] = useState(initialCompilation?.status === "PENDING" || initialCompilation?.status === "PROCESSING");
+  const [timedOut, setTimedOut] = useState(false);
   const router = useRouter();
   const t = useTranslations("Dashboard");
 
+  // Bounded polling loop:
+  //   - starts at CLIENT_POLL_INITIAL_MS (5s), backs off 1.5x up to CLIENT_POLL_MAX_MS (30s)
+  //   - hard-caps at CLIENT_POLL_TIMEOUT_MS (5min) wall clock
+  //   - transitions to TIMED_OUT UI state on cap; stops all further requests
+  //   - cleans up the pending timer on unmount / dependency change
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPolling && compilation?.id) {
-      interval = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/licenses/status?jobId=${compilation.id}`);
-          const data = await res.json();
-          if (data.status === "COMPLETED" || data.status === "FAILED") {
-            setCompilation(data);
-            setIsPolling(false);
-            router.refresh(); // Update the whole page state
-          }
-        } catch (error) {
-          console.error("Polling error:", error);
+    if (!isPolling || !compilation?.id) return;
+
+    const startedAt = Date.now();
+    let delay = CLIENT_POLL_INITIAL_MS;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    const tick = async () => {
+      if (cancelled) return;
+      if (Date.now() - startedAt > CLIENT_POLL_TIMEOUT_MS) {
+        setIsPolling(false);
+        setTimedOut(true);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/licenses/status?jobId=${compilation.id}`);
+        const data = await res.json();
+        if (data.status === "COMPLETED" || data.status === "FAILED") {
+          setCompilation(data);
+          setIsPolling(false);
+          router.refresh();
+          return;
         }
-      }, 5000);
-    }
-    return () => clearInterval(interval);
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+      delay = Math.min(delay * 1.5, CLIENT_POLL_MAX_MS);
+      if (!cancelled) {
+        timer = setTimeout(tick, delay);
+      }
+    };
+
+    timer = setTimeout(tick, delay);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [isPolling, compilation?.id, router]);
 
   const handleUpdateMt5 = async () => {
     if (!mt5Account) return;
+    // Clear stale timeout state so a fresh compile retry can poll again.
+    setTimedOut(false);
     setIsUpdating(true);
     try {
       const res = await fetch("/api/licenses/update-mt5", {
@@ -146,6 +179,12 @@ export default function LicenseManager({ subscription, latestCompilation: initia
             >
               {isPolling ? t("compiling", { status: compilation?.status || "" }) : t("compileAndDownloadEx5")}
             </button>
+          )}
+
+          {timedOut && (
+            <p style={{ fontSize: "0.9rem", color: "#f4dca2", marginTop: "0.5rem", fontWeight: 500 }}>
+              Compilation is taking longer than expected — an email will be sent when it&apos;s ready.
+            </p>
           )}
 
           {compilation && (
