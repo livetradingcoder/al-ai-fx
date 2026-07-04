@@ -32,13 +32,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Any `Compilation` stuck in `PROCESSING` past the reaper threshold auto-transitions to retry (bounded N attempts) or `FAILED` — no infinite polling from the client.
   4. `/api/compiler/poll` and `/api/compiler/complete` use the shared Prisma singleton and no longer risk exhausting Postgres connections under load.
   5. Compiled `.ex5` payloads no longer fail at Vercel's 4.5 MB body limit — either delivered via a direct-to-Blob upload URL or explicitly size-capped.
-**Plans**: TBD (est. 4)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 01-01: Server health + heartbeat (health endpoint, admin dashboard indicator, offline alert email)
-- [ ] 01-02: Stuck-job reaper + bounded retry (add `startedAt`/`attempts`, background sweep, client polling cap)
-- [ ] 01-03: Prisma singleton fix in compile routes (replace `new PrismaClient()`, verify no other leaks)
-- [ ] 01-04: Base64 payload path fix (direct-to-Blob upload URL flow or explicit size cap + updated Windows worker contract)
+- [ ] 01-01-PLAN.md — Schema + shared config (WorkerHeartbeat model, Compilation.attemptCount/attemptedAt/sha256/sizeBytes/errorMessage, src/lib/compiler-config.ts, `prisma db push` to remote Coolify Postgres) [Wave 1]
+- [ ] 01-02-PLAN.md — Direct-to-Blob worker + secret rotation (rewrite VM daemon.js for `@vercel/blob` `put()`, drop hardcoded fallback secret, MetaEditor triple-check, cleanup; refactor `/api/compiler/complete` to metadata-only; unify filename via new `src/lib/compiler-filename.ts`; rotate COMPILER_SECRET) [Wave 2]
+- [ ] 01-03-PLAN.md — Heartbeat + atomic dequeue + reaper (patch `/poll` for WorkerHeartbeat upsert + `FOR UPDATE SKIP LOCKED` via `$queryRaw`; new `/api/compiler/reap` CRON_SECRET-gated; second NSSM service `al-ai-fx-reaper` on VM pings every 60s — Hobby-plan-safe external cron) [Wave 2, parallel with 01-02]
+- [ ] 01-04-PLAN.md — Admin visibility + client-poll cap + alert email (new `/api/admin/compiler-status` + `<CompileServerStatus>` tile on admin dashboard; `sendAdminCompilerAlertEmail` + reaper integration w/ dedup cooldown; cap LicenseManager polling at 5 min w/ exponential backoff + TIMED_OUT UI state) [Wave 3]
+
+Note: CMPL-05 (Prisma singleton in compiler routes) was closed pre-planning by commit `1073e45 fix(compiler): use shared Prisma singleton in poll + complete routes` — no dedicated plan needed. Poll route gets further changes in Plan 03; complete route gets further changes in Plan 02, both continuing to use the singleton.
 
 ### Phase 2: Payment + Pricing Launch Blockers
 **Goal**: No real customer can pay for `1-year` / `lifetime-source` and get silently downgraded, and no anonymous POST can provision a subscription via a misconfigured webhook.
@@ -150,7 +152,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Restore Compile Delivery | 0/4 | Not started | - |
+| 1. Restore Compile Delivery | 0/4 | Planned | - |
 | 2. Payment + Pricing Launch Blockers | 0/3 | Not started | - |
 | 3. Multi-Robot Schema Foundation | 0/3 | Not started | - |
 | 4. Robot-Aware Compile Pipeline | 0/4 | Not started | - |
