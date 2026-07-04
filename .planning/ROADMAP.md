@@ -51,12 +51,12 @@ Note: CMPL-05 (Prisma singleton in compiler routes) was closed pre-planning by c
   2. Paygate webhook rejects (HTTP error, no provisioning) when `PAYGATE_WEBHOOK_SECRET` is missing in production — fail-closed, not fail-open with a warning log.
   3. A replayed Paygate webhook payload (same signature, past its timestamp window or with a previously-seen nonce/paygateId) is rejected without double-fulfilling an order.
   4. Repeating a legitimate webhook delivery for the same order is idempotent — one `Order`, one `Subscription`, one confirmation email.
-**Plans**: TBD (est. 3)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Align `PricingTier` enum ↔ `config/pricing.ts` ↔ `mapTier()` (extend enum, extend `computeExpirationDate`, throw on unknown)
-- [ ] 02-02: Fail-closed webhook secret verification (production-strict + explicit dev bypass)
-- [ ] 02-03: Replay protection + idempotency (timestamp window, nonce / `paygateId` uniqueness check, POST + GET paths)
+- [ ] 02-01-pricing-tier-alignment-PLAN.md — Extend `PricingTier` enum (TEN_DAYS/ONE_YEAR/LIFETIME_SOURCE), new `src/lib/pricing-tiers.ts` as SSoT (`TIER_METADATA` + `mapTier` throws `UnknownTierError` + `computeExpirationDate` exhaustive switch), delete legacy inline from `subscriptions.ts`, wire through free-trial route [Wave 1]
+- [ ] 02-02-fail-closed-webhook-signature-PLAN.md — New `src/lib/webhook-signature.ts` (fail-closed HMAC + two-key dev bypass), rewrite webhook GET, DELETE dead POST handler, embed signature in `create-session` callback URL, preflight `vercel env add PAYGATE_WEBHOOK_SECRET` [Wave 1, parallel with 02-01]
+- [ ] 02-03-webhook-replay-idempotency-PLAN.md — Add `WebhookDelivery` model to schema, `prisma db push`, insert `prisma.webhookDelivery.create` + P2002 short-circuit into webhook GET, pattern unit tests [Wave 2]
 
 ### Phase 3: Multi-Robot Schema Foundation
 **Goal**: The database and source-storage layer support multiple robots. No user-facing UX yet — the ground the rest of the milestone builds on.
