@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 ## Current Position
 
 Phase: 1 of 7 (Restore Compile Delivery)
-Plan: 1 of 4 in current phase
-Status: In progress
-Last activity: 2026-07-04 — Completed 01-01-schema-and-config-PLAN.md
+Plan: 3 of 4 in current phase
+Status: In progress (Wave 2 complete; only Plan 01-04 remains in Phase 1)
+Last activity: 2026-07-04 — Completed 01-03-heartbeat-atomic-reaper-PLAN.md (parallel with 01-02)
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 4% (1/28 plans across all phases; 1/4 in Phase 1)
+Progress: [███░░░░░░░░░░░░░░░░░░░░░░░░░] 11% (3/28 plans across all phases; 3/4 in Phase 1)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2m 21s
-- Total execution time: 2m 21s
+- Total plans completed: 3
+- Average duration: 6m 28s
+- Total execution time: 19m 24s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 - Restore Compile Delivery | 1/4 | 2m 21s | 2m 21s |
+| 1 - Restore Compile Delivery | 3/4 | 19m 24s | 6m 28s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 21s)
-- Trend: — (need more data)
+- Last 5 plans: 01-01 (2m 21s), 01-02 (8m 30s), 01-03 (8m 33s)
+- Trend: ↑ (Wave 2 plans larger — real infra work — but well under phase budgets)
 
 *Updated after each plan completion*
 
@@ -50,6 +50,10 @@ Recent decisions affecting current work:
 - 01-01: `WorkerHeartbeat.id` is a plain String @id (no default) — singleton row keyed `"compiler"` for the entire compile daemon fleet (one worker for now).
 - 01-01: `db push` (not `migrate dev`) is the Phase 1 stopgap; formal migrations arrive in Phase 3.
 - 01-01: Timing thresholds live in `src/lib/compiler-config.ts` as named `export const`s — never inline in poll/complete/reaper/LicenseManager code.
+- 01-03: Atomic dequeue via Postgres `FOR UPDATE SKIP LOCKED` inside `prisma.$transaction` using `$queryRaw` (Prisma issue #5983 — no native SKIP LOCKED support). Standard pattern for any future queue in this DB.
+- 01-03: Hobby-plan-safe cron: second NSSM service `al-ai-fx-reaper` on the same VM as `al-ai-fx-daemon`, independent lifetime; Pro-upgrade path is a one-line `vercel.json` crons entry + `nssm stop`.
+- 01-03: Reaper `attemptedAt = null` on requeue-to-PENDING so the cutoff scan does not immediately re-match the row on the next tick.
+- 01-03: Heartbeat upsert is best-effort (try/catch, non-fatal) — job dequeue matters more than observability.
 
 ### Pending Todos
 
@@ -57,12 +61,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- **Windows compile server is currently offline** — resolved as part of Phase 1 (CMPL-01/CMPL-02). Until it is back online and health-checked, no user can receive a compiled `.ex5`.
-- **`prisma/migrations/` directory is not in the repo** — surfaced by codebase mapper. Phase 3 must decide migration strategy (checked-in migrations vs. continued `db push`) before schema changes land.
-- **External Windows worker parser strictness unknown** — Phase 4 extends the `/api/compiler/poll` response; plan may need to version the endpoint to avoid breaking the worker on unknown fields.
+- **Windows compile server** — RESOLVED by Wave 2. `al-ai-fx-daemon` (from 01-02) uploads directly to Blob; `al-ai-fx-reaper` (from 01-03) auto-heals stuck rows every 60s. End-to-end retry loop validated live during 01-02.
+- **`prisma/migrations/` directory is not in the repo** — Phase 3 must decide migration strategy before schema changes land.
+- **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
+- **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
 
 ## Session Continuity
 
 Last session: 2026-07-04
-Stopped at: Completed 01-01-schema-and-config-PLAN.md; Phase 1 Wave 2 (Plans 02 + 03) can now run in parallel
-Resume file: `.planning/phases/01-restore-compile-delivery/01-02-direct-blob-worker-PLAN.md` or `.planning/phases/01-restore-compile-delivery/01-03-heartbeat-atomic-reaper-PLAN.md`
+Stopped at: Completed 01-03-heartbeat-atomic-reaper-PLAN.md (in parallel with 01-02). Phase 1 Wave 2 complete; only Wave 3 (Plan 01-04 admin visibility + client cap) remains in Phase 1.
+Resume file: `.planning/phases/01-restore-compile-delivery/01-04-admin-visibility-client-cap-PLAN.md`
