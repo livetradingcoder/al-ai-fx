@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { createHmac } from "node:crypto";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
+import { TIER_METADATA } from "@/lib/pricing-tiers";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
@@ -36,7 +38,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: emailValidation.error }, { status: 400 });
     }
 
-    if (!Object.prototype.hasOwnProperty.call(PRICING_TIERS, tier)) {
+    // TIER_METADATA (Plan 02-01 SSoT) is the canonical tier-validity mapping.
+    if (!(tier in TIER_METADATA)) {
       return NextResponse.json({ error: "Invalid tier." }, { status: 400 });
     }
 
@@ -48,6 +51,16 @@ export async function POST(req: Request) {
     if (!payoutAddress) {
       return NextResponse.json(
         { error: "Server not configured: PAYGATE_PAYOUT_USDC_ADDRESS is missing." },
+        { status: 500 },
+      );
+    }
+
+    // Fail-closed BEFORE the Paygate wallet API call: without the secret we
+    // cannot sign the callback URL, and the webhook would reject every callback.
+    const webhookSecret = process.env.PAYGATE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      return NextResponse.json(
+        { error: "Server not configured: PAYGATE_WEBHOOK_SECRET is missing." },
         { status: 500 },
       );
     }
@@ -66,6 +79,16 @@ export async function POST(req: Request) {
     callbackUrl.searchParams.set("email", email);
     callbackUrl.searchParams.set("currency", currency);
     callbackUrl.searchParams.set("amount", amount);
+
+    // Sign the callback so the fail-closed webhook accepts it. Payload order
+    // MUST match the webhook GET's reconstruction exactly:
+    // `${orderRef}${email}${tier}${callbackAmount}`. Paygate omits value_coin
+    // for USD callbacks, so the webhook falls back to our `amount` param here.
+    const signaturePayload = `${orderRef}${email}${tier}${amount}`;
+    const signature = createHmac("sha256", webhookSecret)
+      .update(signaturePayload)
+      .digest("hex");
+    callbackUrl.searchParams.set("signature", signature);
 
     const walletUrl = new URL(PAYGATE_WALLET_ENDPOINT);
     walletUrl.searchParams.set("address", payoutAddress);
