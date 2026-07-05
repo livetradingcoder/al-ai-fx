@@ -67,6 +67,7 @@ model Robot {
   active           Boolean  @default(true) // catalog visibility flag
   artworkUrl       String? // nullable until artwork asset exists
   sortOrder        Int      @default(0) // catalog ordering
+  sourceVersion    Int      @default(1) // which sources/<slug>/v<N>.mq5.enc is current
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -82,6 +83,7 @@ model Compilation {
   subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   robotId        String
   robot          Robot         @relation(fields: [robotId], references: [id])
+  sourceVersion  Int           @default(1) // denormalized from robot at creation; immutable per job
   status         CompileStatus @default(PENDING)
   downloadUrl    String?
 

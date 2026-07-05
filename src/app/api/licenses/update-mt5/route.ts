@@ -30,7 +30,7 @@ export async function PUT(req: Request) {
 
     const subscription = await prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { user: true }
+      include: { user: true, robot: { select: { sourceVersion: true } } }
     });
 
     if (!subscription || subscription.userId !== session.user.id) {
@@ -51,6 +51,7 @@ export async function PUT(req: Request) {
       data: {
         subscriptionId: subscription.id,
         robotId: subscription.robotId,
+        sourceVersion: subscription.robot.sourceVersion,
         status: 'PENDING'
       }
     });
