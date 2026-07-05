@@ -32,6 +32,8 @@ model Subscription {
   id               String      @id @default(cuid())
   userId           String
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  robotId          String
+  robot            Robot       @relation(fields: [robotId], references: [id])
   tier             PricingTier
   status           SubStatus   @default(ACTIVE)
   mt5AccountNumber String? // The MT5 account locked to this EA
@@ -56,10 +58,30 @@ model Order {
   updatedAt   DateTime    @updatedAt
 }
 
+model Robot {
+  id               String   @id @default(cuid())
+  slug             String   @unique // "goldbot" — join key for Blob path (sources/<slug>/) + compiled filename
+  name             String // "GoldBot" — display name
+  shortDescription String // catalog card copy
+  longDescription  String   @db.Text // detail-page copy — Postgres text, avoids varchar cap
+  active           Boolean  @default(true) // catalog visibility flag
+  artworkUrl       String? // nullable until artwork asset exists
+  sortOrder        Int      @default(0) // catalog ordering
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions Subscription[]
+  compilations  Compilation[]
+
+  @@index([active, sortOrder]) // catalog list query: where active order by sortOrder
+}
+
 model Compilation {
   id             String        @id @default(cuid())
   subscriptionId String
   subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  robotId        String
+  robot          Robot         @relation(fields: [robotId], references: [id])
   status         CompileStatus @default(PENDING)
   downloadUrl    String?
 
