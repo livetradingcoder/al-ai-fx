@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 
 ## Current Position
 
-Phase: 3 of 7 (Multi-Robot Schema Foundation) — **IN PROGRESS (2/3 plans; 03-03 may be running in parallel)**
-Plan: 2 of 3 in current phase — done (03-02); 03-01 done
-Status: **Phase 3 in progress.** 03-02 (robotId FK wiring) complete: `provisionSubscription` resolves the `goldbot` Robot via `findUniqueOrThrow` (fail-closed) and writes `robotId` on every Subscription (duplicate-guard now robot-scoped); `update-mt5` denormalizes `robotId` onto each Compilation; poll response additively carries `robotSlug`; `compiler-filename.ts` default reconciled to lowercase `goldbot`. CTLG-04 now fully closed (schema half from 03-01 + code half here) — Success Criterion 2 holds at runtime. NOTE: 03-03 (encrypted source storage, different files) is Wave 2 and may still be running in parallel — Phase 3 completion is the orchestrator's call once both Wave 2 plans land.
-Last activity: 2026-07-05 — Completed 03-02: threaded `robotId` through all Subscription/Compilation write paths, additive `robotSlug` in poll response, reconciled filename slug. 3 feat commits (77d4a7f, 2e59c4a, 19c9508); tsc + eslint clean across all six touched files. No deploy/migration needed (columns already server-side from 03-01).
+Phase: 3 of 7 (Multi-Robot Schema Foundation) — **IN PROGRESS (3/3 plans landed; orchestrator to confirm phase close)**
+Plan: 3 of 3 in current phase — done (03-03); 03-01 + 03-02 done
+Status: **Phase 3 Wave 2 complete (both plans landed).** 03-02 (robotId FK wiring): `provisionSubscription` resolves the `goldbot` Robot via `findUniqueOrThrow` (fail-closed) and writes `robotId` on every Subscription; `update-mt5` denormalizes `robotId` onto each Compilation; poll response additively carries `robotSlug`; `compiler-filename.ts` default reconciled to lowercase `goldbot`. CTLG-04 fully closed. 03-03 (encrypted source storage): AES-256-GCM `source-encryption.ts` (+4 passing tests), versioned immutable `uploadEncryptedSource` → `sources/<slug>/v<N>.mq5.enc` (`allowOverwrite:false`), `SOURCE_ENCRYPTION_KEY` provisioned in all 3 Vercel scopes, real GoldBot source (`ALaiFX_EA.mq5`, 14002B) fetched from the VM + uploaded as `sources/goldbot/v1.mq5.enc` (14030B enc). SRCE-01 closed. NOTE: do NOT declare Phase 3 complete here — the orchestrator confirms phase close once it has reconciled both Wave 2 SUMMARYs.
+Last activity: 2026-07-05 — Completed 03-03: 3 task commits (66b0733 AES-256-GCM module + tests, 2246593 upload helper, 16fa61c one-time uploader + Rule-3 private-access fix). tsc + eslint clean; 4/4 crypto tests green. Ran in parallel with 03-02 (commit 6c5a116, no file overlap).
 
-Progress: [████████░░░░░░░░░░░░░░░░░░] 35% (9/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 2/3 Phase 3)
+Progress: [██████████░░░░░░░░░░░░░░░░] 38% (10/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3)
 
 ## Performance Metrics
 
@@ -90,6 +90,11 @@ Recent decisions affecting current work:
 - 03-02: `Compilation.robotId` is denormalized from the parent subscription AT CREATION and treated immutable — the compile worker needs the slug directly and a compilation's robot must not change even if the subscription is later re-pointed. (Do not derive robot via join at read time.)
 - 03-02: `compiler-filename.ts` default slug reconciled from capital `GoldBot` → lowercase `goldbot` (matches DB `Robot.slug`). Compiled filename is now `AL-ai-FX_goldbot_<jobId>.ex5`; safe because the DB was wiped in 03-01 (no artifacts keyed on the old capitalized pathname). Supersedes the 01-02 note about `AL-ai-FX_GoldBot_...`.
 - 03-02: `/api/compiler/poll` response now additively carries `robotSlug` (joined Robot relation) for the Phase 4 worker; all pre-existing daemon fields (`id`, `mt5AccountNumber`, `expiresAt`, `attemptCount`) unchanged. Null-check extended to guard a missing robot relation. Daemon contract preserved (reads it only in Phase 4).
+- 03-03: MQL5 source-at-rest is AES-256-GCM (Node built-in `crypto`, zero new deps) keyed by a single env var `SOURCE_ENCRYPTION_KEY` (no KMS). `src/lib/source-encryption.ts` owns both directions + the `[12-byte IV][16-byte authTag][ciphertext]` blob layout; `getKey()` validates 32 bytes and FAILS CLOSED (throws) on missing/wrong-length. Never hand-roll CBC+HMAC.
+- 03-03: Encrypted sources live in Vercel Blob at versioned immutable paths `sources/<slug>/v<N>.mq5.enc` via `uploadEncryptedSource` (`src/lib/source-storage.ts`) with `allowOverwrite:false` — a new version = a new `vN` file; `put` rejects on collision. `sourceBlobPathname()` is the path SSoT. Never in the repo, never in Postgres (no source bytes/URLs stored).
+- 03-03: Blob store is PRIVATE-access (deviation from plan's `access:'public'`, which the store now rejects). `access:'private'` + AES ciphertext = defence-in-depth. Consequence for Phase 4/SRCE-02: the daemon read-path needs an authenticated/signed retrieval (bare anonymous `fetch` of the download URL returns "Access denied") — that signed-URL read-path is exactly SRCE-02's scope, still deferred.
+- 03-03: `SOURCE_ENCRYPTION_KEY` generated via `openssl rand -hex 32`, same canonical value added to all 3 Vercel scopes via `echo "$KEY" | vercel env add SOURCE_ENCRYPTION_KEY <scope>` (piped stdin — automated, not a checkpoint; same pattern as `PAYGATE_WEBHOOK_SECRET` 02-02). Also written to gitignored `.env.local` for the local upload script.
+- 03-03: Real GoldBot source (`ALaiFX_EA.mq5`, 14002 bytes) fetched live from the VM (`ssh alfx "Get-Content ...base_ea_source.mq5 -Raw"`) and uploaded as `sources/goldbot/v1.mq5.enc` (14030B enc) — the first live encrypted artifact, NOT a placeholder. `scripts/upload-goldbot-source.js` is the reusable one-time uploader (inlines the CJS crypto matching the TS module's layout). Worker source-fetch rewiring stays deferred to Phase 4/SRCE-02 (daemon still reads its local `base_ea_source.mq5` on the VM).
 
 ### Pending Todos
 
