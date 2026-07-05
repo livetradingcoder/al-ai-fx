@@ -3,6 +3,10 @@
 // Versioned, immutable encrypted-source upload helper.
 // Mirrors the Phase 1 @vercel/blob put() convention (addRandomSuffix:false,
 // deterministic pathname), but sources are versioned + immutable so allowOverwrite:false.
+//
+// access:"private" because the Blob store is configured private-access (the store now
+// rejects public puts). Combined with AES-256-GCM ciphertext this is defence-in-depth:
+// authenticated retrieval AND encrypted bytes. Signed-URL read-path is Phase 4/SRCE-02.
 import { put } from "@vercel/blob";
 import { encryptSource } from "./source-encryption";
 
@@ -14,8 +18,8 @@ export function sourceBlobPathname(robotSlug: string, version: number): string {
 /**
  * Encrypt an MQL5 source buffer and upload it as an immutable, versioned Blob object.
  * Layout: sources/<robotSlug>/v<N>.mq5.enc  (AES-256-GCM ciphertext).
- * access:"public" is acceptable because the bytes are ciphertext — the encryption IS
- * the access control (matches 01-02 deferred-hardening posture; signed URLs are Phase 4).
+ * access:"private" — the store is private-access; the bytes are also ciphertext, so this
+ * is defence-in-depth. Signed-URL read-path hardening is deferred to Phase 4/SRCE-02.
  * allowOverwrite:false makes versions immutable — bump N to publish a new source.
  * Do NOT store source bytes or the returned Blob URL in Postgres.
  */
@@ -26,7 +30,7 @@ export async function uploadEncryptedSource(
 ) {
   const enc = encryptSource(mq5);
   return put(sourceBlobPathname(robotSlug, version), enc, {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     allowOverwrite: false,
     contentType: "application/octet-stream",
