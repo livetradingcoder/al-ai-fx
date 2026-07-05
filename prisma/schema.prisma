@@ -115,3 +115,22 @@ model WorkerHeartbeat {
   workerVersion String?
   updatedAt     DateTime @updatedAt
 }
+
+/// One row per authenticated Paygate GET callback delivery.
+///
+/// The `signature` field is the natural per-delivery nonce: it embeds
+/// PAYGATE_WEBHOOK_SECRET via HMAC-SHA256 over ${orderRef}${email}${tier}${amount},
+/// so it is deterministic per legitimate order but unforgeable without the secret.
+/// A `P2002` on insert = this delivery is a replay of a signature we've already
+/// processed → webhook GET returns 200 duplicated:true without provisioning.
+///
+/// Closes SECR-02 (replay rejection) and SECR-03 (idempotency).
+model WebhookDelivery {
+  id         String   @id @default(cuid())
+  signature  String   @unique
+  orderRef   String
+  receivedAt DateTime @default(now())
+
+  @@index([orderRef])
+  @@index([receivedAt]) // supports future cleanup cron (deferred — see 2-RESEARCH.md Open Q 3)
+}
