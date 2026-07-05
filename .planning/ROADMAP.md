@@ -70,7 +70,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-robot-model-migration-seed-PLAN.md — `Robot` model + NON-NULL `robotId` FKs (full schema) → offline `0_init` migration → reset remote DB + `migrate deploy` + GoldBot seed via Vercel build-step channel [Wave 1]
+- [x] 03-01-robot-model-migration-seed-PLAN.md — `Robot` model + NON-NULL `robotId` FKs (full schema) → offline `0_init` migration → reset remote DB + `migrate deploy` + GoldBot seed via Vercel build-step channel [Wave 1] ✅ 2026-07-05
 - [ ] 03-02-robotid-fk-wiring-PLAN.md — Thread `robotId` through `provisionSubscription` + `update-mt5` (Compilation) + additive poll-response slug; reconcile `compiler-filename.ts` to lowercase `goldbot` [Wave 2]
 - [ ] 03-03-encrypted-source-storage-PLAN.md — AES-256-GCM `source-encryption.ts` + versioned Blob `uploadEncryptedSource` (`sources/<slug>/v<N>.mq5.enc`) + provision `SOURCE_ENCRYPTION_KEY` + upload real GoldBot v1 from VM [Wave 2, parallel with 03-02]
 
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 |-------|----------------|--------|-----------|
 | 1. Restore Compile Delivery | 4/4 | Complete | 2026-07-04 |
 | 2. Payment + Pricing Launch Blockers | 3/3 | Complete | 2026-07-05 |
-| 3. Multi-Robot Schema Foundation | 0/3 | Not started | - |
+| 3. Multi-Robot Schema Foundation | 1/3 | In progress | - |
 | 4. Robot-Aware Compile Pipeline | 0/4 | Not started | - |
 | 5. Admin Catalog + Delivery Loop | 0/4 | Not started | - |
 | 6. Public Catalog, Per-Robot Pricing, Free Trials | 0/4 | Not started | - |
