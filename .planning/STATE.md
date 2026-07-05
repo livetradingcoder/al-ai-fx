@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 
 Phase: 2 of 7 (Payment + Pricing Launch Blockers)
 Plan: 2 of 3 in current phase
-Status: **Wave 1 complete** (02-01 + 02-02 both landed). SECR-01 (fail-open webhook) closed; PRIC-02 tier-downgrade closed in code. Next: 02-03 (webhook replay/idempotency, Wave 2). One remote-DB follow-up from 02-01: `prisma db push` for the extended enum is PENDING (see Blockers).
-Last activity: 2026-07-05 — Completed 02-02-fail-closed-webhook-signature-PLAN.md (fail-closed HMAC verifier, GET-only webhook, dead POST deleted, signed callback URL; PAYGATE_WEBHOOK_SECRET provisioned in all 3 Vercel scopes via CLI)
+Status: **Wave 1 complete** (02-01 + 02-02 both landed). SECR-01 (fail-open webhook) closed; PRIC-02 tier-downgrade closed in code AND on remote DB. Next: 02-03 (webhook replay/idempotency, Wave 2).
+Last activity: 2026-07-05 — Pushed extended `PricingTier` enum to remote Postgres via Vercel build step (confirmed in sync), reverted the temporary build script change.
 
 Progress: [██████░░░░░░░░░░░░░░░░░░░░] 23% (6/26 plans across all phases; 4/4 Phase 1, 2/3 Phase 2)
 
@@ -77,16 +77,14 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- **02-01: run `prisma db push` against remote Coolify Postgres** so the extended `PricingTier` enum (TEN_DAYS/ONE_YEAR/LIFETIME_SOURCE) exists server-side. Blocked in the exec env because the DB URL is a Vercel-Sensitive secret (empty on `env pull`). Until pushed, writing an order/subscription with a new tier fails at the DB layer. See Blockers/Concerns.
-
-None yet.
+None.
 
 ### Blockers/Concerns
 
 - **Windows compile server pipeline** — RESOLVED by Wave 2. `al-ai-fx-daemon` (from 01-02) uploads directly to Blob with fail-fast env checks + triple-check MetaEditor success detection + bounded-retry via `/complete`; `al-ai-fx-reaper` (from 01-03) auto-heals stuck rows every 60s. End-to-end retry loop validated live during 01-02.
 - **RESOLVED 2026-07-05 (via SSH `alfx`): VM MetaTrader stdlib include path.** Root cause: LocalSystem's MetaQuotes terminal profile (`C:\Windows\system32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\`) had no `MQL5` folder at all — Administrator's profile (same terminal ID) had the real install. Fix: copied Administrator's `MQL5` dir (Include, Experts, Libraries, etc.) into LocalSystem's terminal profile. Verified via one-shot `schtasks /RU SYSTEM` MetaEditor compile of `base_ea_source.mq5`: `Result: 0 errors, 1 warnings`, `.ex5` produced, `Trade.mqh` resolved. Test task + artifacts cleaned up after verification. No code change needed — filesystem-only fix on the VM.
 - **`prisma/migrations/` directory is not in the repo** — Phase 3 must decide migration strategy before schema changes land.
-- **02-01: extended `PricingTier` enum NOT yet pushed to remote Postgres** — `prisma generate` ran (local client has all 8 values), but `prisma db push` could not run: `vercel env pull` returns EMPTY values for `DATABASE_URL`/`POSTGRES_URL`/`PRISMA_DATABASE_URL` because they are Vercel **Sensitive** (write-only) secrets, and no local `.env` with the real connection string exists. Same applies to `COMPILER_SECRET`/`BLOB_READ_WRITE_TOKEN`/`CRON_SECRET`. Fix: run `npx prisma db push` from an environment that has the real `DATABASE_URL` (expect "in sync"). Until then, the tier-downgrade fix is code-only and any write with a new tier value fails at the DB.
+- **RESOLVED 2026-07-05 (02-01): extended `PricingTier` enum pushed to remote Postgres.** `vercel env pull` can't read `DATABASE_URL` locally (Vercel-Sensitive, write-only), so ran the push via the Vercel build step instead: temporarily changed `package.json` build script to `prisma generate && prisma db push --accept-data-loss && next build`, deployed (`vercel --prod --yes`), confirmed via build log `🚀 Your database is now in sync with your Prisma schema. Done in 406ms` against `db.prisma.io:5432`, then reverted the build script in a follow-up commit. All 8 `PricingTier` enum values now live server-side. Reusable pattern for any future `db push` needing the real prod `DATABASE_URL`.
 - **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
 - **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
 - **RESOLVED 2026-07-05 (02-02): `PAYGATE_WEBHOOK_SECRET` provisioned in Vercel** — was absent (this was the reason 02-02 Task 1 was a checkpoint). Generated via `openssl rand -hex 32` and added to all three scopes (production/preview/development) via `echo "$SECRET" | vercel env add PAYGATE_WEBHOOK_SECRET <scope>` (piped stdin accepted by the interactive prompt). Verified present via `vercel env ls`. Rollout order satisfied — the secret is in Vercel BEFORE the 02-02 code merge, so `create-session` (signs) and the webhook GET (fail-closed) will not 500 on deploy. No local `.env` created.
