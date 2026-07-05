@@ -27,6 +27,24 @@ export async function findOrCreateUser(email: string) {
   return { user, emailSuccess };
 }
 
+// Default catalog robot for all subscriptions provisioned before per-robot
+// checkout selection lands (Plan 03-02). Today GoldBot is the only Robot row
+// (seeded in 03-01), so every purchase is a GoldBot license.
+const DEFAULT_ROBOT_SLUG = "goldbot";
+
+async function resolveDefaultRobotId() {
+  const robot = await prisma.robot.findUnique({
+    where: { slug: DEFAULT_ROBOT_SLUG },
+    select: { id: true },
+  });
+  if (!robot) {
+    throw new Error(
+      `[Subscription Service] Default robot '${DEFAULT_ROBOT_SLUG}' not found — run scripts/seed-goldbot.js`,
+    );
+  }
+  return robot.id;
+}
+
 function formatTierLabel(tier: PricingTier) {
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -93,9 +111,11 @@ export async function provisionSubscription(
   }
 
   const expiresAt = computeExpirationDate(tier);
+  const robotId = await resolveDefaultRobotId();
   const subscription = await prisma.subscription.create({
     data: {
       userId: user.id,
+      robotId,
       tier,
       expiresAt: expiresAt,
       status: "ACTIVE",

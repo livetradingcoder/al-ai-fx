@@ -43,10 +43,13 @@ export async function PUT(req: Request) {
       data: { mt5AccountNumber: String(mt5AccountNumber) }
     });
 
-    // Create a new compilation job
+    // Create a new compilation job.
+    // Denormalize robotId from the subscription so the compile worker can
+    // derive the slug directly (Plan 03-01 schema; wiring refined in 03-02).
     const job = await prisma.compilation.create({
       data: {
         subscriptionId: subscription.id,
+        robotId: subscription.robotId,
         status: 'PENDING'
       }
     });
