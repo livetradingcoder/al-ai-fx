@@ -81,9 +81,12 @@ model Compilation {
 
 enum PricingTier {
   FREE_TRIAL
+  TEN_DAYS           // NEW — was silently downgraded to ONE_MONTH
   ONE_MONTH
   SIX_MONTHS
+  ONE_YEAR           // NEW — was silently downgraded to ONE_MONTH
   LIFETIME
+  LIFETIME_SOURCE    // NEW — was silently downgraded to ONE_MONTH
   SECRET_TEST_TIER
 }
 
