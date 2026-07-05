@@ -83,13 +83,12 @@ Plans:
   2. The Windows worker fetches source at job time via a short-lived signed URL from a new Next.js endpoint — source is never embedded in the poll response.
   3. `/api/compiler/complete` writes the compiled binary to a robot-scoped Blob path (using `Robot.slug` / filename template), and `/api/compiler/download` streams it back to the user under the same naming — no more `AL-ai-FX_GoldBot_...` vs `GoldBot_v2.0_...` mismatch.
   4. MQL5 source content is never returned to end users, never written to application logs in plaintext, and never rendered in any admin UI — verifiable by inspection of logs + response bodies.
-**Plans**: TBD (est. 4)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: Extend `/api/compiler/poll` response with `robotSlug`, `sourceVersion`, signed source URL (version the endpoint if the Windows worker parser is strict)
-- [ ] 04-02: Source signed-URL endpoint (`POST /api/compiler/source-url` or embedded in poll response) with short TTL + audit log
-- [ ] 04-03: Robot-scoped filename generator + `/api/compiler/complete` write path + `/api/compiler/download` consumer aligned via a single helper
-- [ ] 04-04: Source-secrecy audit (log scrubbing, admin UI never renders source, download-route negative test)
+- [ ] 04-01-PLAN.md — `sourceVersion` schema field + migration + `/api/compiler/source` authed decrypt-and-stream proxy endpoint + HMAC short-TTL token module
+- [ ] 04-02-PLAN.md — poll response extension (`sourceVersion` + signed `sourceUrl`) + robot-scoped filename consistency across `/complete` and `/download` (CTLG-07/08)
+- [ ] 04-03-PLAN.md — VM daemon rewire (fetch+compile per-job source, robot-scoped upload) + deploy/restart + live E2E smoke test + SRCE-03 source-secrecy audit
 
 ### Phase 5: Admin Catalog + Delivery Loop
 **Goal**: An admin can onboard a robot without a deploy, and a paying user gets notified through two independent channels (email + dashboard) whether the compile succeeds or fails.
