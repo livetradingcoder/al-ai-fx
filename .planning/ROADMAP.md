@@ -71,7 +71,7 @@ Plans:
 
 Plans:
 - [x] 03-01-robot-model-migration-seed-PLAN.md — `Robot` model + NON-NULL `robotId` FKs (full schema) → offline `0_init` migration → reset remote DB + `migrate deploy` + GoldBot seed via Vercel build-step channel [Wave 1] ✅ 2026-07-05
-- [ ] 03-02-robotid-fk-wiring-PLAN.md — Thread `robotId` through `provisionSubscription` + `update-mt5` (Compilation) + additive poll-response slug; reconcile `compiler-filename.ts` to lowercase `goldbot` [Wave 2]
+- [x] 03-02-robotid-fk-wiring-PLAN.md — Thread `robotId` through `provisionSubscription` + `update-mt5` (Compilation) + additive poll-response slug; reconcile `compiler-filename.ts` to lowercase `goldbot` [Wave 2] ✅ 2026-07-05
 - [ ] 03-03-encrypted-source-storage-PLAN.md — AES-256-GCM `source-encryption.ts` + versioned Blob `uploadEncryptedSource` (`sources/<slug>/v<N>.mq5.enc`) + provision `SOURCE_ENCRYPTION_KEY` + upload real GoldBot v1 from VM [Wave 2, parallel with 03-02]
 
 ### Phase 4: Robot-Aware Compile Pipeline
