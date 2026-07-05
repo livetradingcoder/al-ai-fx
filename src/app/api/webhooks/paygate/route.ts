@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-// prisma import retained for Plan 02-03 (WebhookDelivery.create replay/idempotency).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { provisionSubscription } from "@/lib/subscriptions";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { verifyPaygateSignature } from "@/lib/webhook-signature";
@@ -66,9 +65,35 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing tier parameter." }, { status: 400 });
     }
 
-    // NOTE: Replay + idempotency (WebhookDelivery.signature @unique + P2002
-    // short-circuit) lands in Plan 02-03 — inserted here between verify and
-    // provisionSubscription.
+    // Replay + idempotency: signature is a natural per-delivery nonce (embeds
+    // PAYGATE_WEBHOOK_SECRET). Try to record the delivery; on P2002 (unique
+    // constraint violation), this is a replay — return 200 duplicated:true
+    // WITHOUT calling provisionSubscription. Race-safe across concurrent
+    // Paygate retries because Postgres handles the unique-index check atomically.
+    try {
+      await prisma.webhookDelivery.create({
+        data: {
+          signature: signature!,
+          orderRef,
+        },
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        console.log(
+          "[paygate] duplicate delivery — orderRef=%s (P2002 short-circuit)",
+          orderRef,
+        );
+        return NextResponse.json(
+          { success: true, duplicated: true, source: "paygate-get-callback" },
+          { status: 200 },
+        );
+      }
+      throw err;
+    }
+
     let result;
     try {
       result = await provisionSubscription(email, tier, orderRef, amount, currency);
