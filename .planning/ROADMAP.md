@@ -67,12 +67,12 @@ Plans:
   2. `Subscription.robotId` and `Compilation.robotId` are non-null foreign keys — every new subscription and compile job is scoped to exactly one robot.
   3. The existing GoldBot data path is either migrated to a real `Robot` row or the test data is wiped and a seed script recreates GoldBot cleanly as the first catalog entry (per project decision — no test-user preservation).
   4. MQL5 source files live encrypted in Vercel Blob at `sources/<robotSlug>/v<N>.mq5.enc` — versioned, not stored in the repo, not in Postgres.
-**Plans**: TBD (est. 3)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: `Robot` model + Prisma migration + seed script (checked-in migration; GoldBot seed row)
-- [ ] 03-02: Wire `robotId` into `Subscription` + `Compilation` (schema + `provisionSubscription` + `update-mt5`)
-- [ ] 03-03: Encrypted source-storage layer in Blob (upload helper, versioning convention, key management)
+- [ ] 03-01-robot-model-migration-seed-PLAN.md — `Robot` model + NON-NULL `robotId` FKs (full schema) → offline `0_init` migration → reset remote DB + `migrate deploy` + GoldBot seed via Vercel build-step channel [Wave 1]
+- [ ] 03-02-robotid-fk-wiring-PLAN.md — Thread `robotId` through `provisionSubscription` + `update-mt5` (Compilation) + additive poll-response slug; reconcile `compiler-filename.ts` to lowercase `goldbot` [Wave 2]
+- [ ] 03-03-encrypted-source-storage-PLAN.md — AES-256-GCM `source-encryption.ts` + versioned Blob `uploadEncryptedSource` (`sources/<slug>/v<N>.mq5.enc`) + provision `SOURCE_ENCRYPTION_KEY` + upload real GoldBot v1 from VM [Wave 2, parallel with 03-02]
 
 ### Phase 4: Robot-Aware Compile Pipeline
 **Goal**: The Windows worker knows which robot to compile, fetches the right source, and the download route returns a robot-scoped filename that matches what was written.
