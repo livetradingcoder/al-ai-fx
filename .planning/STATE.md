@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-07-04)
 
 **Core value:** A paying user receives their chosen, compiled, MT5-account-locked robot within minutes of checkout — automatically, every time.
-**Current focus:** Phase 1 — Restore Compile Delivery
+**Current focus:** Phase 2 — Payment + Pricing Launch Blockers
 
 ## Current Position
 
-Phase: 1 of 7 (Restore Compile Delivery)
-Plan: 4 of 4 in current phase
-Status: **Phase 1 complete** (all four plans landed; two non-blocking follow-ups noted in Blockers/Concerns)
-Last activity: 2026-07-04 — Completed 01-04-admin-visibility-client-cap-PLAN.md
+Phase: 2 of 7 (Payment + Pricing Launch Blockers)
+Plan: 1 of 3 in current phase
+Status: **Plan 02-01 code complete** (PRIC-02 tier-downgrade bug closed in code). Wave 1 in progress — 02-02 (webhook signature) running in parallel. One remote-DB follow-up: `prisma db push` for the extended enum is PENDING (see Blockers).
+Last activity: 2026-07-05 — Completed 02-01-pricing-tier-alignment-PLAN.md (code + local Prisma client; remote enum push blocked on Vercel-Sensitive DB URL)
 
-Progress: [████░░░░░░░░░░░░░░░░░░░░░░] 15% (4/26 plans across all phases; 4/4 in Phase 1)
+Progress: [█████░░░░░░░░░░░░░░░░░░░░░] 19% (5/26 plans across all phases; 4/4 Phase 1, 1/3 Phase 2)
 
 ## Performance Metrics
 
@@ -65,23 +65,29 @@ Recent decisions affecting current work:
 - 01-04: `sendAdminCompilerAlertEmail` is silent-no-op on missing `MAILTRAP_TOKEN`/`SMTP_PASS` or missing `ADMIN_ALERT_EMAIL`/`SMTP_FROM_EMAIL` — never throws; alert path must never fail the request.
 - 01-04: `TIMED_OUT` is a client-only React state (LicenseManager), NOT a Prisma `CompileStatus` enum value — avoids schema migration for pure UX transition. Server still emits PENDING/PROCESSING/COMPLETED/FAILED only.
 - 01-04: Admin JSON endpoint gate uses `session?.user?.role !== 'ADMIN'` → 403 (distinct from page-level `redirect('/dashboard')`). Anonymous callers also get 403.
+- 02-01: `PricingTier` enum extended 5 → 8 (`TEN_DAYS`, `ONE_YEAR`, `LIFETIME_SOURCE`); additive-only, `LIFETIME`/`SECRET_TEST_TIER` untouched.
+- 02-01: `src/lib/pricing-tiers.ts` is the single source of truth — `TIER_METADATA: Record<TierId, TierMetadata>` compile-time-aligns `src/config/pricing.ts` slugs with the DB enum. All callers import `mapTier`/`computeExpirationDate`/`UnknownTierError` from here (re-exported by `subscriptions.ts` for now).
+- 02-01: `mapTier` is a TOTAL function — throws `UnknownTierError` on unknown/aliased input (canonical-slug-only; old aliases `monthly`/`one_month`/`biannual`/`free_trial`/`secret_test` now throw). Every caller MUST translate to HTTP 400; never fall back to a default.
+- 02-01: `computeExpirationDate` exhaustiveness enforced at COMPILE time via `assertNever(x: never)` — a future enum value without a case fails `tsc --noEmit`. Chosen over runtime coverage checks.
 
 ### Pending Todos
+
+- **02-01: run `prisma db push` against remote Coolify Postgres** so the extended `PricingTier` enum (TEN_DAYS/ONE_YEAR/LIFETIME_SOURCE) exists server-side. Blocked in the exec env because the DB URL is a Vercel-Sensitive secret (empty on `env pull`). Until pushed, writing an order/subscription with a new tier fails at the DB layer. See Blockers/Concerns.
 
 None yet.
 
 ### Blockers/Concerns
 
 - **Windows compile server pipeline** — RESOLVED by Wave 2. `al-ai-fx-daemon` (from 01-02) uploads directly to Blob with fail-fast env checks + triple-check MetaEditor success detection + bounded-retry via `/complete`; `al-ai-fx-reaper` (from 01-03) auto-heals stuck rows every 60s. End-to-end retry loop validated live during 01-02.
-- **NEW BLOCKER (surfaced by 01-02 end-to-end test): VM MetaTrader stdlib include path is broken.** MetaEditor reports `error 106: file 'C:\Windows\system32\config\systemprofile\...\MQL5\Include\Trade\Trade.mqh' not found` when running as LocalSystem. Pipeline correctly handles the failure (triple-check catches it, bounded-retry burns to FAILED with errorMessage populated), but no real user will get a working .ex5 until this is fixed. **This is now the single remaining blocker between "pipeline works" and "user receives a real .ex5".** Fix options: (a) reinstall MetaTrader under LocalSystem, (b) copy `MQL5\Include\` dir into LocalSystem's `%APPDATA%\MetaQuotes\Terminal\<terminal-id>\`, (c) reconfigure NSSM to run as Administrator instead of LocalSystem.
+- **RESOLVED 2026-07-05 (via SSH `alfx`): VM MetaTrader stdlib include path.** Root cause: LocalSystem's MetaQuotes terminal profile (`C:\Windows\system32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\`) had no `MQL5` folder at all — Administrator's profile (same terminal ID) had the real install. Fix: copied Administrator's `MQL5` dir (Include, Experts, Libraries, etc.) into LocalSystem's terminal profile. Verified via one-shot `schtasks /RU SYSTEM` MetaEditor compile of `base_ea_source.mq5`: `Result: 0 errors, 1 warnings`, `.ex5` produced, `Trade.mqh` resolved. Test task + artifacts cleaned up after verification. No code change needed — filesystem-only fix on the VM.
 - **`prisma/migrations/` directory is not in the repo** — Phase 3 must decide migration strategy before schema changes land.
+- **02-01: extended `PricingTier` enum NOT yet pushed to remote Postgres** — `prisma generate` ran (local client has all 8 values), but `prisma db push` could not run: `vercel env pull` returns EMPTY values for `DATABASE_URL`/`POSTGRES_URL`/`PRISMA_DATABASE_URL` because they are Vercel **Sensitive** (write-only) secrets, and no local `.env` with the real connection string exists. Same applies to `COMPILER_SECRET`/`BLOB_READ_WRITE_TOKEN`/`CRON_SECRET`. Fix: run `npx prisma db push` from an environment that has the real `DATABASE_URL` (expect "in sync"). Until then, the tier-downgrade fix is code-only and any write with a new tier value fails at the DB.
 - **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
 - **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
 - **`MAILTRAP_TOKEN` + `ADMIN_ALERT_EMAIL` not set in Vercel (surfaced by 01-04)** — verified via `vercel env ls`. Admin alert emails (retry-exhausted FAILED + stale-heartbeat) log a warning and no-op until the token lands. Non-blocking for Phase 1 completion; provisioning tracked as orchestrator Task #13. Add via `vercel env add MAILTRAP_TOKEN production` (paste API token from Mailtrap dashboard) + `vercel env add ADMIN_ALERT_EMAIL production`, then redeploy. No code change needed.
 
 ## Session Continuity
 
-Last session: 2026-07-04
-Stopped at: Completed 01-04-admin-visibility-client-cap-PLAN.md. **Phase 1 complete (4/4 plans).** Two non-blocking follow-ups tracked in Blockers/Concerns: (a) provision `MAILTRAP_TOKEN` + `ADMIN_ALERT_EMAIL` in Vercel; (b) fix VM MetaTrader stdlib include path so real .ex5 delivery works end-to-end.
-Resume file: Phase 2 kick-off — `.planning/phases/02-payment-pricing/` (not yet created; will need `/gsd:plan-phase 2`).
-Resume file: `.planning/phases/01-restore-compile-delivery/01-04-admin-visibility-client-cap-PLAN.md`
+Last session: 2026-07-05
+Stopped at: Completed 02-01-pricing-tier-alignment-PLAN.md (code + tests + local Prisma client; 3 atomic commits 956bf1f/255010f/c2ce679). PRIC-02 silent tier-downgrade closed in code. **Blocked follow-up:** `prisma db push` for the extended enum must run from an env with the real `DATABASE_URL` (Vercel-Sensitive; empty on `env pull` here). Plan 02-02 (webhook signature) is in progress in parallel — its uncommitted working-tree changes in `create-session/route.ts` + `webhooks/paygate/route.ts` were intentionally left untouched (commit a457ce3 is 02-02's).
+Resume file: `.planning/phases/02-payment-pricing-launch-blockers/02-02-fail-closed-webhook-signature-PLAN.md` (continue Wave 1), then 02-03. Also: run the pending `prisma db push` for 02-01.
