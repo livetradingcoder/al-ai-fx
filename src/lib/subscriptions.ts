@@ -27,23 +27,9 @@ export async function findOrCreateUser(email: string) {
   return { user, emailSuccess };
 }
 
-// Default catalog robot for all subscriptions provisioned before per-robot
-// checkout selection lands (Plan 03-02). Today GoldBot is the only Robot row
-// (seeded in 03-01), so every purchase is a GoldBot license.
-const DEFAULT_ROBOT_SLUG = "goldbot";
-
-async function resolveDefaultRobotId() {
-  const robot = await prisma.robot.findUnique({
-    where: { slug: DEFAULT_ROBOT_SLUG },
-    select: { id: true },
-  });
-  if (!robot) {
-    throw new Error(
-      `[Subscription Service] Default robot '${DEFAULT_ROBOT_SLUG}' not found — run scripts/seed-goldbot.js`,
-    );
-  }
-  return robot.id;
-}
+// Phase 3: single-robot. Every subscription/compilation is scoped to GoldBot.
+// Multi-robot selection (slug passed from checkout/catalog) is Phase 4+/6 work.
+const GOLDBOT_SLUG = "goldbot";
 
 function formatTierLabel(tier: PricingTier) {
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
@@ -91,10 +77,19 @@ export async function provisionSubscription(
     }
   }
 
-  // Check if an active subscription of the same tier already exists
+  // Resolve the single GoldBot Robot row (seeded in 03-01). Fail-closed:
+  // if the seed is missing, findUniqueOrThrow throws P2025 and the whole flow
+  // aborts with a 500 rather than creating a dangling subscription.
+  const robot = await prisma.robot.findUniqueOrThrow({
+    where: { slug: GOLDBOT_SLUG },
+  });
+
+  // Check if an active subscription of the same tier already exists.
+  // Scoped per (user, robot, tier) — an active subscription is unique per robot.
   const existingSub = await prisma.subscription.findFirst({
     where: {
       userId: user.id,
+      robotId: robot.id,
       tier,
       status: "ACTIVE",
     },
@@ -111,11 +106,10 @@ export async function provisionSubscription(
   }
 
   const expiresAt = computeExpirationDate(tier);
-  const robotId = await resolveDefaultRobotId();
   const subscription = await prisma.subscription.create({
     data: {
       userId: user.id,
-      robotId,
+      robotId: robot.id,
       tier,
       expiresAt: expiresAt,
       status: "ACTIVE",
