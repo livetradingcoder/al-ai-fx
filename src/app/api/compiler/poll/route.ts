@@ -32,6 +32,7 @@ export async function GET(req: Request) {
   let claimed:
     | (ClaimedJob & {
         subscription: { mt5AccountNumber: string | null; expiresAt: Date | null };
+        robot: { slug: string };
       })
     | null = null;
   try {
@@ -60,14 +61,16 @@ export async function GET(req: Request) {
         where: { id: jobId },
         include: {
           subscription: { select: { mt5AccountNumber: true, expiresAt: true } },
+          robot: { select: { slug: true } },
         },
       });
-      if (!job || !job.subscription) return null;
+      if (!job || !job.subscription || !job.robot) return null;
       return {
         id: job.id,
         subscriptionId: job.subscriptionId,
         attemptCount: job.attemptCount,
         subscription: job.subscription,
+        robot: job.robot,
       };
     });
   } catch (err) {
@@ -81,13 +84,15 @@ export async function GET(req: Request) {
 
   // 3. Response shape — ADDITIVE ONLY. Existing worker (daemon.js) reads
   //    job.id, job.mt5AccountNumber, job.expiresAt. attemptCount is new;
-  //    daemon.js reads it as `job.attemptCount ?? 0`.
+  //    daemon.js reads it as `job.attemptCount ?? 0`. robotSlug is additive
+  //    for Phase 4 (worker source-fetch + filename); daemon ignores it today.
   return NextResponse.json({
     job: {
       id: claimed.id,
       mt5AccountNumber: claimed.subscription.mt5AccountNumber,
       expiresAt: claimed.subscription.expiresAt,
       attemptCount: claimed.attemptCount,
+      robotSlug: claimed.robot.slug,
     },
   });
 }
