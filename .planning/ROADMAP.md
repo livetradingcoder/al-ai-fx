@@ -55,7 +55,7 @@ Note: CMPL-05 (Prisma singleton in compiler routes) was closed pre-planning by c
 
 Plans:
 - [x] 02-01-pricing-tier-alignment-PLAN.md — Extend `PricingTier` enum (TEN_DAYS/ONE_YEAR/LIFETIME_SOURCE), new `src/lib/pricing-tiers.ts` as SSoT (`TIER_METADATA` + `mapTier` throws `UnknownTierError` + `computeExpirationDate` exhaustive switch), delete legacy inline from `subscriptions.ts`, wire through free-trial route [Wave 1] — code done; remote `prisma db push` PENDING (DB URL is a Vercel-Sensitive secret, unreachable in exec env)
-- [ ] 02-02-fail-closed-webhook-signature-PLAN.md — New `src/lib/webhook-signature.ts` (fail-closed HMAC + two-key dev bypass), rewrite webhook GET, DELETE dead POST handler, embed signature in `create-session` callback URL, preflight `vercel env add PAYGATE_WEBHOOK_SECRET` [Wave 1, parallel with 02-01]
+- [x] 02-02-fail-closed-webhook-signature-PLAN.md — New `src/lib/webhook-signature.ts` (fail-closed HMAC + two-key dev bypass), rewrite webhook GET, DELETE dead POST handler, embed signature in `create-session` callback URL, preflight `vercel env add PAYGATE_WEBHOOK_SECRET` [Wave 1, parallel with 02-01] ✓ 2026-07-05 — SECR-01 closed; `PAYGATE_WEBHOOK_SECRET` provisioned in all 3 Vercel scopes
 - [ ] 02-03-webhook-replay-idempotency-PLAN.md — Add `WebhookDelivery` model to schema, `prisma db push`, insert `prisma.webhookDelivery.create` + P2002 short-circuit into webhook GET, pattern unit tests [Wave 2]
 
 ### Phase 3: Multi-Robot Schema Foundation

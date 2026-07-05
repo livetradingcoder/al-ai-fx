@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 ## Current Position
 
 Phase: 2 of 7 (Payment + Pricing Launch Blockers)
-Plan: 1 of 3 in current phase
-Status: **Plan 02-01 code complete** (PRIC-02 tier-downgrade bug closed in code). Wave 1 in progress — 02-02 (webhook signature) running in parallel. One remote-DB follow-up: `prisma db push` for the extended enum is PENDING (see Blockers).
-Last activity: 2026-07-05 — Completed 02-01-pricing-tier-alignment-PLAN.md (code + local Prisma client; remote enum push blocked on Vercel-Sensitive DB URL)
+Plan: 2 of 3 in current phase
+Status: **Wave 1 complete** (02-01 + 02-02 both landed). SECR-01 (fail-open webhook) closed; PRIC-02 tier-downgrade closed in code. Next: 02-03 (webhook replay/idempotency, Wave 2). One remote-DB follow-up from 02-01: `prisma db push` for the extended enum is PENDING (see Blockers).
+Last activity: 2026-07-05 — Completed 02-02-fail-closed-webhook-signature-PLAN.md (fail-closed HMAC verifier, GET-only webhook, dead POST deleted, signed callback URL; PAYGATE_WEBHOOK_SECRET provisioned in all 3 Vercel scopes via CLI)
 
-Progress: [█████░░░░░░░░░░░░░░░░░░░░░] 19% (5/26 plans across all phases; 4/4 Phase 1, 1/3 Phase 2)
+Progress: [██████░░░░░░░░░░░░░░░░░░░░] 23% (6/26 plans across all phases; 4/4 Phase 1, 2/3 Phase 2)
 
 ## Performance Metrics
 
@@ -69,6 +69,11 @@ Recent decisions affecting current work:
 - 02-01: `src/lib/pricing-tiers.ts` is the single source of truth — `TIER_METADATA: Record<TierId, TierMetadata>` compile-time-aligns `src/config/pricing.ts` slugs with the DB enum. All callers import `mapTier`/`computeExpirationDate`/`UnknownTierError` from here (re-exported by `subscriptions.ts` for now).
 - 02-01: `mapTier` is a TOTAL function — throws `UnknownTierError` on unknown/aliased input (canonical-slug-only; old aliases `monthly`/`one_month`/`biannual`/`free_trial`/`secret_test` now throw). Every caller MUST translate to HTTP 400; never fall back to a default.
 - 02-01: `computeExpirationDate` exhaustiveness enforced at COMPILE time via `assertNever(x: never)` — a future enum value without a case fails `tsc --noEmit`. Chosen over runtime coverage checks.
+- 02-02: `verifyPaygateSignature` (`src/lib/webhook-signature.ts`) is the single fail-closed HMAC entry point — routes never hand-roll signature comparison. Missing secret => refuse; constant-time `timingSafeEqual` guarded by a length pre-check.
+- 02-02: Dev bypass requires TWO keys (`NODE_ENV!=production` AND `PAYGATE_ALLOW_INSECURE_WEBHOOK=1`) — either alone fails closed. No fail-open-with-warning path exists anymore (SECR-01 closed).
+- 02-02: Paygate webhook is GET-only; the POST handler was DELETED (Paygate.to's WordPress + WHMCS plugin source confirms GET-only callbacks; POST was dead code + a Vercel 4.5MB body-limit hazard).
+- 02-02: `create-session` signs the registered callback URL with HMAC over `${orderRef}${email}${tier}${amount}` and fail-closes 500 (before the wallet API call) if `PAYGATE_WEBHOOK_SECRET` is missing. Payload order is load-bearing — must match the webhook GET's reconstruction exactly.
+- 02-02: Tier validity in `create-session` now checks `tier in TIER_METADATA` (Plan 02-01 SSoT), replacing the ad-hoc `hasOwnProperty(PRICING_TIERS)` check.
 
 ### Pending Todos
 
@@ -84,10 +89,11 @@ None yet.
 - **02-01: extended `PricingTier` enum NOT yet pushed to remote Postgres** — `prisma generate` ran (local client has all 8 values), but `prisma db push` could not run: `vercel env pull` returns EMPTY values for `DATABASE_URL`/`POSTGRES_URL`/`PRISMA_DATABASE_URL` because they are Vercel **Sensitive** (write-only) secrets, and no local `.env` with the real connection string exists. Same applies to `COMPILER_SECRET`/`BLOB_READ_WRITE_TOKEN`/`CRON_SECRET`. Fix: run `npx prisma db push` from an environment that has the real `DATABASE_URL` (expect "in sync"). Until then, the tier-downgrade fix is code-only and any write with a new tier value fails at the DB.
 - **External Windows worker parser strictness (Phase 4)** — Plan 01-03 confirmed the additive-only response contract works: `attemptCount` was added to `/poll` response with the daemon still parsing correctly (reads via `?? 0` fallback). Future extensions to `/poll` should stay strictly additive or version the endpoint.
 - **Vercel Hobby plan** — external NSSM reaper is the compensating pattern. If/when upgrading to Pro, add `vercel.json` crons entry and `nssm stop al-ai-fx-reaper` (no code change).
+- **RESOLVED 2026-07-05 (02-02): `PAYGATE_WEBHOOK_SECRET` provisioned in Vercel** — was absent (this was the reason 02-02 Task 1 was a checkpoint). Generated via `openssl rand -hex 32` and added to all three scopes (production/preview/development) via `echo "$SECRET" | vercel env add PAYGATE_WEBHOOK_SECRET <scope>` (piped stdin accepted by the interactive prompt). Verified present via `vercel env ls`. Rollout order satisfied — the secret is in Vercel BEFORE the 02-02 code merge, so `create-session` (signs) and the webhook GET (fail-closed) will not 500 on deploy. No local `.env` created.
 - **`MAILTRAP_TOKEN` + `ADMIN_ALERT_EMAIL` not set in Vercel (surfaced by 01-04)** — verified via `vercel env ls`. Admin alert emails (retry-exhausted FAILED + stale-heartbeat) log a warning and no-op until the token lands. Non-blocking for Phase 1 completion; provisioning tracked as orchestrator Task #13. Add via `vercel env add MAILTRAP_TOKEN production` (paste API token from Mailtrap dashboard) + `vercel env add ADMIN_ALERT_EMAIL production`, then redeploy. No code change needed.
 
 ## Session Continuity
 
 Last session: 2026-07-05
-Stopped at: Completed 02-01-pricing-tier-alignment-PLAN.md (code + tests + local Prisma client; 3 atomic commits 956bf1f/255010f/c2ce679). PRIC-02 silent tier-downgrade closed in code. **Blocked follow-up:** `prisma db push` for the extended enum must run from an env with the real `DATABASE_URL` (Vercel-Sensitive; empty on `env pull` here). Plan 02-02 (webhook signature) is in progress in parallel — its uncommitted working-tree changes in `create-session/route.ts` + `webhooks/paygate/route.ts` were intentionally left untouched (commit a457ce3 is 02-02's).
-Resume file: `.planning/phases/02-payment-pricing-launch-blockers/02-02-fail-closed-webhook-signature-PLAN.md` (continue Wave 1), then 02-03. Also: run the pending `prisma db push` for 02-01.
+Stopped at: Completed 02-02-fail-closed-webhook-signature-PLAN.md (SECR-01 closed). 3 atomic commits (a457ce3 verifier+tests, 23df5a3 fail-closed webhook GET + POST deleted, b44b31b signed callback URL + TIER_METADATA). `PAYGATE_WEBHOOK_SECRET` provisioned in all 3 Vercel scopes via CLI. 8/8 signature unit tests green; tsc + eslint clean. **Wave 1 of Phase 2 complete** (02-01 + 02-02). **Blocked follow-up carried from 02-01:** `prisma db push` for the extended `PricingTier` enum must run from an env with the real `DATABASE_URL` (Vercel-Sensitive; empty on `env pull` here).
+Resume file: `.planning/phases/02-payment-pricing-launch-blockers/02-03-webhook-replay-idempotency-PLAN.md` (Wave 2 — adds `WebhookDelivery` model + P2002 replay short-circuit into the webhook GET; the `prisma` import is already wired there). Also: run the pending `prisma db push` for 02-01.
