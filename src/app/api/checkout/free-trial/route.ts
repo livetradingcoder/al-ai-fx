@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { provisionSubscription } from "@/lib/subscriptions";
+import { UnknownTierError } from "@/lib/pricing-tiers";
 import { checkFreeTrialRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
 
@@ -28,11 +29,21 @@ export async function POST(req: Request) {
     const normalizedEmail = email.toLowerCase().trim();
     console.log(`[Free Trial] Processing trial for: ${normalizedEmail}`);
 
-    const result = await provisionSubscription(normalizedEmail, "free-trial");
+    let result;
+    try {
+      result = await provisionSubscription(normalizedEmail, "free-trial");
+    } catch (err) {
+      if (err instanceof UnknownTierError) {
+        // Defensive: should never fire for hardcoded "free-trial", but matches
+        // the webhook + create-session pattern (Plan 02-02) — no silent 500 on tier drift.
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
+    }
 
     if (!result.emailSuccess) {
       return NextResponse.json({
-        error: "Your account was created, but we failed to send the welcome email with your credentials. Please contact support@al-ai-fx.xyz immediately to get your password."
+        error: "Your account was created, but we failed to send the welcome sign-in link. Please contact support@al-ai-fx.xyz for a secure sign-in link."
       }, { status: 500 });
     }
 

@@ -2,47 +2,12 @@ import { PricingTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendPurchaseConfirmationEmail } from "@/lib/mail";
 import { buildMagicLinkUrl, createMagicLinkToken } from "@/lib/magic-links";
+import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
 
-export function mapTier(tierRaw: string): PricingTier {
-  switch (tierRaw.toLowerCase()) {
-    case "free-trial":
-    case "free_trial":
-      return PricingTier.FREE_TRIAL;
-    case "1-month":
-    case "one_month":
-    case "monthly":
-      return PricingTier.ONE_MONTH;
-    case "6-months":
-    case "six_months":
-    case "biannual":
-      return PricingTier.SIX_MONTHS;
-    case "lifetime":
-      return PricingTier.LIFETIME;
-    case "secret-test":
-    case "secret_test":
-      return PricingTier.SECRET_TEST_TIER;
-    default:
-      return PricingTier.ONE_MONTH;
-  }
-}
-
-export function computeExpirationDate(tier: PricingTier): Date {
-  const expiresAt = new Date();
-
-  if (tier === PricingTier.FREE_TRIAL) {
-    expiresAt.setDate(expiresAt.getDate() + 3);
-  } else if (tier === PricingTier.ONE_MONTH) {
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-  } else if (tier === PricingTier.SIX_MONTHS) {
-    expiresAt.setMonth(expiresAt.getMonth() + 6);
-  } else if (tier === PricingTier.SECRET_TEST_TIER) {
-    expiresAt.setDate(expiresAt.getDate() + 7);
-  } else {
-    expiresAt.setFullYear(expiresAt.getFullYear() + 100);
-  }
-
-  return expiresAt;
-}
+// Re-export so existing imports elsewhere (webhook route.ts, create-session, etc.)
+// don't need to change their import path in this plan. Plan 02-02 may migrate
+// callers to import directly from ./pricing-tiers.
+export { mapTier, computeExpirationDate, UnknownTierError };
 
 export async function findOrCreateUser(email: string) {
   let user = await prisma.user.findUnique({ where: { email } });
