@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-07-04)
 
 **Core value:** A paying user receives their chosen, compiled, MT5-account-locked robot within minutes of checkout — automatically, every time.
-**Current focus:** Phase 2 — Payment + Pricing Launch Blockers
+**Current focus:** Phase 3 — Multi-Robot Schema Foundation (Phase 2 complete)
 
 ## Current Position
 
-Phase: 2 of 7 (Payment + Pricing Launch Blockers)
-Plan: 2 of 3 in current phase
-Status: **Wave 1 complete** (02-01 + 02-02 both landed). SECR-01 (fail-open webhook) closed; PRIC-02 tier-downgrade closed in code AND on remote DB. Next: 02-03 (webhook replay/idempotency, Wave 2).
-Last activity: 2026-07-05 — Pushed extended `PricingTier` enum to remote Postgres via Vercel build step (confirmed in sync), reverted the temporary build script change.
+Phase: 2 of 7 (Payment + Pricing Launch Blockers) — **COMPLETE (3/3 plans)**
+Plan: 3 of 3 in current phase — done
+Status: **Phase 2 COMPLETE.** All four launch-blocker requirements closed: PRIC-02 (tier drift, 02-01), SECR-01 (fail-open webhook, 02-02), SECR-02 (replay rejection, 02-03), SECR-03 (webhook idempotency, 02-03). `WebhookDelivery` table live on remote Postgres. Next: Phase 3 — Multi-Robot Schema Foundation.
+Last activity: 2026-07-05 — Completed 02-03: added `WebhookDelivery` model (signature @unique), pushed to remote Postgres via Vercel build step (confirmed in sync, reverted), inserted P2002 replay short-circuit into webhook GET, 4/4 pattern unit tests green.
 
-Progress: [██████░░░░░░░░░░░░░░░░░░░░] 23% (6/26 plans across all phases; 4/4 Phase 1, 2/3 Phase 2)
+Progress: [███████░░░░░░░░░░░░░░░░░░░] 27% (7/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2)
 
 ## Performance Metrics
 
@@ -74,6 +74,9 @@ Recent decisions affecting current work:
 - 02-02: Paygate webhook is GET-only; the POST handler was DELETED (Paygate.to's WordPress + WHMCS plugin source confirms GET-only callbacks; POST was dead code + a Vercel 4.5MB body-limit hazard).
 - 02-02: `create-session` signs the registered callback URL with HMAC over `${orderRef}${email}${tier}${amount}` and fail-closes 500 (before the wallet API call) if `PAYGATE_WEBHOOK_SECRET` is missing. Payload order is load-bearing — must match the webhook GET's reconstruction exactly.
 - 02-02: Tier validity in `create-session` now checks `tier in TIER_METADATA` (Plan 02-01 SSoT), replacing the ad-hoc `hasOwnProperty(PRICING_TIERS)` check.
+- 02-03: Webhook idempotency uses `WebhookDelivery.signature @unique` + `create`-then-catch-`P2002` (never `findFirst`-then-create) — the Postgres UNIQUE INDEX is the entire mechanism and is race-safe across concurrent Paygate retries. Standard pattern for any future at-most-once webhook/delivery in this DB.
+- 02-03: Duplicate webhook deliveries return HTTP 200 `duplicated:true` (not 4xx) so retriers stop; only P2002 short-circuits, all other errors (non-P2002 Prisma, non-Prisma) propagate — never swallow real DB failures.
+- 02-03: `WebhookDelivery.orderRef` is NOT unique (a retried create-session yields a new signature for the same orderRef) and has no `orderId` FK (a replay has no legitimate Order); `receivedAt` indexed for a future cleanup cron (deferred).
 
 ### Pending Todos
 
@@ -93,5 +96,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-07-05
-Stopped at: Completed 02-02-fail-closed-webhook-signature-PLAN.md (SECR-01 closed). 3 atomic commits (a457ce3 verifier+tests, 23df5a3 fail-closed webhook GET + POST deleted, b44b31b signed callback URL + TIER_METADATA). `PAYGATE_WEBHOOK_SECRET` provisioned in all 3 Vercel scopes via CLI. 8/8 signature unit tests green; tsc + eslint clean. **Wave 1 of Phase 2 complete** (02-01 + 02-02). **Blocked follow-up carried from 02-01:** `prisma db push` for the extended `PricingTier` enum must run from an env with the real `DATABASE_URL` (Vercel-Sensitive; empty on `env pull` here).
-Resume file: `.planning/phases/02-payment-pricing-launch-blockers/02-03-webhook-replay-idempotency-PLAN.md` (Wave 2 — adds `WebhookDelivery` model + P2002 replay short-circuit into the webhook GET; the `prisma` import is already wired there). Also: run the pending `prisma db push` for 02-01.
+Stopped at: Completed 02-03-webhook-replay-idempotency-PLAN.md — **Phase 2 COMPLETE (3/3)**. SECR-02 + SECR-03 closed. 5 commits (94ec16c WebhookDelivery model, 2a7c540 + 910cc80 temporary db-push build step apply/revert, d39fb53 P2002 replay short-circuit in webhook GET, f1bea1a 4 pattern unit tests). `WebhookDelivery` table live on remote Postgres (build log `database is now in sync`, deployment dpl_3vHDV1hR94maxQY23pm4rDdYMqTB). tsc + eslint clean; 4/4 tests green. No outstanding db-push blockers — remote schema fully current.
+Resume file: Phase 3 kickoff — plan `.planning/phases/03-multi-robot-schema-foundation/` (Multi-Robot Schema Foundation: `Robot` entity + checked-in migration strategy + wire `robotId` through Subscription/Compilation + encrypted source Blob storage). NOTE for Phase 3: `prisma/migrations/` is still absent — Phase 3 must decide the formal migration strategy before its schema changes land (the build-step `db push` workaround has been the Phase 1/2 stopgap).

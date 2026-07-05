@@ -13,7 +13,7 @@ This milestone takes AL-ai-FX from a single-robot GoldBot pipeline with an offli
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Restore Compile Delivery** ✓ 2026-07-04 — Windows daemon + reaper as NSSM services; atomic dequeue (FOR UPDATE SKIP LOCKED); heartbeat singleton; bounded retry via reaper + /complete FAILED path; direct-to-Blob upload; COMPILER_SECRET rotated; admin status widget; client-poll cap. Follow-up: VM MetaTrader stdlib path (Trade.mqh missing under LocalSystem).
-- [ ] **Phase 2: Payment + Pricing Launch Blockers** - Fix silent tier downgrade and fail-open Paygate webhook before real revenue arrives
+- [x] **Phase 2: Payment + Pricing Launch Blockers** ✓ 2026-07-05 — PRIC-02 tier drift closed (extended `PricingTier` enum + `pricing-tiers.ts` SSoT, unknown tier refused); SECR-01 fail-open webhook closed (fail-closed HMAC verify, POST deleted, signed callback URL); SECR-02 replay + SECR-03 idempotency closed (`WebhookDelivery.signature @unique` + P2002 short-circuit in webhook GET). Remote Postgres in sync via Vercel build-step db-push.
 - [ ] **Phase 3: Multi-Robot Schema Foundation** - Land the `Robot` entity, wire `robotId` through subscriptions/compilations, move sources to encrypted Blob storage
 - [ ] **Phase 4: Robot-Aware Compile Pipeline** - Thread robot identity through poll/complete/download; source fetched by short-lived signed URL, never logged
 - [ ] **Phase 5: Admin Catalog + Delivery Loop** - Admin can add/edit/upload robots without a deploy; users get email + dashboard delivery + failure notices
@@ -56,7 +56,7 @@ Note: CMPL-05 (Prisma singleton in compiler routes) was closed pre-planning by c
 Plans:
 - [x] 02-01-pricing-tier-alignment-PLAN.md — Extend `PricingTier` enum (TEN_DAYS/ONE_YEAR/LIFETIME_SOURCE), new `src/lib/pricing-tiers.ts` as SSoT (`TIER_METADATA` + `mapTier` throws `UnknownTierError` + `computeExpirationDate` exhaustive switch), delete legacy inline from `subscriptions.ts`, wire through free-trial route [Wave 1] ✓ 2026-07-05 — code + remote DB in sync (pushed via Vercel build-step workaround, then reverted)
 - [x] 02-02-fail-closed-webhook-signature-PLAN.md — New `src/lib/webhook-signature.ts` (fail-closed HMAC + two-key dev bypass), rewrite webhook GET, DELETE dead POST handler, embed signature in `create-session` callback URL, preflight `vercel env add PAYGATE_WEBHOOK_SECRET` [Wave 1, parallel with 02-01] ✓ 2026-07-05 — SECR-01 closed; `PAYGATE_WEBHOOK_SECRET` provisioned in all 3 Vercel scopes
-- [ ] 02-03-webhook-replay-idempotency-PLAN.md — Add `WebhookDelivery` model to schema, `prisma db push`, insert `prisma.webhookDelivery.create` + P2002 short-circuit into webhook GET, pattern unit tests [Wave 2]
+- [x] 02-03-webhook-replay-idempotency-PLAN.md — Add `WebhookDelivery` model to schema, `prisma db push`, insert `prisma.webhookDelivery.create` + P2002 short-circuit into webhook GET, pattern unit tests [Wave 2] ✓ 2026-07-05 — SECR-02 + SECR-03 closed; table live on remote Postgres; 4/4 pattern tests green
 
 ### Phase 3: Multi-Robot Schema Foundation
 **Goal**: The database and source-storage layer support multiple robots. No user-facing UX yet — the ground the rest of the milestone builds on.
@@ -152,8 +152,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Restore Compile Delivery | 0/4 | Planned | - |
-| 2. Payment + Pricing Launch Blockers | 0/3 | Not started | - |
+| 1. Restore Compile Delivery | 4/4 | Complete | 2026-07-04 |
+| 2. Payment + Pricing Launch Blockers | 3/3 | Complete | 2026-07-05 |
 | 3. Multi-Robot Schema Foundation | 0/3 | Not started | - |
 | 4. Robot-Aware Compile Pipeline | 0/4 | Not started | - |
 | 5. Admin Catalog + Delivery Loop | 0/4 | Not started | - |
