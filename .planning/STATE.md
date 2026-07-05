@@ -5,14 +5,13 @@
 See: .planning/PROJECT.md (updated 2026-07-04)
 
 **Core value:** A paying user receives their chosen, compiled, MT5-account-locked robot within minutes of checkout — automatically, every time.
-**Current focus:** Phase 3 — Multi-Robot Schema Foundation (Phase 2 complete)
+**Current focus:** Phase 4 — Robot-Aware Compile Pipeline (Phase 3 complete)
 
 ## Current Position
 
-Phase: 3 of 7 (Multi-Robot Schema Foundation) — **IN PROGRESS (3/3 plans landed; orchestrator to confirm phase close)**
-Plan: 3 of 3 in current phase — done (03-03); 03-01 + 03-02 done
-Status: **Phase 3 Wave 2 complete (both plans landed).** 03-02 (robotId FK wiring): `provisionSubscription` resolves the `goldbot` Robot via `findUniqueOrThrow` (fail-closed) and writes `robotId` on every Subscription; `update-mt5` denormalizes `robotId` onto each Compilation; poll response additively carries `robotSlug`; `compiler-filename.ts` default reconciled to lowercase `goldbot`. CTLG-04 fully closed. 03-03 (encrypted source storage): AES-256-GCM `source-encryption.ts` (+4 passing tests), versioned immutable `uploadEncryptedSource` → `sources/<slug>/v<N>.mq5.enc` (`allowOverwrite:false`), `SOURCE_ENCRYPTION_KEY` provisioned in all 3 Vercel scopes, real GoldBot source (`ALaiFX_EA.mq5`, 14002B) fetched from the VM + uploaded as `sources/goldbot/v1.mq5.enc` (14030B enc). SRCE-01 closed. NOTE: do NOT declare Phase 3 complete here — the orchestrator confirms phase close once it has reconciled both Wave 2 SUMMARYs.
-Last activity: 2026-07-05 — Completed 03-03: 3 task commits (66b0733 AES-256-GCM module + tests, 2246593 upload helper, 16fa61c one-time uploader + Rule-3 private-access fix). tsc + eslint clean; 4/4 crypto tests green. Ran in parallel with 03-02 (commit 6c5a116, no file overlap).
+Phase: 3 of 7 (Multi-Robot Schema Foundation) — **COMPLETE (3/3 plans)**
+Status: **Phase 3 COMPLETE.** CTLG-01/CTLG-04/CTLG-05/SRCE-01 all closed. Robot model + NON-NULL robotId FKs live; first checked-in Prisma migration (0_init) applied via the build-step channel after a full remote reset (test DB — pre-approved); robotId threaded through provisionSubscription (fail-closed findUniqueOrThrow) and update-mt5 (denormalized onto Compilation); poll response additively carries robotSlug; compiler-filename.ts reconciled to lowercase `goldbot`. AES-256-GCM encrypted source storage live (`SOURCE_ENCRYPTION_KEY` in all 3 Vercel scopes; Blob store turned out to be private-access, not public — adjusted); GoldBot's real source uploaded as `sources/goldbot/v1.mq5.enc`. Next: Phase 4 — Robot-Aware Compile Pipeline.
+Last activity: 2026-07-05 — Closed Phase 3 (03-01, 03-02, 03-03 all landed; 03-02 and 03-03 ran in parallel with zero file overlap, no conflicts).
 
 Progress: [██████████░░░░░░░░░░░░░░░░] 38% (10/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3)
 
