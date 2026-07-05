@@ -3,10 +3,13 @@
  * (write path — becomes the Blob pathname) AND /api/compiler/download
  * (read path — becomes Content-Disposition filename).
  *
- * Phase 1: single-robot (GoldBot). Phase 4 will thread robotSlug through.
+ * Phase 3: single-robot. The default slug is the canonical lowercase DB
+ * Robot.slug ("goldbot") so compiled filenames and Blob source paths stay
+ * consistent with the database. Phase 4 will thread the real per-robot slug
+ * through opts.robotSlug.
  */
 export function getCompiledFilename(jobId: string, opts?: { robotSlug?: string }): string {
-  const slug = opts?.robotSlug ?? "GoldBot";
+  const slug = opts?.robotSlug ?? "goldbot";
   return `AL-ai-FX_${slug}_${jobId}.ex5`;
 }
 

@@ -44,8 +44,9 @@ export async function PUT(req: Request) {
     });
 
     // Create a new compilation job.
-    // Denormalize robotId from the subscription so the compile worker can
-    // derive the slug directly (Plan 03-01 schema; wiring refined in 03-02).
+    // Denormalize robotId from the subscription at creation time: the compile
+    // worker's filename generation needs the slug directly, and a compilation's
+    // robot is immutable once queued even if the subscription is later re-pointed.
     const job = await prisma.compilation.create({
       data: {
         subscriptionId: subscription.id,
