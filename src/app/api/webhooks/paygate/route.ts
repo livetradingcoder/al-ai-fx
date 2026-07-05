@@ -1,68 +1,56 @@
 import { NextResponse } from "next/server";
+// prisma import retained for Plan 02-03 (WebhookDelivery.create replay/idempotency).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { prisma } from "@/lib/prisma";
 import { provisionSubscription } from "@/lib/subscriptions";
-import { createHmac } from "crypto";
+import { UnknownTierError } from "@/lib/pricing-tiers";
+import { verifyPaygateSignature } from "@/lib/webhook-signature";
 import { checkWebhookRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail, validateAmount } from "@/lib/validation";
 
-async function provisionPayment(input: {
-  email: string;
-  tierRaw: string;
-  amount: number;
-  currency: string;
-  paygateId: string;
-}) {
-  return provisionSubscription(input.email, input.tierRaw, input.paygateId, input.amount, input.currency);
-}
-
 /**
- * Verifies webhook signature to prevent unauthorized access
+ * Paygate.to callback endpoint.
+ *
+ * Paygate.to invokes this GET-only (verified against their WordPress + WHMCS
+ * plugin source): it appends value_coin/coin/txid_in to the merchant-registered
+ * callback URL. There is no signature header, no timestamp, no nonce — so we
+ * embed our own HMAC `signature` query param at create-session time and verify
+ * it here, fail-closed, BEFORE any provisioning. The old POST handler was dead
+ * code (no legitimate caller) and a Vercel 4.5 MB body-limit hazard — deleted.
  */
-function verifyWebhookSignature(payload: string, signature: string | null): boolean {
-  if (!signature) return false;
-  
-  const secret = process.env.PAYGATE_WEBHOOK_SECRET;
-  if (!secret) {
-    console.warn("[Paygate Webhook] PAYGATE_WEBHOOK_SECRET not configured. Skipping signature verification.");
-    return true; // Allow in development, but log warning
-  }
-  
-  const expectedSignature = createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-  
-  return signature === expectedSignature;
-}
-
 export async function GET(req: Request) {
-  // Rate limiting
   const identifier = getClientIdentifier(req);
-  const { success } = await checkWebhookRateLimit(identifier);
-  
-  if (!success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
+  const { success: rlOk } = await checkWebhookRateLimit(identifier);
+  if (!rlOk) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   try {
     const url = new URL(req.url);
     const orderRef = url.searchParams.get("order_ref") || "";
     const email = (url.searchParams.get("email") || "").trim().toLowerCase();
-    const tier = url.searchParams.get("tier") || "1-month";
+    const tier = url.searchParams.get("tier") || "";
     const currency = (url.searchParams.get("currency") || "USD").toUpperCase();
-    const callbackAmount = url.searchParams.get("value_coin") || url.searchParams.get("amount") || "0";
+    const callbackAmount =
+      url.searchParams.get("value_coin") || url.searchParams.get("amount") || "0";
     const signature = url.searchParams.get("signature");
 
-    // Verify signature if configured
     const signaturePayload = `${orderRef}${email}${tier}${callbackAmount}`;
-    if (!verifyWebhookSignature(signaturePayload, signature)) {
-      console.error("[Paygate Webhook] Invalid signature");
+    const verified = verifyPaygateSignature(signaturePayload, signature);
+    if (!verified.ok) {
+      console.error(
+        "[paygate] webhook rejected — reason=%s orderRef=%s",
+        verified.reason,
+        orderRef,
+      );
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     if (!orderRef || !email) {
-      return NextResponse.json({ error: "Missing required callback parameters." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required callback parameters." },
+        { status: 400 },
+      );
     }
 
-    // Validate email
     const emailValidation = validateEmail(email);
     if (!emailValidation.valid) {
       return NextResponse.json({ error: emailValidation.error }, { status: 400 });
@@ -74,90 +62,36 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: amountValidation.error }, { status: 400 });
     }
 
-    const result = await provisionPayment({
-      email,
-      tierRaw: tier,
-      amount,
-      currency,
-      paygateId: orderRef,
-    });
-
-    return NextResponse.json({ success: true, source: "paygate-get-callback", ...result }, { status: 200 });
-  } catch (error) {
-    console.error("Paygate GET callback error:", error);
-    return NextResponse.json({ error: "Webhook payload processing failed." }, { status: 500 });
-  }
-}
-
-export async function POST(req: Request) {
-  // Rate limiting
-  const identifier = getClientIdentifier(req);
-  const { success } = await checkWebhookRateLimit(identifier);
-  
-  if (!success) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
-
-  try {
-    const rawBody = await req.text();
-    const signature = req.headers.get("x-paygate-signature");
-    
-    // Verify signature
-    if (!verifyWebhookSignature(rawBody, signature)) {
-      console.error("[Paygate Webhook] Invalid POST signature");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    if (!tier) {
+      return NextResponse.json({ error: "Missing tier parameter." }, { status: 400 });
     }
 
-    const body = JSON.parse(rawBody) as {
-      orderId?: string;
-      customerEmail?: string;
-      amount?: number | string;
-      status?: string;
-      metadata?: { tier?: string };
-    };
-
-    const status = (body.status || "").toUpperCase();
-    if (status !== "PAID") {
-      return NextResponse.json({ message: "Order not paid. Ignoring." }, { status: 200 });
+    // NOTE: Replay + idempotency (WebhookDelivery.signature @unique + P2002
+    // short-circuit) lands in Plan 02-03 — inserted here between verify and
+    // provisionSubscription.
+    let result;
+    try {
+      result = await provisionSubscription(email, tier, orderRef, amount, currency);
+    } catch (err) {
+      if (err instanceof UnknownTierError) {
+        console.error("[paygate] unknown tier — orderRef=%s tier=%s", orderRef, tier);
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
     }
-
-    const orderId = body.orderId || "";
-    const customerEmail = (body.customerEmail || "").trim().toLowerCase();
-    const tier = body.metadata?.tier || "1-month";
-    const amount = Number.parseFloat(String(body.amount ?? "0"));
-
-    // Validate email
-    const emailValidation = validateEmail(customerEmail);
-    if (!emailValidation.valid) {
-      return NextResponse.json({ error: emailValidation.error }, { status: 400 });
-    }
-
-    // Validate amount
-    const amountValidation = validateAmount(amount);
-    if (!amountValidation.valid || !orderId) {
-      return NextResponse.json({ error: "Invalid webhook payload." }, { status: 400 });
-    }
-
-    const result = await provisionPayment({
-      email: customerEmail,
-      tierRaw: tier,
-      amount,
-      currency: "USD",
-      paygateId: orderId,
-    });
 
     return NextResponse.json(
-      {
-        success: true,
-        message: result.duplicated
-          ? "Payment was already processed previously."
-          : "Account provisioned and subscription created.",
-        ...result,
-      },
-      { status: 201 },
+      { success: true, source: "paygate-get-callback", ...result },
+      { status: 200 },
     );
   } catch (error) {
-    console.error("Paygate POST callback error:", error);
-    return NextResponse.json({ error: "Webhook payload processing failed." }, { status: 500 });
+    console.error("Paygate GET callback error:", error);
+    return NextResponse.json(
+      { error: "Webhook payload processing failed." },
+      { status: 500 },
+    );
   }
 }
+
+// POST handler intentionally not exported — dead code deleted (Paygate.to sends
+// GET-only per their WordPress + WHMCS plugin source).
