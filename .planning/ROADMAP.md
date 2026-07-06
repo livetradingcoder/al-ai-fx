@@ -122,7 +122,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — RobotPrice schema + partial trial index + resolveRobotPrice resolver + GoldBot seed (build-step migration) [Wave 1]
+- [x] 06-01-PLAN.md — RobotPrice schema + partial trial index + resolveRobotPrice resolver + GoldBot seed (build-step migration) [Wave 1]
 - [ ] 06-02-PLAN.md — Public catalog RSC page listing active robots with per-robot curated prices [Wave 2]
 - [ ] 06-03-PLAN.md — robotSlug through the funnel: robotSlug-bound HMAC (create-session + webhook, atomic), provisionSubscription refactor, free-trial per-robot + one-trial P2002, checkout UI [Wave 2]
 - [ ] 06-04-PLAN.md — Admin per-robot price editor (updateRobotPrices + editable RobotForm inputs, dual revalidate) [Wave 2]
@@ -156,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 | 3. Multi-Robot Schema Foundation | 3/3 | Complete | 2026-07-05 |
 | 4. Robot-Aware Compile Pipeline | 3/3 | Complete | 2026-07-06 |
 | 5. Admin Catalog + Delivery Loop | 4/4 | Complete | 2026-07-06 |
-| 6. Public Catalog, Per-Robot Pricing, Free Trials | 0/4 | Not started | - |
+| 6. Public Catalog, Per-Robot Pricing, Free Trials | 1/4 | In progress | - |
 | 7. Onboard 3 New Robots + End-to-End Validation | 0/4 | Not started | - |
 
 ---
