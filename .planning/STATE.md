@@ -127,7 +127,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None.
+- **Future idea (not scoped, not started):** "Pay after trial" pricing model — user tries free for 3 days, only pays if their trades were profitable during the trial. Real blocker: the platform has NO visibility into a user's actual trade results today (GoldBot runs on the user's own MT5 terminal/broker; nothing reports P&L back). Needs a real design decision on verification mechanism before any build: (a) EA reports P&L via telemetry (new endpoint + DB model + EA-side code), (b) user uploads an MT5 statement (manual/parser review), or (c) read-only investor-password polling (custody/security exposure). User explicitly deferred deciding — flagged here for a future session, not part of the current Phase 7 milestone.
 
 ### Blockers/Concerns
 
