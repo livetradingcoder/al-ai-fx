@@ -1,8 +1,9 @@
-import { PricingTier } from "@prisma/client";
+import { PricingTier, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendPurchaseConfirmationEmail } from "@/lib/mail";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
+import { resolveRobotPrice } from "@/lib/robot-pricing";
 
 // Re-export so existing imports elsewhere (webhook route.ts, create-session, etc.)
 // don't need to change their import path in this plan. Plan 02-02 may migrate
@@ -27,22 +28,22 @@ export async function findOrCreateUser(email: string) {
   return { user, emailSuccess };
 }
 
-// Phase 3: single-robot. Every subscription/compilation is scoped to GoldBot.
-// Multi-robot selection (slug passed from checkout/catalog) is Phase 4+/6 work.
-const GOLDBOT_SLUG = "goldbot";
-
 function formatTierLabel(tier: PricingTier) {
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+// Phase 6: robotSlug is REQUIRED — no GoldBot default. An unknown/inactive robot
+// or untiered/inactive price is refused (UnknownRobotError/UnknownRobotPriceError/
+// UnknownTierError propagate to the caller), never coerced. Amount is ALWAYS
+// resolved server-side via resolveRobotPrice — never trust a client-supplied amount.
 export async function provisionSubscription(
   email: string,
   tierRaw: string,
+  robotSlug: string,
   paygateId?: string,
   amount?: number,
   currency?: string,
 ) {
-  const tier = mapTier(tierRaw);
   const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
 
@@ -53,15 +54,15 @@ export async function provisionSubscription(
     }
   }
 
-  // Resolve the single GoldBot Robot row (seeded in 03-01). Fail-closed:
-  // if the seed is missing, findUniqueOrThrow throws P2025 and the whole flow
-  // aborts with a 500 rather than creating a dangling subscription.
-  const robot = await prisma.robot.findUniqueOrThrow({
-    where: { slug: GOLDBOT_SLUG },
-  });
+  // Fail-closed robot+tier+price resolution (throws UnknownRobotError /
+  // UnknownRobotPriceError / UnknownTierError — never defaults to GoldBot).
+  const { robot, tier } = await resolveRobotPrice(robotSlug, tierRaw);
 
   // Check if an active subscription of the same tier already exists.
   // Scoped per (user, robot, tier) — an active subscription is unique per robot.
+  // For FREE_TRIAL this is a nice-message pre-check only; the REAL guard is the
+  // DB partial unique index (Subscription_one_free_trial_per_robot, 06-01),
+  // which catches even an EXPIRED prior trial (existence-ever, not active-ever).
   const existingSub = await prisma.subscription.findFirst({
     where: {
       userId: user.id,
@@ -82,15 +83,34 @@ export async function provisionSubscription(
   }
 
   const expiresAt = computeExpirationDate(tier);
-  const subscription = await prisma.subscription.create({
-    data: {
-      userId: user.id,
-      robotId: robot.id,
-      tier,
-      expiresAt: expiresAt,
-      status: "ACTIVE",
-    },
-  });
+  let subscription;
+  try {
+    subscription = await prisma.subscription.create({
+      data: {
+        userId: user.id,
+        robotId: robot.id,
+        tier,
+        expiresAt: expiresAt,
+        status: "ACTIVE",
+      },
+    });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002" &&
+      tier === "FREE_TRIAL"
+    ) {
+      // Partial unique index Subscription_one_free_trial_per_robot fired:
+      // this user already claimed (ever) a free trial for this robot.
+      return {
+        userId: user.id,
+        duplicated: true,
+        alreadyTrialed: true,
+        emailSuccess: true,
+      };
+    }
+    throw err;
+  }
 
   let orderId = null;
   if (paygateId && amount !== undefined) {
