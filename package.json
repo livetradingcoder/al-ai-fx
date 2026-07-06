@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && node scripts/check-phase4-test-job.js cmr8s1ch90004gg4v41rcuky3 && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
