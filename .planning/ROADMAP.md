@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Payment + Pricing Launch Blockers** ✓ 2026-07-05 — PRIC-02 tier drift closed (extended `PricingTier` enum + `pricing-tiers.ts` SSoT, unknown tier refused); SECR-01 fail-open webhook closed (fail-closed HMAC verify, POST deleted, signed callback URL); SECR-02 replay + SECR-03 idempotency closed (`WebhookDelivery.signature @unique` + P2002 short-circuit in webhook GET). Remote Postgres in sync via Vercel build-step db-push.
 - [x] **Phase 3: Multi-Robot Schema Foundation** ✓ 2026-07-05 — Robot model + NON-NULL robotId FKs; first checked-in migration (0_init, remote DB reset via build channel); robotId wired through subscription/compilation writes + additive poll slug; AES-256-GCM encrypted source storage (SOURCE_ENCRYPTION_KEY, private Blob); GoldBot real source uploaded as v1.
 - [x] **Phase 4: Robot-Aware Compile Pipeline** ✓ 2026-07-06 — Robot-scoped poll/complete/download; source fetched via authed proxy endpoint (private Blob, no signed URL exists so a decrypt-and-stream proxy substitutes); VM daemon rewired + two pre-existing production bugs fixed (MetaEditor exit-code, Blob access mode); first genuine COMPLETED compile job in project history.
-- [ ] **Phase 5: Admin Catalog + Delivery Loop** - Admin can add/edit/upload robots without a deploy; users get email + dashboard delivery + failure notices
+- [x] **Phase 5: Admin Catalog + Delivery Loop** ✓ 2026-07-06 — Admin robot CRUD + encrypted source upload (first-source→v1, later uploads bump sourceVersion, functionally verified); compile-ready delivery email (magic-link hop) + dashboard Download; unified terminal-failure notify from both /complete and /reap terminal paths (real gap fixed) + dashboard FAILED state + Mailtrap-independent admin flag (live-proven). MAILTRAP_TOKEN still unprovisioned (non-blocking).
 - [ ] **Phase 6: Public Catalog, Per-Robot Pricing, Free Trials** - Customer-facing catalog + checkout + per-robot tiers + one-trial-per-robot enforcement
 - [ ] **Phase 7: Onboard 3 New Robots + End-to-End Validation** - Ship robots #2/#3/#4 as real catalog entries and validate purchase → compile → MetaTrader for each
 
@@ -104,9 +104,9 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md — Admin robot list + activate/deactivate + metadata edit (role-gated CRUD trio; slug immutable) [Wave 1] ✓ 2026-07-06
-- [ ] 05-02-PLAN.md — Admin add-robot + encrypted source-upload (reuses uploadEncryptedSource; first-source→v1; ADMN-03 pricing read-only) [Wave 2, dep 05-01]
+- [x] 05-02-PLAN.md — Admin add-robot + encrypted source-upload (reuses uploadEncryptedSource; first-source→v1; ADMN-03 pricing read-only) [Wave 2, dep 05-01] ✓ 2026-07-06
 - [x] 05-03-PLAN.md — Compile-ready delivery email (magic-link hop, no-op-safe) + verify dashboard Download button [Wave 1] ✓ 2026-07-06
-- [ ] 05-04-PLAN.md — Terminal-failure notify (shared helper from both FAILED paths) + dashboard failure support link + admin dashboard flag [Wave 2, dep 05-03]
+- [x] 05-04-PLAN.md — Terminal-failure notify (shared helper from both FAILED paths) + dashboard failure support link + admin dashboard flag [Wave 2, dep 05-03] ✓ 2026-07-06
 
 ### Phase 6: Public Catalog, Per-Robot Pricing, Free Trials
 **Goal**: A visitor can browse the catalog, pick a robot, pick a tier, pay, and (for free trials) claim at most one trial per robot — all with correct per-robot pricing and no client-side bypass.
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 | 2. Payment + Pricing Launch Blockers | 3/3 | Complete | 2026-07-05 |
 | 3. Multi-Robot Schema Foundation | 3/3 | Complete | 2026-07-05 |
 | 4. Robot-Aware Compile Pipeline | 3/3 | Complete | 2026-07-06 |
-| 5. Admin Catalog + Delivery Loop | 0/4 | Not started | - |
+| 5. Admin Catalog + Delivery Loop | 4/4 | Complete | 2026-07-06 |
 | 6. Public Catalog, Per-Robot Pricing, Free Trials | 0/4 | Not started | - |
 | 7. Onboard 3 New Robots + End-to-End Validation | 0/4 | Not started | - |
 

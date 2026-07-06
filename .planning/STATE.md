@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-07-04)
 
 **Core value:** A paying user receives their chosen, compiled, MT5-account-locked robot within minutes of checkout — automatically, every time.
-**Current focus:** Phase 5 — Admin Catalog + Delivery Loop (Wave 1 complete, 2/4 plans)
+**Current focus:** Phase 6 — Public Catalog, Per-Robot Pricing, Free Trials (Phase 5 complete)
 
 ## Current Position
 
-Phase: 5 of 7 (Admin Catalog + Delivery Loop) — **IN PROGRESS (2/4 plans, Wave 1 complete)**
-Status: Phase 4 COMPLETE (3/3). Phase 5 Wave 1 done: **05-01** (admin robot list/toggle/edit — ADMN-01/02/05) and **05-03** (compile-ready delivery email — DLVR-01/02) both landed, ran in parallel with zero file overlap. Verified against LIVE PRODUCTION (this project has no local DB access — `DATABASE_URL` is Vercel-Sensitive/write-only — so browser/UI verification for admin+dashboard work is done via curl against the deployed site with a real NextAuth session cookie, not a local dev server). Admin robot table confirmed rendering with GoldBot + toggle controls; anonymous access confirmed redirected to `/login`. Compile-ready email code path complete and no-op-safe (MAILTRAP_TOKEN still unprovisioned — non-blocking, same treatment as Phase 1's original gap). Next: Wave 2 — **05-02** (add robot + source upload, depends on 05-01, appends to same files) and **05-04** (terminal-failure notify + admin alert, depends on 05-03, appends to same files).
-Last activity: 2026-07-06 — Completed 05-01 + 05-03 (both had been interrupted mid-Task-3 by a session limit; resumed by verifying already-committed code and completing browser/curl verification against production).
+Phase: 5 of 7 (Admin Catalog + Delivery Loop) — **COMPLETE (4/4 plans)**
+Status: **Phase 5 COMPLETE.** ADMN-01/02/03/04/05 + DLVR-01/02/03/04 all closed. Admin can list/toggle/edit/create robots and upload encrypted source versions (first source lands at v1, later uploads bump sourceVersion, both proven live against production DB/Blob state) — ADMN-03 scoped metadata-only per research, per-robot pricing deferred to Phase 6. Delivery loop complete: compile-ready email (magic-link hop) + dashboard Download button (DLVR-01/02); terminal-failure notify unified into one `notifyTerminalFailure` helper called from BOTH `/complete` and `/reap` terminal paths (previously `/complete`'s path silently alerted no one — real gap, now fixed) + dashboard FAILED state with support link + Mailtrap-independent admin dashboard flag, live-proven by driving a real job to terminal FAILED against production and confirming both the 200-no-crash response and the flag banner rendering. All verification this phase was done via curl + real NextAuth session cookies against LIVE PRODUCTION (this project has no local DB access — `DATABASE_URL` is Vercel-Sensitive/write-only). Outstanding non-blocking gap: `MAILTRAP_TOKEN`/`ADMIN_ALERT_EMAIL`/`SMTP_FROM_EMAIL` still not provisioned in Vercel (same as Phase 1) — all 5 success criteria are independently satisfied via dashboard channels regardless. Next: Phase 6 — Public Catalog, Per-Robot Pricing, Free Trials.
+Last activity: 2026-07-06 — Completed 05-02 (admin add-robot + source-upload, functionally verified via build-step script: all 5 assertions PASS) and 05-04 (terminal-failure notify + admin flag, live-verified via a real driven terminal-FAILED job). Phase 5 closed.
 
-Progress: [█████████████░░░░░░░░░░░░░] 50% (14/28 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3, 3/3 Phase 4, 2/4 Phase 5)
+Progress: [██████████████░░░░░░░░░░░░] 54% (16/28 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3, 3/3 Phase 4, 4/4 Phase 5)
 
 ## Performance Metrics
 
