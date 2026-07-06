@@ -2431,10 +2431,10 @@ html:lang(ar) .landing-hero-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  min-width: 230px;
-  padding: 16px 18px;
-  border-radius: 22px;
+  gap: 14px;
+  min-width: 180px;
+  padding: 12px 14px;
+  border-radius: 16px;
   border: 1px solid rgba(244, 220, 162, 0.2);
   background:
     linear-gradient(180deg, rgba(255, 248, 229, 0.06), rgba(255, 248, 229, 0.015)),
@@ -2456,7 +2456,7 @@ html:lang(ar) .landing-hero-title {
 
 .hero-floating-meta span {
   display: block;
-  font-size: 0.66rem;
+  font-size: 0.6rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -2465,25 +2465,25 @@ html:lang(ar) .landing-hero-title {
 
 .hero-floating-meta strong {
   display: block;
-  margin-top: 8px;
-  font-size: 1rem;
+  margin-top: 6px;
+  font-size: 0.88rem;
   letter-spacing: -0.03em;
 }
 
 .hero-floating-glyph {
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   color: var(--accent-primary-light);
   flex-shrink: 0;
 }
 
 .hero-stage-caption {
   position: absolute;
-  left: 30px;
-  right: 30px;
-  bottom: 26px;
-  padding: 20px 22px;
-  border-radius: 24px;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255, 248, 229, 0.04), rgba(255, 248, 229, 0.015)),
     rgba(14, 11, 9, 0.82);
@@ -2493,7 +2493,7 @@ html:lang(ar) .landing-hero-title {
 }
 
 .hero-caption-kicker {
-  font-size: 0.64rem;
+  font-size: 0.58rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent-primary-light);
@@ -2501,16 +2501,16 @@ html:lang(ar) .landing-hero-title {
 }
 
 .hero-stage-caption h2 {
-  margin: 12px 0 0;
-  font-size: clamp(1.55rem, 3vw, 2.45rem);
+  margin: 8px 0 0;
+  font-size: clamp(1.05rem, 1.7vw, 1.45rem);
   text-align: left;
 }
 
 .hero-stage-caption p {
-  margin-top: 10px;
+  margin-top: 6px;
   color: var(--text-secondary);
-  font-size: 0.97rem;
-  line-height: 1.72;
+  font-size: 0.83rem;
+  line-height: 1.55;
 }
 
 .landing-proof-band {
