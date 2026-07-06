@@ -116,6 +116,14 @@ export default function DashboardSidebar() {
                 {t("manageUsers")} &rarr;
               </Link>
             </li>
+            <li>
+              <Link
+                href="/dashboard/admin/robots"
+                style={getLinkStyle(isActive("/dashboard/admin/robots"), "primary")}
+              >
+                Manage Robots &rarr;
+              </Link>
+            </li>
           </ul>
         </div>
       ) : null}
