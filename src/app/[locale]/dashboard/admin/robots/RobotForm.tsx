@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { createRobot, updateRobot } from "./actions";
-import { PRICING_TIERS } from "@/config/pricing";
+import { useEffect, useState, useTransition } from "react";
+import { createRobot, updateRobot, getRobotPrices, updateRobotPrices } from "./actions";
+import { TIER_METADATA } from "@/lib/pricing-tiers";
 import type { RobotRow } from "./RobotsTable";
 
 const inputStyle: React.CSSProperties = {
@@ -41,9 +41,46 @@ export default function RobotForm({
   const [sortOrder, setSortOrder] = useState(String(robot?.sortOrder ?? 0));
   const [source, setSource] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isSavingPrices, startPriceTransition] = useTransition();
+
+  const tierIds = Object.keys(TIER_METADATA) as (keyof typeof TIER_METADATA)[];
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const [pricesLoaded, setPricesLoaded] = useState(false);
+
+  useEffect(() => {
+    if (isCreate || !robot) return;
+    let cancelled = false;
+    getRobotPrices(robot.id).then((rows) => {
+      if (cancelled) return;
+      const seeded: Record<string, string> = {};
+      for (const tierId of tierIds) {
+        const existing = rows.find((r) => r.tier === TIER_METADATA[tierId].enum);
+        seeded[tierId] = existing ? String(existing.amount) : "0";
+      }
+      setPrices(seeded);
+      setPricesLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [robot?.id, isCreate]);
 
   const getErrorMessage = (error: unknown, fallback: string) =>
     error instanceof Error ? error.message : fallback;
+
+  function handleSavePrices() {
+    if (!robot) return;
+    startPriceTransition(async () => {
+      try {
+        const rows = tierIds.map((tierId) => ({ tier: tierId, amount: Number(prices[tierId] ?? 0) }));
+        await updateRobotPrices(robot.id, rows);
+        alert("Prices saved");
+      } catch (error) {
+        alert(getErrorMessage(error, "Failed to save prices"));
+      }
+    });
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -162,18 +199,48 @@ export default function RobotForm({
 
           {!isCreate && (
             <div style={{ border: "1px solid var(--border-color)", borderRadius: "8px", padding: "1rem" }}>
-              <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Pricing (read-only)</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                {Object.entries(PRICING_TIERS).map(([tierId, tier]) => (
-                  <div key={tierId} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
-                    <span style={{ color: "var(--text-secondary)" }}>{tierId}</span>
-                    <span style={{ fontFamily: "monospace" }}>{tier.priceString}</span>
-                  </div>
-                ))}
-              </div>
-              <p style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                Pricing is global for now. Per-robot pricing arrives in the catalog phase (Phase 6).
-              </p>
+              <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Per-robot pricing</h3>
+              {!pricesLoaded ? (
+                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Loading prices…</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {tierIds.map((tierId) => (
+                    <div key={tierId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+                      <label htmlFor={`price-${tierId}`} style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                        {tierId}
+                      </label>
+                      <input
+                        id={`price-${tierId}`}
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={prices[tierId] ?? ""}
+                        onChange={(e) => setPrices((p) => ({ ...p, [tierId]: e.target.value }))}
+                        style={{ ...inputStyle, width: "140px" }}
+                      />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleSavePrices}
+                    disabled={isSavingPrices}
+                    style={{
+                      alignSelf: "flex-end",
+                      marginTop: "0.5rem",
+                      padding: "0.5rem 1rem",
+                      fontSize: "0.85rem",
+                      backgroundColor: "#3B82F6",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: isSavingPrices ? "not-allowed" : "pointer",
+                      opacity: isSavingPrices ? 0.7 : 1,
+                    }}
+                  >
+                    {isSavingPrices ? "Saving…" : "Save prices"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
