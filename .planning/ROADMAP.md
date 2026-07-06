@@ -100,13 +100,13 @@ Plans:
   3. On a successful compile, the user receives a Mailtrap email with a signed, expiring download link AND their dashboard shows a "Download" button — both channels fire, either alone unblocks the user.
   4. On a terminal compile failure (all retries exhausted), the user receives an explanatory email + support link and the dashboard shows a failure state — no silent hangs.
   5. Admin receives an alert (email or dashboard flag) when a compile job fails after all retries or when the compile server has been offline past threshold.
-**Plans**: TBD (est. 4)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 05-01: Admin robot list + activate/deactivate + edit metadata UI (role check + `revalidatePath`)
-- [ ] 05-02: Admin add-robot + source-upload flow (metadata form + encrypted-upload handler)
-- [ ] 05-03: User delivery: purchase-completion email with signed download link + dashboard download button (both wired to same `Compilation` state)
-- [ ] 05-04: Failure delivery: user failure email + dashboard failure state + admin alert on retry-exhausted / server-offline threshold
+- [ ] 05-01-PLAN.md — Admin robot list + activate/deactivate + metadata edit (role-gated CRUD trio; slug immutable) [Wave 1]
+- [ ] 05-02-PLAN.md — Admin add-robot + encrypted source-upload (reuses uploadEncryptedSource; first-source→v1; ADMN-03 pricing read-only) [Wave 2, dep 05-01]
+- [ ] 05-03-PLAN.md — Compile-ready delivery email (magic-link hop, no-op-safe) + verify dashboard Download button [Wave 1]
+- [ ] 05-04-PLAN.md — Terminal-failure notify (shared helper from both FAILED paths) + dashboard failure support link + admin dashboard flag [Wave 2, dep 05-03]
 
 ### Phase 6: Public Catalog, Per-Robot Pricing, Free Trials
 **Goal**: A visitor can browse the catalog, pick a robot, pick a tier, pay, and (for free trials) claim at most one trial per robot — all with correct per-robot pricing and no client-side bypass.
