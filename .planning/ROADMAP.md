@@ -87,7 +87,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — `sourceVersion` schema field + migration + `/api/compiler/source` authed decrypt-and-stream proxy endpoint + HMAC short-TTL token module ✓ 2026-07-06
-- [ ] 04-02-PLAN.md — poll response extension (`sourceVersion` + signed `sourceUrl`) + robot-scoped filename consistency across `/complete` and `/download` (CTLG-07/08)
+- [x] 04-02-PLAN.md — poll response extension (`sourceVersion` + signed `sourceUrl`) + robot-scoped filename consistency across `/complete` and `/download` (CTLG-07/08) ✓ 2026-07-06
 - [ ] 04-03-PLAN.md — VM daemon rewire (fetch+compile per-job source, robot-scoped upload) + deploy/restart + live E2E smoke test + SRCE-03 source-secrecy audit
 
 ### Phase 5: Admin Catalog + Delivery Loop
