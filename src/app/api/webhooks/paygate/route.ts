@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { provisionSubscription } from "@/lib/subscriptions";
 import { UnknownTierError } from "@/lib/pricing-tiers";
+import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { verifyPaygateSignature } from "@/lib/webhook-signature";
 import { checkWebhookRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail, validateAmount } from "@/lib/validation";
@@ -31,8 +32,12 @@ export async function GET(req: Request) {
     const callbackAmount =
       url.searchParams.get("value_coin") || url.searchParams.get("amount") || "0";
     const signature = url.searchParams.get("signature");
+    const robotSlug = (url.searchParams.get("robot") || "").trim().toLowerCase();
 
-    const signaturePayload = `${orderRef}${email}${tier}${callbackAmount}`;
+    // PHASE 6 SECURITY: identical order to create-session/route.ts — MUST match
+    // byte-for-byte or every legitimate callback 401s:
+    //   `${orderRef}${email}${robotSlug}${tier}${callbackAmount}`
+    const signaturePayload = `${orderRef}${email}${robotSlug}${tier}${callbackAmount}`;
     const verified = verifyPaygateSignature(signaturePayload, signature);
     if (!verified.ok) {
       console.error(
@@ -63,6 +68,10 @@ export async function GET(req: Request) {
 
     if (!tier) {
       return NextResponse.json({ error: "Missing tier parameter." }, { status: 400 });
+    }
+
+    if (!robotSlug) {
+      return NextResponse.json({ error: "Missing robot parameter." }, { status: 400 });
     }
 
     // Replay + idempotency: signature is a natural per-delivery nonce (embeds
@@ -96,10 +105,14 @@ export async function GET(req: Request) {
 
     let result;
     try {
-      result = await provisionSubscription(email, tier, orderRef, amount, currency);
+      result = await provisionSubscription(email, tier, robotSlug, orderRef, amount, currency);
     } catch (err) {
-      if (err instanceof UnknownTierError) {
-        console.error("[paygate] unknown tier — orderRef=%s tier=%s", orderRef, tier);
+      if (
+        err instanceof UnknownTierError ||
+        err instanceof UnknownRobotError ||
+        err instanceof UnknownRobotPriceError
+      ) {
+        console.error("[paygate] unknown tier/robot — orderRef=%s tier=%s robot=%s", orderRef, tier, robotSlug);
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
       throw err;

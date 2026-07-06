@@ -2,18 +2,20 @@ import { NextResponse } from "next/server";
 import { createHmac } from "node:crypto";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
-import { TIER_METADATA } from "@/lib/pricing-tiers";
+import { UnknownTierError } from "@/lib/pricing-tiers";
+import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
 
-import { TierId, PRICING_TIERS } from "@/config/pricing";
+import { TierId } from "@/config/pricing";
 
 type CreateSessionPayload = {
   email?: string;
   tier?: TierId;
   provider?: string;
   currency?: string;
+  robotSlug?: string;
 };
 
 export async function POST(req: Request) {
@@ -31,6 +33,7 @@ export async function POST(req: Request) {
     const email = (body.email || "").trim().toLowerCase();
     const provider = (body.provider || "").trim().toLowerCase();
     const currency = (body.currency || "USD").trim().toUpperCase();
+    const robotSlug = (body.robotSlug || "").trim().toLowerCase();
 
     // Validate email
     const emailValidation = validateEmail(email);
@@ -38,13 +41,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: emailValidation.error }, { status: 400 });
     }
 
-    // TIER_METADATA (Plan 02-01 SSoT) is the canonical tier-validity mapping.
-    if (!(tier in TIER_METADATA)) {
-      return NextResponse.json({ error: "Invalid tier." }, { status: 400 });
+    if (!robotSlug) {
+      return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
     }
 
     if (tier === "free-trial") {
       return NextResponse.json({ error: "Free trial does not require Paygate checkout." }, { status: 400 });
+    }
+
+    // Fail-closed, server-authoritative price resolution — refuses unknown/inactive
+    // robot, unknown tier, or an untiered/inactive price row. NEVER trust a client
+    // amount; NEVER coerce to a default robot.
+    let resolved;
+    try {
+      resolved = await resolveRobotPrice(robotSlug, tier);
+    } catch (err) {
+      if (
+        err instanceof UnknownTierError ||
+        err instanceof UnknownRobotError ||
+        err instanceof UnknownRobotPriceError
+      ) {
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
     }
 
     const payoutAddress = process.env.PAYGATE_PAYOUT_USDC_ADDRESS;
@@ -65,7 +84,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const amount = PRICING_TIERS[tier].amount.toFixed(2);
+    const amount = resolved.amount.toFixed(2);
     const orderRef = crypto.randomUUID();
     const requestUrl = new URL(req.url);
     const callbackBase =
@@ -79,12 +98,14 @@ export async function POST(req: Request) {
     callbackUrl.searchParams.set("email", email);
     callbackUrl.searchParams.set("currency", currency);
     callbackUrl.searchParams.set("amount", amount);
+    callbackUrl.searchParams.set("robot", robotSlug);
 
-    // Sign the callback so the fail-closed webhook accepts it. Payload order
-    // MUST match the webhook GET's reconstruction exactly:
-    // `${orderRef}${email}${tier}${callbackAmount}`. Paygate omits value_coin
-    // for USD callbacks, so the webhook falls back to our `amount` param here.
-    const signaturePayload = `${orderRef}${email}${tier}${amount}`;
+    // PHASE 6 SECURITY: robotSlug is bound into the HMAC to block robot-swap
+    // replay (an unsigned slug would let an attacker swap the robot identity on
+    // a captured callback while the signature still verifies). Payload order is
+    // LOAD-BEARING and MUST match webhooks/paygate/route.ts byte-for-byte:
+    //   `${orderRef}${email}${robotSlug}${tier}${amount}`
+    const signaturePayload = `${orderRef}${email}${robotSlug}${tier}${amount}`;
     const signature = createHmac("sha256", webhookSecret)
       .update(signaturePayload)
       .digest("hex");
