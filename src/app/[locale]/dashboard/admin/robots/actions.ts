@@ -5,7 +5,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadEncryptedSource } from "@/lib/source-storage";
-import { Prisma } from "@prisma/client";
+import { Prisma, PricingTier } from "@prisma/client";
+import { TIER_METADATA } from "@/lib/pricing-tiers";
 
 export async function toggleRobotActive(robotId: string, currentActive: boolean) {
   const session = await getServerSession(authOptions);
@@ -136,4 +137,51 @@ export async function uploadRobotSource(formData: FormData) {
 
   revalidatePath("/dashboard/admin/robots");
   return { success: true, version: nextVersion };
+}
+
+export async function getRobotPrices(robotId: string) {
+  const session = await getServerSession(authOptions);
+  if (session?.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+  return prisma.robotPrice.findMany({ where: { robotId } });
+}
+
+// Accepts a list of per-tier prices for one robot and upserts each RobotPrice row.
+export async function updateRobotPrices(
+  robotId: string,
+  prices: { tier: string; amount: number; active?: boolean }[],
+) {
+  const session = await getServerSession(authOptions);
+  if (session?.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+  if (!robotId) throw new Error("robotId is required");
+
+  // Confirm the robot exists (fail-closed) — never create price rows for a ghost robot.
+  await prisma.robot.findUniqueOrThrow({ where: { id: robotId } });
+
+  for (const row of prices) {
+    // Validate tier against the enum via TIER_METADATA (the tier SSoT).
+    const meta = TIER_METADATA[row.tier as keyof typeof TIER_METADATA];
+    if (!meta) throw new Error(`Unknown tier: ${row.tier}`);
+    const tier: PricingTier = meta.enum;
+
+    const amount = Number(row.amount);
+    if (!Number.isFinite(amount) || amount < 0) {
+      throw new Error(`Invalid amount for ${row.tier}`);
+    }
+    const active = row.active ?? true;
+
+    await prisma.robotPrice.upsert({
+      where: { robotId_tier: { robotId, tier } },
+      update: { amount, active },
+      create: { robotId, tier, amount, active },
+    });
+  }
+
+  // Deploy-free price change (PRIC-04): refresh admin AND public catalog.
+  revalidatePath("/dashboard/admin/robots");
+  revalidatePath("/catalog");
+  return { success: true, count: prices.length };
 }
