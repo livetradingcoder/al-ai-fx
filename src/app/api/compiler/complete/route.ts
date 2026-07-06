@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MAX_ATTEMPTS } from '@/lib/compiler-config';
+import { getCompiledBlobPathname } from '@/lib/compiler-filename';
 
 type CompletePayload = {
   jobId?: string;
@@ -30,7 +31,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  const job = await prisma.compilation.findUnique({ where: { id: jobId } });
+  const job = await prisma.compilation.findUnique({
+    where: { id: jobId },
+    include: { robot: { select: { slug: true } } },
+  });
   if (!job) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
@@ -38,6 +42,14 @@ export async function POST(req: Request) {
   if (status === 'COMPLETED') {
     if (!blobUrl) {
       return NextResponse.json({ error: 'Missing blobUrl' }, { status: 400 });
+    }
+    // Soft consistency check: the daemon (Plan 04-03) uploads to the
+    // robot-scoped pathname getCompiledBlobPathname(jobId, { robotSlug }).
+    // /download reads with the SAME slug. Warn on mismatch — never reject a
+    // good compile over a naming nit.
+    const expectedPath = getCompiledBlobPathname(jobId, { robotSlug: job.robot.slug });
+    if (!blobUrl.includes(expectedPath)) {
+      console.warn(`[complete] blobUrl pathname mismatch for job ${jobId}: expected .../${expectedPath}`);
     }
     await prisma.compilation.update({
       where: { id: jobId },

@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   try {
     const job = await prisma.compilation.findUnique({
       where: { id: jobId },
-      include: { subscription: true }
+      include: { subscription: true, robot: { select: { slug: true } } }
     });
 
     if (!job || job.subscription.userId !== session.user.id) {
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     }
 
     const blob = await response.blob();
-    const fileName = getCompiledFilename(jobId);
+    const fileName = getCompiledFilename(jobId, { robotSlug: job.robot.slug });
 
     return new Response(blob, {
       headers: {
