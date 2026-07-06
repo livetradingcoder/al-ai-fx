@@ -18,6 +18,8 @@ function CheckoutContent() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const tier = (searchParams?.get("tier") || "1-month") as TierId;
+  const robotSlug = searchParams?.get("robot") || "";
+  const robotName = searchParams?.get("name") || "your robot";
 
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,7 +84,7 @@ function CheckoutContent() {
         const response = await fetch("/api/checkout/free-trial", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+          body: JSON.stringify({ email: email.trim().toLowerCase(), robotSlug }),
         });
 
         if (!response.ok) {
@@ -102,6 +104,7 @@ function CheckoutContent() {
           tier,
           email: email.trim().toLowerCase(),
           currency: "USD",
+          robotSlug,
         }),
       });
 
@@ -194,7 +197,7 @@ function CheckoutContent() {
                   lineHeight: "1.6",
                 }}
               >
-                Your GoldBot access is active. We sent a secure dashboard sign-in link to{" "}
+                Your {robotName} access is active. We sent a secure dashboard sign-in link to{" "}
                 <strong>{email}</strong>.
               </p>
 
@@ -335,7 +338,7 @@ function CheckoutContent() {
               style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
             >
               <span style={{ color: "var(--text-secondary)" }}>{t("product")}</span>
-              <span>GoldBot EA</span>
+              <span>{robotName}</span>
             </div>
 
             <hr

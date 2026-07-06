@@ -41,9 +41,10 @@ export default async function CatalogPage() {
 
           // Default checkout CTA: cheapest paid tier available, else free trial if that's all there is.
           const defaultPrice = publicPrices.find((p) => p.amount > 0) ?? publicPrices[0];
+          const nameParam = `&name=${encodeURIComponent(robot.name)}`;
           const ctaHref = defaultPrice
-            ? `/checkout?robot=${robot.slug}&tier=${TIER_ENUM_TO_SLUG[defaultPrice.tier]}`
-            : `/checkout?robot=${robot.slug}`;
+            ? `/checkout?robot=${robot.slug}&tier=${TIER_ENUM_TO_SLUG[defaultPrice.tier]}${nameParam}`
+            : `/checkout?robot=${robot.slug}${nameParam}`;
 
           return (
             <div key={robot.id} className="feature-card glass-panel" style={{ display: "flex", flexDirection: "column", padding: "1.5rem" }}>
