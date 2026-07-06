@@ -119,13 +119,13 @@ Plans:
   4. A user may claim at most one free trial per robot — enforced by a server-side check or unique constraint on (`userId`, `robotId`, `tier=FREE_TRIAL`), not by client-only guards.
   5. A free trial subscription runs the full lifecycle (MT5 binding → compile → delivery → expiry) identically to paid tiers, per-robot.
   6. An admin can change a robot's tier prices from the admin dashboard without a code deploy.
-**Plans**: TBD (est. 4)
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01: Public catalog page + robot-aware checkout UX (`/[locale]/catalog` + `CheckoutClient` accepts `robotSlug`)
-- [ ] 06-02: Per-robot pricing data model + admin edit UI (`RobotTier` or `RobotPricing` rows keyed by robot + tier)
-- [ ] 06-03: Server-side tier enforcement + refusal path (`create-session`, `free-trial` route, webhook validation refuse unknown)
-- [ ] 06-04: One-trial-per-robot enforcement (unique constraint + server-side pre-check + updated free-trial flow)
+- [ ] 06-01-PLAN.md — RobotPrice schema + partial trial index + resolveRobotPrice resolver + GoldBot seed (build-step migration) [Wave 1]
+- [ ] 06-02-PLAN.md — Public catalog RSC page listing active robots with per-robot curated prices [Wave 2]
+- [ ] 06-03-PLAN.md — robotSlug through the funnel: robotSlug-bound HMAC (create-session + webhook, atomic), provisionSubscription refactor, free-trial per-robot + one-trial P2002, checkout UI [Wave 2]
+- [ ] 06-04-PLAN.md — Admin per-robot price editor (updateRobotPrices + editable RobotForm inputs, dual revalidate) [Wave 2]
 
 ### Phase 7: Onboard 3 New Robots + End-to-End Validation
 **Goal**: Three new robots are live on the catalog, priced, buyable, and each has been proven end-to-end from purchase through MetaTrader execution.
