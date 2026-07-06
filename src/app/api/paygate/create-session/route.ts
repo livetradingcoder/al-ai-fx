@@ -149,9 +149,14 @@ export async function POST(req: Request) {
     const decodedAddress = decodeURIComponent(walletJson.address_in);
     paymentUrl.searchParams.set("address", decodedAddress);
     paymentUrl.searchParams.set("amount", amount);
-    if (provider) {
-      paymentUrl.searchParams.set("provider", provider);
-    }
+    // Paygate's process-payment.php REJECTS the request outright (400 "Bad
+    // request method!") if provider is omitted entirely -- it is NOT optional
+    // despite the docs implying otherwise. "multi" is Paygate's own documented
+    // Multi-provider mode: it keeps the customer on Paygate's own hosted
+    // "Complete Your Purchase" page with a choice of Credit Card/Apple Pay/
+    // Google Pay/MoonPay/Robinhood, instead of hard-locking to one 3rd-party
+    // brand. Never send an empty provider value.
+    paymentUrl.searchParams.set("provider", provider || "multi");
     paymentUrl.searchParams.set("email", email);
     paymentUrl.searchParams.set("currency", currency);
 
