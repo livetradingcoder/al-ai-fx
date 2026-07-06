@@ -13,7 +13,7 @@ const { createCipheriv, randomBytes } = require('crypto');
 const { put } = require('@vercel/blob');
 
 const prisma = new PrismaClient();
-const SLUG = 'testbot-05-02';
+const SLUG = `testbot-05-02-${Date.now()}`;
 
 function encrypt(plain) {
   const hex = process.env.SOURCE_ENCRYPTION_KEY;
