@@ -1968,7 +1968,7 @@ button {
 }
 
 .nav-container {
-  width: min(1520px, calc(100vw - 56px));
+  width: min(1240px, calc(100vw - 56px));
   padding: 0;
 }
 
@@ -2115,7 +2115,7 @@ button {
 }
 
 .footer {
-  width: min(1520px, calc(100vw - 56px));
+  width: min(1240px, calc(100vw - 56px));
   margin: 0 auto;
   padding: 36px 0 56px;
   border-top: 1px solid rgba(244, 220, 162, 0.1);
@@ -2156,7 +2156,7 @@ button {
 }
 
 .landing-container {
-  width: min(1520px, calc(100vw - 56px));
+  width: min(1240px, calc(100vw - 56px));
   margin: 0 auto;
   position: relative;
 }
@@ -2253,9 +2253,9 @@ button {
 .landing-proof-title {
   margin: 22px 0 0;
   font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(3.05rem, 8vw, 7.7rem);
-  line-height: 0.93;
-  letter-spacing: -0.06em;
+  font-size: clamp(2.3rem, 5.2vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
 }
 
 .landing-hero-title {
@@ -2277,8 +2277,8 @@ html:lang(hi) .landing-hero-title,
 html:lang(bn) .landing-hero-title,
 html:lang(ur) .landing-hero-title,
 html:lang(ar) .landing-hero-title {
-  font-size: clamp(2.8rem, 7vw, 6.8rem);
-  line-height: 0.98;
+  font-size: clamp(2.1rem, 4.6vw, 3.8rem);
+  line-height: 1.02;
 }
 
 .landing-hero-lead,
@@ -2522,7 +2522,7 @@ html:lang(ar) .landing-hero-title {
 }
 
 .landing-proof-title {
-  font-size: clamp(2.8rem, 5vw, 4.8rem);
+  font-size: clamp(2.1rem, 3.6vw, 3.4rem);
 }
 
 .landing-proof-wireframe {
@@ -2576,7 +2576,7 @@ html:lang(ar) .landing-hero-title {
 
 .section-title {
   margin-top: 20px;
-  font-size: clamp(2.85rem, 5vw, 5.6rem);
+  font-size: clamp(2.15rem, 3.8vw, 3.8rem);
 }
 
 .section-title-left {
@@ -3689,7 +3689,7 @@ html:lang(ar) .landing-hero-title {
   .nav-container,
   .landing-container,
   .footer {
-    width: min(100vw - 36px, 1520px);
+    width: min(100vw - 36px, 1240px);
   }
 
   .nav-actions {
@@ -3697,7 +3697,7 @@ html:lang(ar) .landing-hero-title {
   }
 
   .landing-hero-title {
-    font-size: clamp(3rem, 12vw, 5.8rem);
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
   }
 
   .private-access-header,
@@ -3743,7 +3743,7 @@ html:lang(ar) .landing-hero-title {
   .nav-container,
   .landing-container,
   .footer {
-    width: min(100vw - 28px, 1520px);
+    width: min(100vw - 28px, 1240px);
   }
 
   .nav-brand-copy span {
@@ -3793,7 +3793,7 @@ html:lang(ar) .landing-hero-title {
   .landing-hero-title,
   .section-title,
   .landing-proof-title {
-    font-size: clamp(2.7rem, 12vw, 4.4rem);
+    font-size: clamp(2rem, 8vw, 2.9rem);
   }
 
   .landing-hero-lead,
