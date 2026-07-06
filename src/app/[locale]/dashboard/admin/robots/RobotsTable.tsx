@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { toggleRobotActive } from "./actions";
+import { useRef, useState, useTransition } from "react";
+import { toggleRobotActive, uploadRobotSource } from "./actions";
 import RobotForm from "./RobotForm";
 
 export interface RobotRow {
@@ -16,9 +16,55 @@ export interface RobotRow {
   sourceVersion: number;
 }
 
+function UploadSourceButton({ robotId }: { robotId: string }) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    // reset the input so the same file can be re-selected later
+    e.target.value = "";
+    if (!file) return;
+    startTransition(async () => {
+      try {
+        const fd = new FormData();
+        fd.set("robotId", robotId);
+        fd.set("source", file);
+        const res = await uploadRobotSource(fd);
+        alert(`Source uploaded — now at v${res.version}.`);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : "Failed to upload source");
+      }
+    });
+  }
+
+  return (
+    <>
+      <input ref={fileRef} type="file" accept=".mq5" onChange={onPick} style={{ display: "none" }} />
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={isPending}
+        style={{
+          padding: "0.4rem 0.8rem",
+          fontSize: "0.8rem",
+          backgroundColor: "#8B5CF6",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: isPending ? "not-allowed" : "pointer",
+          opacity: isPending ? 0.7 : 1,
+        }}
+      >
+        {isPending ? "Uploading…" : "Upload Source"}
+      </button>
+    </>
+  );
+}
+
 export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [editing, setEditing] = useState<RobotRow | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const getErrorMessage = (error: unknown, fallback: string) =>
     error instanceof Error ? error.message : fallback;
@@ -36,7 +82,23 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
 
   return (
     <div className="glass-panel" style={{ overflowX: "auto" }}>
-      <h2 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>All Robots</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <h2 style={{ fontSize: "1.5rem" }}>All Robots</h2>
+        <button
+          onClick={() => setCreating(true)}
+          style={{
+            padding: "0.5rem 1rem",
+            fontSize: "0.85rem",
+            backgroundColor: "#10B981",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          + Add Robot
+        </button>
+      </div>
       <table
         style={{
           width: "100%",
@@ -124,6 +186,7 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
                     >
                       Edit
                     </button>
+                    <UploadSourceButton robotId={robot.id} />
                   </div>
                 </td>
               </tr>
@@ -132,7 +195,8 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
         </tbody>
       </table>
 
-      {editing && <RobotForm robot={editing} onClose={() => setEditing(null)} />}
+      {editing && <RobotForm robot={editing} mode="edit" onClose={() => setEditing(null)} />}
+      {creating && <RobotForm mode="create" onClose={() => setCreating(false)} />}
     </div>
   );
 }
