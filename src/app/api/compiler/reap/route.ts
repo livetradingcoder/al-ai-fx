@@ -6,20 +6,24 @@ import {
   HEARTBEAT_DEAD_SECONDS,
 } from '@/lib/compiler-config';
 import { sendAdminCompilerAlertEmail } from '@/lib/mail';
+import { notifyTerminalFailure } from '@/lib/compiler-notify';
 
 // Dedup: don't fire more than one alert per event kind within this window
 // per WARM serverless instance. Cold starts may cause one duplicate email,
 // which is acceptable — the alternative (persistent dedup) needs a DB row
 // and locking. Best-effort per-instance dedup keeps operator inbox quiet
 // when the same condition persists across many reap ticks.
+//
+// Note: the per-job job-failed admin alert now lives in notifyTerminalFailure
+// (fired per terminal-FAILED job below), so this cooldown map only guards the
+// worker-health 'stale-heartbeat' alert.
 const ALERT_COOLDOWN_MS = 15 * 60_000;
-const lastAlertAt: Record<'stale-heartbeat' | 'job-failed', number> = {
+const lastAlertAt: Record<'stale-heartbeat', number> = {
   'stale-heartbeat': 0,
-  'job-failed': 0,
 };
 
 function tryFireAlert(
-  kind: 'stale-heartbeat' | 'job-failed',
+  kind: 'stale-heartbeat',
   fire: () => Promise<void>,
 ) {
   const now = Date.now();
@@ -43,12 +47,17 @@ export async function GET(request: NextRequest) {
       status: 'PROCESSING',
       attemptedAt: { lt: cutoff },
     },
-    select: { id: true, attemptCount: true, errorMessage: true },
+    select: {
+      id: true,
+      attemptCount: true,
+      errorMessage: true,
+      robot: { select: { name: true } },
+      subscription: { select: { user: { select: { email: true } } } },
+    },
   });
 
   const requeued: string[] = [];
   const failed: string[] = [];
-  let firstFailedErrorMessage: string | undefined;
 
   for (const job of stuck) {
     const nextAttempt = job.attemptCount + 1;
@@ -74,25 +83,20 @@ export async function GET(request: NextRequest) {
         },
       });
       failed.push(job.id);
-      if (!firstFailedErrorMessage) {
-        firstFailedErrorMessage = job.errorMessage ?? terminalError;
-      }
-    }
-  }
 
-  // Alert: any job transitioned to permanent FAILED this tick.
-  // One email covers the whole batch (uses the first job as representative).
-  if (failed.length > 0) {
-    const representativeJobId = failed[0];
-    const errMsg = firstFailedErrorMessage;
-    tryFireAlert('job-failed', () =>
-      sendAdminCompilerAlertEmail({
-        kind: 'job-failed',
-        jobId: representativeJobId,
-        attempts: MAX_ATTEMPTS,
-        errorMessage: errMsg,
-      }),
-    );
+      // DLVR-03/04: terminal FAILED — notify the buying user (compile-failed
+      // email + support link) AND fire the admin alert, per failed job. Both
+      // best-effort; notifyTerminalFailure never throws. This REPLACES the
+      // reaper's former single-batch job-failed admin alert (dedup), so a
+      // terminal failure is never silent regardless of which path wrote FAILED.
+      await notifyTerminalFailure({
+        id: job.id,
+        attemptCount: nextAttempt,
+        errorMessage: job.errorMessage ?? terminalError,
+        userEmail: job.subscription?.user?.email ?? null,
+        robotName: job.robot?.name ?? null,
+      });
+    }
   }
 
   // Alert: heartbeat is past the "dead" threshold. Runs regardless of

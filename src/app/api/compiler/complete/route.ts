@@ -4,6 +4,7 @@ import { MAX_ATTEMPTS } from '@/lib/compiler-config';
 import { getCompiledBlobPathname } from '@/lib/compiler-filename';
 import { sendCompileReadyEmail } from '@/lib/mail';
 import { buildDashboardMagicLink } from '@/lib/magic-links';
+import { notifyTerminalFailure } from '@/lib/compiler-notify';
 
 type CompletePayload = {
   jobId?: string;
@@ -105,5 +106,17 @@ export async function POST(req: Request) {
       errorMessage: errorMessage ?? null,
     },
   });
+
+  // DLVR-03/04: terminal FAILED — notify the buying user (compile-failed email +
+  // support link) AND fire the admin alert. Both best-effort; notifyTerminalFailure
+  // never throws, so the response contract below is unchanged.
+  await notifyTerminalFailure({
+    id: jobId,
+    attemptCount: nextAttempt,
+    errorMessage: errorMessage ?? null,
+    userEmail: job.subscription?.user?.email ?? null,
+    robotName: job.robot?.name ?? null,
+  });
+
   return NextResponse.json({ success: false, requeued: false, attempt: nextAttempt }, { status: 200 });
 }
