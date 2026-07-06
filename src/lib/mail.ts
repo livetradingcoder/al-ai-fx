@@ -132,6 +132,46 @@ export async function sendPurchaseConfirmationEmail(
 }
 
 /**
+ * DLVR-01: Sends the buying user a "your build is ready" email once their
+ * compile reaches COMPLETED. Carries a signed, expiring magic-link that lands
+ * them authenticated in the dashboard where the Download button lives. No-op
+ * safe (same `if (!client)` guard as the other senders) — never throws when
+ * MAILTRAP_TOKEN is unset; the /complete caller wraps it best-effort.
+ */
+export async function sendCompileReadyEmail(
+  email: string,
+  robotName: string,
+  magicLinkUrl: string,
+) {
+  if (!client) {
+    console.warn("[Mail] Mailtrap client not initialized. Skipping compile-ready email.");
+    return;
+  }
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Open your dashboard",
+    buttonUrl: magicLinkUrl,
+    eyebrow: "Build ready",
+    title: `Your ${robotName} build is ready`,
+    intro: "Your compiled, account-locked EA has finished building. Open your dashboard with the secure link below to download the .ex5.",
+    detailLines: [
+      `Robot: ${robotName}`,
+      "This secure sign-in link is time-limited — if it expires, request a fresh one from your dashboard.",
+    ],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email }],
+    subject: `${robotName} — your build is ready`,
+    html,
+    text,
+    category: "Delivery",
+  });
+  console.log(`[Mail] Compile-ready email sent to ${email}`);
+}
+
+/**
  * Sends a secure sign-in link for account recovery
  */
 export async function sendResetPasswordEmail(email: string, magicLinkUrl: string) {

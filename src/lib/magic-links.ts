@@ -46,3 +46,23 @@ export function buildMagicLinkUrl({
 
   return url.toString();
 }
+
+/**
+ * Builds a signed, expiring magic-link URL that lands a user authenticated in
+ * their dashboard. Reuses the NEXTAUTH_SECRET-signed magic-link JWT (default
+ * 30m expiry). Single implementation reused by subscriptions.ts (purchase
+ * confirmation) and the compile-ready delivery email — do NOT hand-roll a new
+ * token or public download route.
+ */
+export function buildDashboardMagicLink(input: { email: string; userId: string }) {
+  const secret = process.env.NEXTAUTH_SECRET;
+  const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET is required to issue magic links.");
+  }
+  const token = createMagicLinkToken(
+    { email: input.email, purpose: "login", userId: input.userId },
+    secret,
+  );
+  return buildMagicLinkUrl({ baseUrl, locale: "en", token });
+}

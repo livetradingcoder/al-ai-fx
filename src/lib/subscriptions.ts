@@ -1,7 +1,7 @@
 import { PricingTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendPurchaseConfirmationEmail } from "@/lib/mail";
-import { buildMagicLinkUrl, createMagicLinkToken } from "@/lib/magic-links";
+import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
 
 // Re-export so existing imports elsewhere (webhook route.ts, create-session, etc.)
@@ -33,30 +33,6 @@ const GOLDBOT_SLUG = "goldbot";
 
 function formatTierLabel(tier: PricingTier) {
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function createUserMagicLink(input: { email: string; userId: string }) {
-  const secret = process.env.NEXTAUTH_SECRET;
-  const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
-
-  if (!secret) {
-    throw new Error("NEXTAUTH_SECRET is required to issue magic links.");
-  }
-
-  const token = createMagicLinkToken(
-    {
-      email: input.email,
-      purpose: "login",
-      userId: input.userId,
-    },
-    secret,
-  );
-
-  return buildMagicLinkUrl({
-    baseUrl,
-    locale: "en",
-    token,
-  });
 }
 
 export async function provisionSubscription(
@@ -133,7 +109,7 @@ export async function provisionSubscription(
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)
   try {
-    const magicLinkUrl = createUserMagicLink({ email, userId: user.id });
+    const magicLinkUrl = buildDashboardMagicLink({ email, userId: user.id });
 
     await sendPurchaseConfirmationEmail(
       email,
