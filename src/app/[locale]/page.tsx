@@ -683,7 +683,7 @@ export default function Home() {
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
-                  <Link href={`/checkout?tier=${plan.id}`} className="btn-primary fill">
+                  <Link href={`/checkout?tier=${plan.id}&robot=goldbot&name=GoldBot`} className="btn-primary fill">
                     Select Plan
                   </Link>
                 </article>
@@ -717,7 +717,7 @@ export default function Home() {
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
-                  <Link href={`/checkout?tier=${plan.id}`} className="btn-primary fill">
+                  <Link href={`/checkout?tier=${plan.id}&robot=goldbot&name=GoldBot`} className="btn-primary fill">
                     Select Plan
                   </Link>
                 </article>
@@ -998,7 +998,7 @@ export default function Home() {
             </p>
 
             <div className="landing-hero-actions final-cta-actions">
-              <Link href="/checkout?tier=1-month" className="btn-primary large">
+              <Link href="/checkout?tier=1-month&robot=goldbot&name=GoldBot" className="btn-primary large">
                 Start Monthly Plan
                 <ArrowRight size={18} />
               </Link>
