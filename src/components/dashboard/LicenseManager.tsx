@@ -196,6 +196,21 @@ export default function LicenseManager({ subscription, latestCompilation: initia
         </div>
       </div>
 
+      {compilation?.status === "FAILED" && (
+        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(255, 68, 68, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255, 68, 68, 0.2)' }}>
+          <h4 style={{ color: '#ff4444', marginBottom: '0.75rem', fontSize: '1rem' }}>We hit a snag building your robot</h4>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Your build did not complete after several automatic retries. Our team has been notified — you have not been charged for a failed build. If you need anything in the meantime, reach out to us directly.
+          </p>
+          <Link
+            href="/support"
+            style={{ display: 'inline-block', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-sm)', background: '#ff4444', color: '#fff', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
+          >
+            Contact support
+          </Link>
+        </div>
+      )}
+
       {compilation?.status === "COMPLETED" && (
         <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
           <h4 style={{ color: 'var(--accent-accent)', marginBottom: '1rem', fontSize: '1rem' }}>{t("successSteps")}</h4>
