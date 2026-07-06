@@ -7,8 +7,8 @@
 // access:"private" because the Blob store is configured private-access (the store now
 // rejects public puts). Combined with AES-256-GCM ciphertext this is defence-in-depth:
 // authenticated retrieval AND encrypted bytes. Signed-URL read-path is Phase 4/SRCE-02.
-import { put } from "@vercel/blob";
-import { encryptSource } from "./source-encryption";
+import { put, get } from "@vercel/blob";
+import { encryptSource, decryptSource } from "./source-encryption";
 
 /** Deterministic Blob pathname for a robot's encrypted source at a given version. */
 export function sourceBlobPathname(robotSlug: string, version: number): string {
@@ -35,4 +35,19 @@ export async function uploadEncryptedSource(
     allowOverwrite: false,
     contentType: "application/octet-stream",
   });
+}
+
+/**
+ * Read a robot's PRIVATE encrypted source blob and return DECRYPTED plaintext.
+ * Server-only: get() needs the store token and decryptSource() needs
+ * SOURCE_ENCRYPTION_KEY — neither ever leaves the server. Sources are a few KB,
+ * so buffering the whole stream is correct (GCM decrypt needs the full blob anyway).
+ */
+export async function fetchDecryptedSource(robotSlug: string, version: number): Promise<Buffer> {
+  const result = await get(sourceBlobPathname(robotSlug, version), { access: "private" });
+  if (!result || result.statusCode !== 200 || !result.stream) {
+    throw new Error("source not found");
+  }
+  const ciphertext = Buffer.from(await new Response(result.stream).arrayBuffer());
+  return decryptSource(ciphertext); // fail-closed: throws on tamper/wrong key
 }
