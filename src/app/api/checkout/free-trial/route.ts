@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { provisionSubscription } from "@/lib/subscriptions";
 import { UnknownTierError } from "@/lib/pricing-tiers";
+import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { checkFreeTrialRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { email } = body;
+    const { email, robotSlug: robotSlugRaw } = body;
 
     // Validate email
     const emailValidation = validateEmail(email);
@@ -26,19 +27,53 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: emailValidation.error }, { status: 400 });
     }
 
+    const robotSlug = String(robotSlugRaw || "").trim().toLowerCase();
+    if (!robotSlug) {
+      return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
+    }
+
     const normalizedEmail = email.toLowerCase().trim();
     console.log(`[Free Trial] Processing trial for: ${normalizedEmail}`);
 
-    let result;
+    // Fail-closed resolve + assert the free-trial price is 0 (Pitfall 6 — a free
+    // trial must never be claimable for an inactive/unpriced/misconfigured robot).
+    let resolved;
     try {
-      result = await provisionSubscription(normalizedEmail, "free-trial");
+      resolved = await resolveRobotPrice(robotSlug, "free-trial");
     } catch (err) {
-      if (err instanceof UnknownTierError) {
-        // Defensive: should never fire for hardcoded "free-trial", but matches
-        // the webhook + create-session pattern (Plan 02-02) — no silent 500 on tier drift.
+      if (
+        err instanceof UnknownTierError ||
+        err instanceof UnknownRobotError ||
+        err instanceof UnknownRobotPriceError
+      ) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
       throw err;
+    }
+    if (resolved.amount !== 0) {
+      return NextResponse.json(
+        { error: "Free trial is misconfigured for this robot." },
+        { status: 400 },
+      );
+    }
+
+    let result;
+    try {
+      result = await provisionSubscription(normalizedEmail, "free-trial", robotSlug);
+    } catch (err) {
+      if (err instanceof UnknownTierError || err instanceof UnknownRobotError || err instanceof UnknownRobotPriceError) {
+        // Defensive: resolveRobotPrice above already validated this, but matches
+        // the webhook + create-session pattern — no silent 500 on tier/robot drift.
+        return NextResponse.json({ error: err.message }, { status: 400 });
+      }
+      throw err;
+    }
+
+    if (result.duplicated && result.alreadyTrialed) {
+      return NextResponse.json(
+        { error: "You already used your free trial for this robot." },
+        { status: 409 },
+      );
     }
 
     if (!result.emailSuccess) {
