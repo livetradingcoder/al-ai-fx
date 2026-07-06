@@ -74,11 +74,6 @@ function CheckoutContent() {
     setIsSubmitting(true);
     setCheckoutError(null);
 
-    const paymentWindow =
-      !isFreeTrial && typeof window !== "undefined"
-        ? window.open("", "al-ai-fx-paygate", "noopener,noreferrer")
-        : null;
-
     try {
       if (isFreeTrial) {
         const response = await fetch("/api/checkout/free-trial", {
@@ -128,10 +123,6 @@ function CheckoutContent() {
         throw new Error("Unable to create a valid checkout session.");
       }
 
-      if (paymentWindow && !paymentWindow.closed) {
-        paymentWindow.location.assign(data.checkoutUrl);
-      }
-
       await openThankYouFlow({
         amount,
         checkoutUrl: data.checkoutUrl,
@@ -140,9 +131,6 @@ function CheckoutContent() {
         tier,
       });
     } catch (error) {
-      if (paymentWindow && !paymentWindow.closed) {
-        paymentWindow.close();
-      }
       const message = error instanceof Error ? error.message : "Unexpected checkout error.";
       setCheckoutError(message);
       setIsSubmitting(false);
