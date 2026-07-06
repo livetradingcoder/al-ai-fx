@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Restore Compile Delivery** ✓ 2026-07-04 — Windows daemon + reaper as NSSM services; atomic dequeue (FOR UPDATE SKIP LOCKED); heartbeat singleton; bounded retry via reaper + /complete FAILED path; direct-to-Blob upload; COMPILER_SECRET rotated; admin status widget; client-poll cap. Follow-up: VM MetaTrader stdlib path (Trade.mqh missing under LocalSystem).
 - [x] **Phase 2: Payment + Pricing Launch Blockers** ✓ 2026-07-05 — PRIC-02 tier drift closed (extended `PricingTier` enum + `pricing-tiers.ts` SSoT, unknown tier refused); SECR-01 fail-open webhook closed (fail-closed HMAC verify, POST deleted, signed callback URL); SECR-02 replay + SECR-03 idempotency closed (`WebhookDelivery.signature @unique` + P2002 short-circuit in webhook GET). Remote Postgres in sync via Vercel build-step db-push.
 - [x] **Phase 3: Multi-Robot Schema Foundation** ✓ 2026-07-05 — Robot model + NON-NULL robotId FKs; first checked-in migration (0_init, remote DB reset via build channel); robotId wired through subscription/compilation writes + additive poll slug; AES-256-GCM encrypted source storage (SOURCE_ENCRYPTION_KEY, private Blob); GoldBot real source uploaded as v1.
-- [ ] **Phase 4: Robot-Aware Compile Pipeline** - Thread robot identity through poll/complete/download; source fetched by short-lived signed URL, never logged
+- [x] **Phase 4: Robot-Aware Compile Pipeline** ✓ 2026-07-06 — Robot-scoped poll/complete/download; source fetched via authed proxy endpoint (private Blob, no signed URL exists so a decrypt-and-stream proxy substitutes); VM daemon rewired + two pre-existing production bugs fixed (MetaEditor exit-code, Blob access mode); first genuine COMPLETED compile job in project history.
 - [ ] **Phase 5: Admin Catalog + Delivery Loop** - Admin can add/edit/upload robots without a deploy; users get email + dashboard delivery + failure notices
 - [ ] **Phase 6: Public Catalog, Per-Robot Pricing, Free Trials** - Customer-facing catalog + checkout + per-robot tiers + one-trial-per-robot enforcement
 - [ ] **Phase 7: Onboard 3 New Robots + End-to-End Validation** - Ship robots #2/#3/#4 as real catalog entries and validate purchase → compile → MetaTrader for each
@@ -88,7 +88,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — `sourceVersion` schema field + migration + `/api/compiler/source` authed decrypt-and-stream proxy endpoint + HMAC short-TTL token module ✓ 2026-07-06
 - [x] 04-02-PLAN.md — poll response extension (`sourceVersion` + signed `sourceUrl`) + robot-scoped filename consistency across `/complete` and `/download` (CTLG-07/08) ✓ 2026-07-06
-- [ ] 04-03-PLAN.md — VM daemon rewire (fetch+compile per-job source, robot-scoped upload) + deploy/restart + live E2E smoke test + SRCE-03 source-secrecy audit
+- [x] 04-03-PLAN.md — VM daemon rewire (fetch+compile per-job source, robot-scoped upload) + deploy/restart + live E2E smoke test + SRCE-03 source-secrecy audit ✓ 2026-07-06
 
 ### Phase 5: Admin Catalog + Delivery Loop
 **Goal**: An admin can onboard a robot without a deploy, and a paying user gets notified through two independent channels (email + dashboard) whether the compile succeeds or fails.
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 | 1. Restore Compile Delivery | 4/4 | Complete | 2026-07-04 |
 | 2. Payment + Pricing Launch Blockers | 3/3 | Complete | 2026-07-05 |
 | 3. Multi-Robot Schema Foundation | 3/3 | Complete | 2026-07-05 |
-| 4. Robot-Aware Compile Pipeline | 0/4 | Not started | - |
+| 4. Robot-Aware Compile Pipeline | 3/3 | Complete | 2026-07-06 |
 | 5. Admin Catalog + Delivery Loop | 0/4 | Not started | - |
 | 6. Public Catalog, Per-Robot Pricing, Free Trials | 0/4 | Not started | - |
 | 7. Onboard 3 New Robots + End-to-End Validation | 0/4 | Not started | - |
