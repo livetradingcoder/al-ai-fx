@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MAX_ATTEMPTS } from '@/lib/compiler-config';
 import { getCompiledBlobPathname } from '@/lib/compiler-filename';
+import { sendCompileReadyEmail } from '@/lib/mail';
+import { buildDashboardMagicLink } from '@/lib/magic-links';
 
 type CompletePayload = {
   jobId?: string;
@@ -33,7 +35,10 @@ export async function POST(req: Request) {
 
   const job = await prisma.compilation.findUnique({
     where: { id: jobId },
-    include: { robot: { select: { slug: true } } },
+    include: {
+      robot: { select: { slug: true, name: true } },
+      subscription: { include: { user: { select: { id: true, email: true } } } },
+    },
   });
   if (!job) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -61,6 +66,19 @@ export async function POST(req: Request) {
         errorMessage: null,
       },
     });
+
+    // DLVR-01: notify the buying user their build is ready — best-effort, never
+    // fail /complete. Email path is no-op-safe when Mailtrap is unconfigured.
+    try {
+      const user = job.subscription?.user;
+      if (user?.email) {
+        const magicLinkUrl = buildDashboardMagicLink({ email: user.email, userId: user.id });
+        await sendCompileReadyEmail(user.email, job.robot.name, magicLinkUrl);
+      }
+    } catch (e) {
+      console.error(`[complete] compile-ready email failed for job ${jobId}:`, e);
+    }
+
     return NextResponse.json({ success: true }, { status: 200 });
   }
 
