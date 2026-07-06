@@ -172,6 +172,47 @@ export async function sendCompileReadyEmail(
 }
 
 /**
+ * DLVR-03: Sends the buying user a "your build hit a snag" email once their
+ * compile reaches terminal FAILED (retries exhausted). Carries a support link
+ * so the user can reach the team. No-op safe (same `if (!client)` guard as the
+ * other senders) — never throws when MAILTRAP_TOKEN is unset; the
+ * notifyTerminalFailure caller wraps it best-effort.
+ */
+export async function sendCompileFailedEmail(
+  email: string,
+  robotName: string,
+  supportUrl: string,
+) {
+  if (!client) {
+    console.warn("[Mail] Mailtrap client not initialized. Skipping compile-failed email.");
+    return;
+  }
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Contact support",
+    buttonUrl: supportUrl,
+    eyebrow: "Build issue",
+    title: `We hit a snag building your ${robotName}`,
+    intro:
+      "Your compile did not complete after several automatic retries. Our team has been alerted and will get your build sorted — no action needed, but you can reach us any time.",
+    detailLines: [
+      `Robot: ${robotName}`,
+      "You have not been charged for a failed build. Reply to this email or use the support link and we'll resolve it quickly.",
+    ],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email }],
+    subject: `${robotName} — build needs attention`,
+    html,
+    text,
+    category: "Delivery",
+  });
+  console.log(`[Mail] Compile-failed email sent to ${email}`);
+}
+
+/**
  * Sends a secure sign-in link for account recovery
  */
 export async function sendResetPasswordEmail(email: string, magicLinkUrl: string) {
