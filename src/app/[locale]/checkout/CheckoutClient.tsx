@@ -76,7 +76,7 @@ function CheckoutContent() {
 
     const paymentWindow =
       !isFreeTrial && typeof window !== "undefined"
-        ? window.open("", "_blank", "noopener,noreferrer")
+        ? window.open("", "al-ai-fx-paygate", "noopener,noreferrer")
         : null;
 
     try {

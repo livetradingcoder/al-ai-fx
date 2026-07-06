@@ -201,7 +201,7 @@ export default function ThankYouClient() {
               style={{ border: "none", alignSelf: "center" }}
               onClick={() => {
                 if (checkoutUrl) {
-                  window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                  window.open(checkoutUrl, "al-ai-fx-paygate", "noopener,noreferrer");
                 }
               }}
               disabled={!checkoutUrl}
