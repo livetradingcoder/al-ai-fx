@@ -775,9 +775,6 @@ export default function Home() {
                       <li key={bullet}>{bullet}</li>
                     ))}
                   </ul>
-                  <Link href="/support" className="btn-secondary fill">
-                    {offer.cta}
-                  </Link>
                 </motion.article>
               ))}
             </div>
