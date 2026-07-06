@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
+import { HEARTBEAT_DEAD_SECONDS } from "@/lib/compiler-config";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -49,10 +50,38 @@ export default async function AdminDashboard() {
     include: { user: true }
   });
 
+  // 6. DLVR-04 dashboard flag: stale compile-worker heartbeat OR recent terminal failures.
+  // Mailtrap-independent — satisfies "admin alerted via email OR dashboard flag" without
+  // depending on MAILTRAP_TOKEN/ADMIN_ALERT_EMAIL being provisioned.
+  const hb = await prisma.workerHeartbeat.findUnique({ where: { id: "compiler" } });
+  const now = new Date();
+  const hbAgeSec = hb ? Math.floor((now.getTime() - hb.lastSeenAt.getTime()) / 1000) : null;
+  const heartbeatStale = hbAgeSec === null || hbAgeSec > HEARTBEAT_DEAD_SECONDS;
+  const dayAgo = new Date(now.getTime() - 24 * 60 * 60_000);
+  const recentFailures = await prisma.compilation.count({
+    where: { status: "FAILED", updatedAt: { gte: dayAgo } },
+  });
+  const showAlertFlag = heartbeatStale || recentFailures > 0;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>Platform Overview</h1>
+
+        {showAlertFlag && (
+          <div style={{ padding: '1rem 1.5rem', marginBottom: '2rem', background: 'rgba(255, 68, 68, 0.1)', border: '1px solid rgba(255, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', color: '#ff4444', fontWeight: 500 }}>
+            {heartbeatStale && (
+              <p style={{ margin: 0 }}>
+                ⚠ Compile worker {hbAgeSec === null ? 'has never reported in' : `offline — last seen ${hbAgeSec}s ago`} (threshold: {HEARTBEAT_DEAD_SECONDS}s).
+              </p>
+            )}
+            {recentFailures > 0 && (
+              <p style={{ margin: heartbeatStale ? '0.5rem 0 0' : 0 }}>
+                ⚠ {recentFailures} compile job{recentFailures === 1 ? '' : 's'} failed in the last 24h — check the pipeline.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="features-grid" style={{ marginBottom: '4rem' }}>
           <div className="feature-card">
