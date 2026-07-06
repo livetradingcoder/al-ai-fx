@@ -9,9 +9,9 @@ See: .planning/PROJECT.md (updated 2026-07-04)
 
 ## Current Position
 
-Phase: 3 of 7 (Multi-Robot Schema Foundation) — **COMPLETE (3/3 plans)**
-Status: **Phase 3 COMPLETE.** CTLG-01/CTLG-04/CTLG-05/SRCE-01 all closed. Robot model + NON-NULL robotId FKs live; first checked-in Prisma migration (0_init) applied via the build-step channel after a full remote reset (test DB — pre-approved); robotId threaded through provisionSubscription (fail-closed findUniqueOrThrow) and update-mt5 (denormalized onto Compilation); poll response additively carries robotSlug; compiler-filename.ts reconciled to lowercase `goldbot`. AES-256-GCM encrypted source storage live (`SOURCE_ENCRYPTION_KEY` in all 3 Vercel scopes; Blob store turned out to be private-access, not public — adjusted); GoldBot's real source uploaded as `sources/goldbot/v1.mq5.enc`. Next: Phase 4 — Robot-Aware Compile Pipeline.
-Last activity: 2026-07-05 — Closed Phase 3 (03-01, 03-02, 03-03 all landed; 03-02 and 03-03 ran in parallel with zero file overlap, no conflicts).
+Phase: 4 of 7 (Robot-Aware Compile Pipeline) — **IN PROGRESS (1/3 plans)**
+Status: Phase 3 COMPLETE (3/3). Phase 4 plan 04-01 (source-version schema + source proxy endpoint) COMPLETE: `Robot.sourceVersion`/`Compilation.sourceVersion` (`@default(1)`) added via a normal incremental `migrate deploy` (0_init already established history — NOT a reset this time); `src/lib/compiler-source-token.ts` (HMAC {robotSlug,version,exp}, keyed by existing COMPILER_SECRET, 5-min TTL, mirrors webhook-signature.ts); `GET /api/compiler/source` — Bearer COMPILER_SECRET + HMAC token required, reads the private Blob, decrypts server-side, streams plaintext .mq5 with `Cache-Control: private, no-store` (key never leaves Vercel). Next: 04-02 (poll extension + filename consistency), then 04-03 (VM daemon rewrite — must come last, calls the real deployed endpoints).
+Last activity: 2026-07-06 — Completed 04-01 (4 commits: schema+migration, HMAC token+endpoint, apply build-step, revert build-step). tsc+eslint clean. Migration confirmed applied via build log inspection, no P3005.
 
 Progress: [██████████░░░░░░░░░░░░░░░░] 38% (10/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3)
 
