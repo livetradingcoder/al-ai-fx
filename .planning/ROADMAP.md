@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Robot-Aware Compile Pipeline** ✓ 2026-07-06 — Robot-scoped poll/complete/download; source fetched via authed proxy endpoint (private Blob, no signed URL exists so a decrypt-and-stream proxy substitutes); VM daemon rewired + two pre-existing production bugs fixed (MetaEditor exit-code, Blob access mode); first genuine COMPLETED compile job in project history.
 - [x] **Phase 5: Admin Catalog + Delivery Loop** ✓ 2026-07-06 — Admin robot CRUD + encrypted source upload (first-source→v1, later uploads bump sourceVersion, functionally verified); compile-ready delivery email (magic-link hop) + dashboard Download; unified terminal-failure notify from both /complete and /reap terminal paths (real gap fixed) + dashboard FAILED state + Mailtrap-independent admin flag (live-proven). MAILTRAP_TOKEN still unprovisioned (non-blocking).
 - [x] **Phase 6: Public Catalog, Per-Robot Pricing, Free Trials** ✓ 2026-07-06 — Public `/catalog` RSC (no auth); `RobotPrice` table + partial trial index + fail-closed `resolveRobotPrice`; robotSlug bound into the Paygate HMAC (create-session + webhook, atomic) closing a robot-swap replay hole; free-trial route enforces true one-trial-per-robot via the DB partial index; admin per-robot price editor with dual revalidate (`/dashboard/admin/robots` + `/catalog`), live-proven deploy-free. Two pre-existing non-blocking gaps surfaced: `PAYGATE_PAYOUT_USDC_ADDRESS` unprovisioned, `PAYGATE_WEBHOOK_SECRET` Vercel-Sensitive/unreadable via CLI.
-- [ ] **Phase 7: Onboard 3 New Robots + End-to-End Validation** - Ship robots #2/#3/#4 as real catalog entries and validate purchase → compile → MetaTrader for each
+- [ ] **Phase 7: Onboard 3 New Robots + End-to-End Validation** - Ship robots #2/#3/#4 as real catalog entries and validate purchase → compile → MetaTrader for each (1/4 — real robots onboarded + compile-verified; MT5 E2E validation pending)
 
 ## Phase Details
 
@@ -136,13 +136,11 @@ Plans:
   2. Robot #3 meets the same criteria — visible, priced, source uploaded, purchase → deliver verified.
   3. Robot #4 meets the same criteria — visible, priced, source uploaded, purchase → deliver verified.
   4. For each of the three new robots, an end-to-end test with a real MT5 account has been performed: purchase → compile → deliver → user runs the `.ex5` in MetaTrader against the bound account. The test result is recorded per robot.
-**Plans**: TBD (est. 4)
+**Plans**: 2 (revised down from est. 4 — all 3 robots' source arrived together, so onboarding collapsed into one plan)
 
 Plans:
-- [ ] 07-01: Onboard robot #2 (admin add + source upload + tier prices + catalog listing verified)
-- [ ] 07-02: Onboard robot #3 (same criteria as 07-01)
-- [ ] 07-03: Onboard robot #4 (same criteria as 07-01)
-- [ ] 07-04: End-to-end MT5 validation for each new robot (real purchase, real compile, real MetaTrader run — logged per robot)
+- [x] 07-01: Onboard robots #2/#3/#4 in one plan — real source from user-supplied `visionfx-ea` repo (VisionFX EA, Precision Range Trader, Sniper Lite EA), encrypted source upload + default tier prices + catalog listing + a real driven-and-completed compile job per robot, all live-verified ✓ 2026-07-06 (blocker noted at Phase 6 close resolved this session; superseded the originally-planned one-plan-per-robot split since all 3 sources arrived together)
+- [ ] 07-04: End-to-end MT5 validation for each new robot (real purchase, real compile, real MetaTrader run — logged per robot) — deferred pending user's pricing/copy/artwork revision pass
 
 ## Progress
 
@@ -157,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 | 4. Robot-Aware Compile Pipeline | 3/3 | Complete | 2026-07-06 |
 | 5. Admin Catalog + Delivery Loop | 4/4 | Complete | 2026-07-06 |
 | 6. Public Catalog, Per-Robot Pricing, Free Trials | 4/4 | Complete | 2026-07-06 |
-| 7. Onboard 3 New Robots + End-to-End Validation | 0/4 | Not started | - |
+| 7. Onboard 3 New Robots + End-to-End Validation | 1/2 | In progress | - |
 
 ---
 
