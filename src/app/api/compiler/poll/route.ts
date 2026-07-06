@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { signSourceToken, sourceTokenExpiry } from '@/lib/compiler-source-token';
 
 type ClaimedJob = {
   id: string;
   subscriptionId: string;
   attemptCount: number;
+  sourceVersion: number;
 };
 
 export async function GET(req: Request) {
@@ -31,6 +33,7 @@ export async function GET(req: Request) {
   //    Both statements share the same transaction => atomic claim.
   let claimed:
     | (ClaimedJob & {
+        sourceVersion: number;
         subscription: { mt5AccountNumber: string | null; expiresAt: Date | null };
         robot: { slug: string };
       })
@@ -69,6 +72,7 @@ export async function GET(req: Request) {
         id: job.id,
         subscriptionId: job.subscriptionId,
         attemptCount: job.attemptCount,
+        sourceVersion: job.sourceVersion,
         subscription: job.subscription,
         robot: job.robot,
       };
@@ -85,14 +89,28 @@ export async function GET(req: Request) {
   // 3. Response shape — ADDITIVE ONLY. Existing worker (daemon.js) reads
   //    job.id, job.mt5AccountNumber, job.expiresAt. attemptCount is new;
   //    daemon.js reads it as `job.attemptCount ?? 0`. robotSlug is additive
-  //    for Phase 4 (worker source-fetch + filename); daemon ignores it today.
+  //    (Phase 3). sourceVersion + sourceUrl are additive (Phase 4) — the new
+  //    daemon (Plan 04-03) fetches the .mq5 from sourceUrl (a short-TTL signed
+  //    URL, never source bytes) with Authorization: Bearer COMPILER_SECRET.
+  const origin = new URL(req.url).origin;
+  const exp = sourceTokenExpiry();
+  const token = signSourceToken(claimed.robot.slug, claimed.sourceVersion, exp);
+  const sourceUrl =
+    `${origin}/api/compiler/source` +
+    `?robotSlug=${encodeURIComponent(claimed.robot.slug)}` +
+    `&version=${claimed.sourceVersion}` +
+    `&exp=${exp}` +
+    `&token=${token}`;
+
   return NextResponse.json({
     job: {
       id: claimed.id,
       mt5AccountNumber: claimed.subscription.mt5AccountNumber,
       expiresAt: claimed.subscription.expiresAt,
       attemptCount: claimed.attemptCount,
-      robotSlug: claimed.robot.slug,
+      robotSlug: claimed.robot.slug,           // additive (Phase 3)
+      sourceVersion: claimed.sourceVersion,    // additive (Phase 4)
+      sourceUrl,                               // additive (Phase 4) — URL, never source bytes
     },
   });
 }
