@@ -2853,6 +2853,16 @@ html:lang(ar) .landing-hero-title {
   margin-top: 22px;
 }
 
+.pricing-group-shell.pricing-group-shell-secondary {
+  max-width: 560px;
+  margin: 22px auto 0;
+  padding: 24px;
+}
+
+.pricing-group-shell-secondary .pricing-group-head {
+  text-align: center;
+}
+
 .pricing-group-head {
   margin-bottom: 24px;
 }
