@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Multi-Robot Schema Foundation** ✓ 2026-07-05 — Robot model + NON-NULL robotId FKs; first checked-in migration (0_init, remote DB reset via build channel); robotId wired through subscription/compilation writes + additive poll slug; AES-256-GCM encrypted source storage (SOURCE_ENCRYPTION_KEY, private Blob); GoldBot real source uploaded as v1.
 - [x] **Phase 4: Robot-Aware Compile Pipeline** ✓ 2026-07-06 — Robot-scoped poll/complete/download; source fetched via authed proxy endpoint (private Blob, no signed URL exists so a decrypt-and-stream proxy substitutes); VM daemon rewired + two pre-existing production bugs fixed (MetaEditor exit-code, Blob access mode); first genuine COMPLETED compile job in project history.
 - [x] **Phase 5: Admin Catalog + Delivery Loop** ✓ 2026-07-06 — Admin robot CRUD + encrypted source upload (first-source→v1, later uploads bump sourceVersion, functionally verified); compile-ready delivery email (magic-link hop) + dashboard Download; unified terminal-failure notify from both /complete and /reap terminal paths (real gap fixed) + dashboard FAILED state + Mailtrap-independent admin flag (live-proven). MAILTRAP_TOKEN still unprovisioned (non-blocking).
-- [ ] **Phase 6: Public Catalog, Per-Robot Pricing, Free Trials** - Customer-facing catalog + checkout + per-robot tiers + one-trial-per-robot enforcement
+- [x] **Phase 6: Public Catalog, Per-Robot Pricing, Free Trials** ✓ 2026-07-06 — Public `/catalog` RSC (no auth); `RobotPrice` table + partial trial index + fail-closed `resolveRobotPrice`; robotSlug bound into the Paygate HMAC (create-session + webhook, atomic) closing a robot-swap replay hole; free-trial route enforces true one-trial-per-robot via the DB partial index; admin per-robot price editor with dual revalidate (`/dashboard/admin/robots` + `/catalog`), live-proven deploy-free. Two pre-existing non-blocking gaps surfaced: `PAYGATE_PAYOUT_USDC_ADDRESS` unprovisioned, `PAYGATE_WEBHOOK_SECRET` Vercel-Sensitive/unreadable via CLI.
 - [ ] **Phase 7: Onboard 3 New Robots + End-to-End Validation** - Ship robots #2/#3/#4 as real catalog entries and validate purchase → compile → MetaTrader for each
 
 ## Phase Details
@@ -122,10 +122,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [x] 06-01-PLAN.md — RobotPrice schema + partial trial index + resolveRobotPrice resolver + GoldBot seed (build-step migration) [Wave 1]
-- [ ] 06-02-PLAN.md — Public catalog RSC page listing active robots with per-robot curated prices [Wave 2]
-- [ ] 06-03-PLAN.md — robotSlug through the funnel: robotSlug-bound HMAC (create-session + webhook, atomic), provisionSubscription refactor, free-trial per-robot + one-trial P2002, checkout UI [Wave 2]
-- [ ] 06-04-PLAN.md — Admin per-robot price editor (updateRobotPrices + editable RobotForm inputs, dual revalidate) [Wave 2]
+- [x] 06-01-PLAN.md — RobotPrice schema + partial trial index + resolveRobotPrice resolver + GoldBot seed (build-step migration) [Wave 1] ✓ 2026-07-06
+- [x] 06-02-PLAN.md — Public catalog RSC page listing active robots with per-robot curated prices [Wave 2] ✓ 2026-07-06
+- [x] 06-03-PLAN.md — robotSlug through the funnel: robotSlug-bound HMAC (create-session + webhook, atomic), provisionSubscription refactor, free-trial per-robot + one-trial P2002, checkout UI [Wave 2] ✓ 2026-07-06
+- [x] 06-04-PLAN.md — Admin per-robot price editor (updateRobotPrices + editable RobotForm inputs, dual revalidate) [Wave 2] ✓ 2026-07-06
 
 ### Phase 7: Onboard 3 New Robots + End-to-End Validation
 **Goal**: Three new robots are live on the catalog, priced, buyable, and each has been proven end-to-end from purchase through MetaTrader execution.
@@ -156,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 (decimal 
 | 3. Multi-Robot Schema Foundation | 3/3 | Complete | 2026-07-05 |
 | 4. Robot-Aware Compile Pipeline | 3/3 | Complete | 2026-07-06 |
 | 5. Admin Catalog + Delivery Loop | 4/4 | Complete | 2026-07-06 |
-| 6. Public Catalog, Per-Robot Pricing, Free Trials | 1/4 | In progress | - |
+| 6. Public Catalog, Per-Robot Pricing, Free Trials | 4/4 | Complete | 2026-07-06 |
 | 7. Onboard 3 New Robots + End-to-End Validation | 0/4 | Not started | - |
 
 ---
