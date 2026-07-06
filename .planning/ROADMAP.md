@@ -103,9 +103,9 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Admin robot list + activate/deactivate + metadata edit (role-gated CRUD trio; slug immutable) [Wave 1]
+- [x] 05-01-PLAN.md — Admin robot list + activate/deactivate + metadata edit (role-gated CRUD trio; slug immutable) [Wave 1] ✓ 2026-07-06
 - [ ] 05-02-PLAN.md — Admin add-robot + encrypted source-upload (reuses uploadEncryptedSource; first-source→v1; ADMN-03 pricing read-only) [Wave 2, dep 05-01]
-- [ ] 05-03-PLAN.md — Compile-ready delivery email (magic-link hop, no-op-safe) + verify dashboard Download button [Wave 1]
+- [x] 05-03-PLAN.md — Compile-ready delivery email (magic-link hop, no-op-safe) + verify dashboard Download button [Wave 1] ✓ 2026-07-06
 - [ ] 05-04-PLAN.md — Terminal-failure notify (shared helper from both FAILED paths) + dashboard failure support link + admin dashboard flag [Wave 2, dep 05-03]
 
 ### Phase 6: Public Catalog, Per-Robot Pricing, Free Trials

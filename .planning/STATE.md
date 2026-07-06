@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-07-04)
 
 **Core value:** A paying user receives their chosen, compiled, MT5-account-locked robot within minutes of checkout — automatically, every time.
-**Current focus:** Phase 5 — Admin Catalog + Delivery Loop (Phase 4 complete)
+**Current focus:** Phase 5 — Admin Catalog + Delivery Loop (Wave 1 complete, 2/4 plans)
 
 ## Current Position
 
-Phase: 4 of 7 (Robot-Aware Compile Pipeline) — **COMPLETE (3/3 plans)**
-Status: **Phase 4 COMPLETE.** CTLG-06/07/08 + SRCE-02/03 all closed. 04-01 + 04-02 landed the schema/endpoint/poll/filename plumbing. 04-03 (VM daemon rewrite) deployed the daemon fetch-source-per-job + robot-scoped upload rewrite to the live VM, and — critically — **produced this project's first-ever genuinely `COMPLETED` compile job** (`cmr8s1ch90004gg4v41rcuky3`, real 40390-byte `.ex5`, sha256 `d38d943f...`). Along the way found and fixed two pre-existing production bugs (both Rule 1, not Phase-4 scope creep — they blocked compiles since Phase 1): (a) MetaEditor exit-code was trusted as a hard gate even though the daemon's own comment said not to — fixed to `ok = ex5Size>0 && !hasErrorMarker`; (b) daemon's Blob upload still used `access:'public'` after the store was found private in 03-03 — fixed to `access:'private'`. SRCE-03 negative test confirmed no source leak (binary artifact, no MQL5 markers); no admin UI renders source; no secret logging. Next: Phase 5 — Admin Catalog + Delivery Loop.
-Last activity: 2026-07-06 — Completed 04-03: VM daemon.js rewritten (source fetch via `/api/compiler/source`, robot-scoped Blob upload pathname), deployed + service restarted, live E2E test reached COMPLETED, SRCE-03 audit green. Phase 4 closed.
+Phase: 5 of 7 (Admin Catalog + Delivery Loop) — **IN PROGRESS (2/4 plans, Wave 1 complete)**
+Status: Phase 4 COMPLETE (3/3). Phase 5 Wave 1 done: **05-01** (admin robot list/toggle/edit — ADMN-01/02/05) and **05-03** (compile-ready delivery email — DLVR-01/02) both landed, ran in parallel with zero file overlap. Verified against LIVE PRODUCTION (this project has no local DB access — `DATABASE_URL` is Vercel-Sensitive/write-only — so browser/UI verification for admin+dashboard work is done via curl against the deployed site with a real NextAuth session cookie, not a local dev server). Admin robot table confirmed rendering with GoldBot + toggle controls; anonymous access confirmed redirected to `/login`. Compile-ready email code path complete and no-op-safe (MAILTRAP_TOKEN still unprovisioned — non-blocking, same treatment as Phase 1's original gap). Next: Wave 2 — **05-02** (add robot + source upload, depends on 05-01, appends to same files) and **05-04** (terminal-failure notify + admin alert, depends on 05-03, appends to same files).
+Last activity: 2026-07-06 — Completed 05-01 + 05-03 (both had been interrupted mid-Task-3 by a session limit; resumed by verifying already-committed code and completing browser/curl verification against production).
 
-Progress: [████████████░░░░░░░░░░░░░░] 46% (12/26 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3, 3/3 Phase 4)
+Progress: [█████████████░░░░░░░░░░░░░] 50% (14/28 plans across all phases; 4/4 Phase 1, 3/3 Phase 2, 3/3 Phase 3, 3/3 Phase 4, 2/4 Phase 5)
 
 ## Performance Metrics
 
