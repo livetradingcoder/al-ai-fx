@@ -73,8 +73,23 @@ model Robot {
 
   subscriptions Subscription[]
   compilations  Compilation[]
+  prices        RobotPrice[]
 
   @@index([active, sortOrder]) // catalog list query: where active order by sortOrder
+}
+
+model RobotPrice {
+  id        String      @id @default(cuid())
+  robotId   String
+  robot     Robot       @relation(fields: [robotId], references: [id], onDelete: Cascade)
+  tier      PricingTier
+  amount    Float // per-robot price in USD; 0 for FREE_TRIAL
+  active    Boolean     @default(true) // hide a tier for one robot without deleting the row
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([robotId, tier]) // one price row per (robot, tier) — gives Prisma the robotId_tier composite
+  @@index([robotId, active])
 }
 
 model Compilation {
@@ -105,12 +120,12 @@ model Compilation {
 
 enum PricingTier {
   FREE_TRIAL
-  TEN_DAYS           // NEW — was silently downgraded to ONE_MONTH
+  TEN_DAYS // NEW — was silently downgraded to ONE_MONTH
   ONE_MONTH
   SIX_MONTHS
-  ONE_YEAR           // NEW — was silently downgraded to ONE_MONTH
+  ONE_YEAR // NEW — was silently downgraded to ONE_MONTH
   LIFETIME
-  LIFETIME_SOURCE    // NEW — was silently downgraded to ONE_MONTH
+  LIFETIME_SOURCE // NEW — was silently downgraded to ONE_MONTH
   SECRET_TEST_TIER
 }
 
