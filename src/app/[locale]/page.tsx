@@ -702,7 +702,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-single">
+            <div className="pricing-showcase-grid pricing-showcase-grid-two">
               {passPlans.map((plan) => (
                 <article key={plan.id} className="pricing-tier pricing-tier-secondary">
                   <GoldGlyph kind="vault" className="pricing-tier-glyph" />
@@ -722,6 +722,30 @@ export default function Home() {
                   </Link>
                 </article>
               ))}
+
+              <article className="pricing-tier pricing-tier-secondary pricing-tier-preview">
+                <div className="pricing-tier-badge pricing-tier-badge-preview">
+                  Coming Soon
+                </div>
+                <GoldGlyph kind="halo" className="pricing-tier-glyph" />
+                <span className="pricing-tier-label">
+                  Pay After Trial
+                </span>
+                <p className="pricing-tier-preview-hook">
+                  Zero upfront. Pay only if your first 3 days close in profit.
+                </p>
+                <p className="pricing-tier-note">
+                  We&apos;re building the verification behind this so results are checked fairly before anyone is charged.
+                </p>
+                <ul className="pricing-tier-list">
+                  <li>Same 3-day hands-on trial</li>
+                  <li>No card required to start</li>
+                  <li>Charged only on a profitable trial</li>
+                </ul>
+                <span className="btn-secondary fill pricing-tier-preview-cta" aria-disabled="true">
+                  Notify Me When Ready
+                </span>
+              </article>
             </div>
           </div>
         </div>

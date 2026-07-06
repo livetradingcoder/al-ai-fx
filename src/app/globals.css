@@ -2854,7 +2854,7 @@ html:lang(ar) .landing-hero-title {
 }
 
 .pricing-group-shell.pricing-group-shell-secondary {
-  max-width: 560px;
+  max-width: 780px;
   margin: 22px auto 0;
   padding: 24px;
 }
@@ -2901,12 +2901,6 @@ html:lang(ar) .landing-hero-title {
 
 .pricing-showcase-grid-two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.pricing-showcase-grid-single {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 380px;
-  margin: 0 auto;
 }
 
 .pricing-tier {
@@ -3007,6 +3001,38 @@ html:lang(ar) .landing-hero-title {
   background: linear-gradient(180deg, var(--accent-primary-light), var(--accent-primary));
   box-shadow: 0 0 0 6px rgba(215, 181, 109, 0.08);
   flex-shrink: 0;
+}
+
+.pricing-tier-preview {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.32);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.pricing-tier-badge-preview {
+  background: rgba(148, 163, 184, 0.14);
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.pricing-tier-preview-hook {
+  margin-top: 18px;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+.pricing-tier-preview-cta {
+  margin-top: 16px;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pricing-tier-preview-cta:hover {
+  transform: none;
+  background: transparent;
+  border-color: var(--border-color);
 }
 
 .private-access-section {
