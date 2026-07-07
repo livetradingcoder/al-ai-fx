@@ -1,14 +1,59 @@
-import { MailtrapClient } from "mailtrap";
+// Transport: Mailgun HTTP API (same integration pattern as LTL's trade-cmp
+// mailgunConfig.ts — HTTPS-only, no SMTP ports needed). Replaces the original
+// Mailtrap client, which was never provisioned. The `client` object below is
+// call-compatible with MailtrapClient#send so all sender functions and their
+// no-op-safe `if (!client)` guards are unchanged.
+const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
+const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
 
-const TOKEN = process.env.MAILTRAP_TOKEN || process.env.SMTP_PASS;
 const SENDER_EMAIL = process.env.SMTP_FROM_EMAIL || "hello@al-ai-fx.xyz";
 const FROM_NAME = process.env.SMTP_FROM_NAME || "GoldBot Support";
 
-if (!TOKEN) {
-  console.warn("[Mail] MAILTRAP_TOKEN or SMTP_PASS (Mailtrap API Token) not found. Emails will not be sent.");
+if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
+  console.warn("[Mail] MAILGUN_API_KEY / MAILGUN_DOMAIN not set. Emails will not be sent.");
 }
 
-const client = TOKEN ? new MailtrapClient({ token: TOKEN }) : null;
+type MailMessage = {
+  from: { email: string; name: string };
+  to: { email: string }[];
+  subject: string;
+  html: string;
+  text: string;
+  category?: string;
+};
+
+const client =
+  MAILGUN_API_KEY && MAILGUN_DOMAIN
+    ? {
+        async send(msg: MailMessage) {
+          const body = new URLSearchParams({
+            from: `${msg.from.name} <${msg.from.email}>`,
+            to: msg.to.map((t) => t.email).join(","),
+            subject: msg.subject,
+            html: msg.html,
+            text: msg.text,
+          });
+          if (msg.category) {
+            body.set("o:tag", msg.category);
+          }
+
+          const response = await fetch(`${MAILGUN_API_BASE}/${MAILGUN_DOMAIN}/messages`, {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${Buffer.from(`api:${MAILGUN_API_KEY}`).toString("base64")}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body,
+          });
+
+          if (!response.ok) {
+            const data = (await response.json().catch(() => ({}))) as { message?: string };
+            throw new Error(data.message || `Mailgun API error (HTTP ${response.status})`);
+          }
+        },
+      }
+    : null;
 
 const sender = {
   email: SENDER_EMAIL.toLowerCase(),
@@ -65,7 +110,7 @@ function renderEmailTemplate(input: {
 
 export async function sendWelcomeEmail(email: string, magicLinkUrl: string) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping welcome email.");
+    console.warn("[Mail] Mail client not initialized. Skipping welcome email.");
     return;
   }
 
@@ -102,7 +147,7 @@ export async function sendPurchaseConfirmationEmail(
   magicLinkUrl: string,
 ) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping confirmation email.");
+    console.warn("[Mail] Mail client not initialized. Skipping confirmation email.");
     return;
   }
 
@@ -136,7 +181,7 @@ export async function sendPurchaseConfirmationEmail(
  * compile reaches COMPLETED. Carries a signed, expiring magic-link that lands
  * them authenticated in the dashboard where the Download button lives. No-op
  * safe (same `if (!client)` guard as the other senders) — never throws when
- * MAILTRAP_TOKEN is unset; the /complete caller wraps it best-effort.
+ * MAILGUN_API_KEY is unset; the /complete caller wraps it best-effort.
  */
 export async function sendCompileReadyEmail(
   email: string,
@@ -144,7 +189,7 @@ export async function sendCompileReadyEmail(
   magicLinkUrl: string,
 ) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping compile-ready email.");
+    console.warn("[Mail] Mail client not initialized. Skipping compile-ready email.");
     return;
   }
 
@@ -175,7 +220,7 @@ export async function sendCompileReadyEmail(
  * DLVR-03: Sends the buying user a "your build hit a snag" email once their
  * compile reaches terminal FAILED (retries exhausted). Carries a support link
  * so the user can reach the team. No-op safe (same `if (!client)` guard as the
- * other senders) — never throws when MAILTRAP_TOKEN is unset; the
+ * other senders) — never throws when MAILGUN_API_KEY is unset; the
  * notifyTerminalFailure caller wraps it best-effort.
  */
 export async function sendCompileFailedEmail(
@@ -184,7 +229,7 @@ export async function sendCompileFailedEmail(
   supportUrl: string,
 ) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping compile-failed email.");
+    console.warn("[Mail] Mail client not initialized. Skipping compile-failed email.");
     return;
   }
 
@@ -217,7 +262,7 @@ export async function sendCompileFailedEmail(
  */
 export async function sendResetPasswordEmail(email: string, magicLinkUrl: string) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping reset password email.");
+    console.warn("[Mail] Mail client not initialized. Skipping reset password email.");
     return;
   }
 
@@ -251,12 +296,12 @@ type AdminAlertKind =
 /**
  * Fires the admin alert email via Mailtrap. Recipient is ADMIN_ALERT_EMAIL
  * (env), falling back to SMTP_FROM_EMAIL. Silent (no throw) if
- * MAILTRAP_TOKEN / SMTP_PASS is missing — callers must not fail the request
+ * MAILGUN_API_KEY is missing — callers must not fail the request
  * just because email failed. Best-effort side effect only.
  */
 export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping admin alert.");
+    console.warn("[Mail] Mail client not initialized. Skipping admin alert.");
     return;
   }
   const to = (process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || "").toLowerCase();
@@ -318,7 +363,7 @@ export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
  */
 export async function sendSubscriberWelcomeEmail(email: string) {
   if (!client) {
-    console.warn("[Mail] Mailtrap client not initialized. Skipping subscriber welcome email.");
+    console.warn("[Mail] Mail client not initialized. Skipping subscriber welcome email.");
     return;
   }
 
