@@ -233,7 +233,13 @@
     "product": "پروڈکٹ",
     "total": "کل",
     "autoRenews": "خودکار تجدید جب تک منسوخ نہ ہو۔ لائف ٹائم پاسز ایک بار کی ادائیگی ہیں۔",
-    "loadingCheckout": "چیک آؤٹ لوڈ ہو رہا ہے..."
+    "loadingCheckout": "چیک آؤٹ لوڈ ہو رہا ہے...",
+    "plan10Days": "10-Day Plan",
+    "plan1Month": "Monthly Plan",
+    "plan6Months": "Biannual Plan",
+    "plan1Year": "Yearly Plan",
+    "planLifetime": "Lifetime Access",
+    "planLifetimeSource": "Lifetime + Source"
   },
   "Tutorials": {
     "platformTutorials": "پلیٹ فارم ٹیوٹوریلز",

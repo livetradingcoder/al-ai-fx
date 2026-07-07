@@ -233,7 +233,13 @@
     "product": "उत्पाद",
     "total": "कुल",
     "autoRenews": "रद्द होने तक स्वतः नवीनीकरण। लाइफटाइम पास एकमुश्त भुगतान है।",
-    "loadingCheckout": "चेकआउट लोड हो रहा है..."
+    "loadingCheckout": "चेकआउट लोड हो रहा है...",
+    "plan10Days": "10-Day Plan",
+    "plan1Month": "Monthly Plan",
+    "plan6Months": "Biannual Plan",
+    "plan1Year": "Yearly Plan",
+    "planLifetime": "Lifetime Access",
+    "planLifetimeSource": "Lifetime + Source"
   },
   "Tutorials": {
     "platformTutorials": "प्लेटफ़ॉर्म ट्यूटोरियल",

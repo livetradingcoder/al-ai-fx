@@ -233,7 +233,13 @@
     "product": "Product",
     "total": "Total",
     "autoRenews": "Auto-renews unless cancelled. Lifetime passes are a one-time payment.",
-    "loadingCheckout": "Loading Checkout..."
+    "loadingCheckout": "Loading Checkout...",
+    "plan10Days": "10-Day Plan",
+    "plan1Month": "Monthly Plan",
+    "plan6Months": "Biannual Plan",
+    "plan1Year": "Yearly Plan",
+    "planLifetime": "Lifetime Access",
+    "planLifetimeSource": "Lifetime + Source"
   },
   "Tutorials": {
     "platformTutorials": "Platform Tutorials",

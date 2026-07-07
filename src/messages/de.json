@@ -233,7 +233,13 @@
     "product": "Produkt",
     "total": "Gesamt",
     "autoRenews": "Automatische Verlängerung, sofern nicht gekündigt. Lifetime-Pässe sind eine einmalige Zahlung.",
-    "loadingCheckout": "Kasse wird geladen..."
+    "loadingCheckout": "Kasse wird geladen...",
+    "plan10Days": "10-Day Plan",
+    "plan1Month": "Monthly Plan",
+    "plan6Months": "Biannual Plan",
+    "plan1Year": "Yearly Plan",
+    "planLifetime": "Lifetime Access",
+    "planLifetimeSource": "Lifetime + Source"
   },
   "Tutorials": {
     "platformTutorials": "Plattform-Tutorials",

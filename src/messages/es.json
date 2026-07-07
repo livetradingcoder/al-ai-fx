@@ -233,7 +233,13 @@
     "product": "Producto",
     "total": "Total",
     "autoRenews": "Se renueva automáticamente a menos que se cancele. Los pases de por vida son un pago único.",
-    "loadingCheckout": "Cargando Pagar..."
+    "loadingCheckout": "Cargando Pagar...",
+    "plan10Days": "10-Day Plan",
+    "plan1Month": "Monthly Plan",
+    "plan6Months": "Biannual Plan",
+    "plan1Year": "Yearly Plan",
+    "planLifetime": "Lifetime Access",
+    "planLifetimeSource": "Lifetime + Source"
   },
   "Tutorials": {
     "platformTutorials": "Tutoriales de plataforma",
