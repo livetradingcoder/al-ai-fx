@@ -310,3 +310,38 @@ export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
     console.error("[Mail] Admin alert send failed:", err);
   }
 }
+
+/**
+ * Welcome email for education-site (algotradingschool.com) subscribers.
+ * No-op-safe like every other sender — the subscribe route calls this
+ * best-effort and must never fail the request over email problems.
+ */
+export async function sendSubscriberWelcomeEmail(email: string) {
+  if (!client) {
+    console.warn("[Mail] Mailtrap client not initialized. Skipping subscriber welcome email.");
+    return;
+  }
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Browse the lessons",
+    buttonUrl: "https://www.algotradingschool.com/en",
+    eyebrow: "Algo Trading School",
+    intro:
+      "You're on the list. From time to time we'll send you a new plain-language lesson on automated trading — same tone as the site: no signals, no promises.",
+    title: "Welcome to Algo Trading School",
+    detailLines: [
+      `Email: ${email}`,
+      "You can unsubscribe at any time by replying to any email.",
+    ],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email }],
+    subject: "Welcome to Algo Trading School",
+    html,
+    text,
+    category: "EducationNewsletter",
+  });
+  console.log(`[Mail] Subscriber welcome email sent to ${email}`);
+}

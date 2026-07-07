@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
+import { sendSubscriberWelcomeEmail } from "@/lib/mail";
 
 // Public, credential-less subscribe endpoint consumed cross-origin by the
 // education site (algotradingschool.com). CORS is wide open on purpose:
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
     // Whitelist sources — never store arbitrary client strings.
     const source = body.source === "algotradingschool" ? "algotradingschool" : "unknown";
 
+    let isNewSubscriber = true;
     try {
       await prisma.emailSubscriber.create({ data: { email, source } });
     } catch (err) {
@@ -48,6 +50,17 @@ export async function POST(req: Request) {
       // purpose: don't let the endpoint act as an email-existence oracle.
       if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) {
         throw err;
+      }
+      isNewSubscriber = false;
+    }
+
+    // Best-effort welcome email for first-time subscribers only. No-op-safe
+    // when MAILTRAP_TOKEN is unset; must never fail the subscribe request.
+    if (isNewSubscriber) {
+      try {
+        await sendSubscriberWelcomeEmail(email);
+      } catch (err) {
+        console.error("[Subscribe] welcome email failed (non-fatal):", err);
       }
     }
 
