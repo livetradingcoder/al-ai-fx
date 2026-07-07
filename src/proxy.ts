@@ -17,8 +17,12 @@ function csrfMiddleware(request: NextRequest) {
   const isStateMutatingMethod = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method);
   const isWebhook = pathname.startsWith('/api/webhooks/');
   const isNextAuth = pathname.startsWith('/api/auth/');
-  
-  if (isStateMutatingMethod && !isWebhook) {
+  // Deliberately cross-origin: consumed by the education site
+  // (algotradingschool.com). Not a CSRF target — no cookies/session are read
+  // or mutated, and the route rate-limits per IP and sets its own CORS headers.
+  const isPublicCrossOrigin = pathname === '/api/marketing/subscribe';
+
+  if (isStateMutatingMethod && !isWebhook && !isPublicCrossOrigin) {
     // Check Origin header for CSRF protection
     const requestOrigin = request.headers.get('origin');
     const host = request.headers.get('host');
