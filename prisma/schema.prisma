@@ -173,3 +173,15 @@ model WebhookDelivery {
   @@index([orderRef])
   @@index([receivedAt]) // supports future cleanup cron (deferred — see 2-RESEARCH.md Open Q 3)
 }
+
+/// Marketing email list — populated by the education site
+/// (algotradingschool.com) via POST /api/marketing/subscribe.
+/// Deliberately NOT related to User: subscribers are pre-customers.
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("algotradingschool") // which property captured the lead
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
