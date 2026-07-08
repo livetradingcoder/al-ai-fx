@@ -25,16 +25,17 @@ export default function LanguageSwitcher() {
       aria-label="Select Language"
       style={{
         background: 'transparent',
-        border: '1px solid var(--border-color)',
-        color: 'var(--text-primary)',
-        padding: '0.4rem 0.8rem',
+        border: 'none',
+        color: 'var(--text-secondary)',
         borderRadius: '6px',
         cursor: 'pointer',
-        fontSize: '0.9rem',
-        marginRight: '1rem',
+        fontSize: '0.8rem',
+        marginRight: '0.25rem',
         outline: 'none',
-        paddingRight: '10px',
-        paddingLeft: '10px'
+        paddingTop: '4px',
+        paddingBottom: '4px',
+        paddingRight: '4px',
+        paddingLeft: '4px'
       }}
     >
       <option value="en">🇪🇺 EN</option>

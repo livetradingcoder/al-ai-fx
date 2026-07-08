@@ -124,6 +124,7 @@ ul {
 .navbar {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   height: 68px;
   background: rgba(13, 17, 23, 0.8);
@@ -131,7 +132,13 @@ ul {
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
   z-index: 100;
-  transition: all 0.3s ease;
+  transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar.scrolled {
@@ -1839,7 +1846,7 @@ h2 {
 }
 
 html {
-  scroll-padding-top: 96px;
+  scroll-padding-top: 84px;
 }
 
 body {
@@ -1897,7 +1904,7 @@ button {
 }
 
 .main-content {
-  padding-top: 92px;
+  padding-top: 74px;
 }
 
 .btn-primary,
@@ -1953,18 +1960,65 @@ button {
 }
 
 .navbar {
-  height: 84px;
+  height: 62px;
   background: rgba(12, 9, 7, 0.72);
-  border-bottom: 1px solid rgba(244, 220, 162, 0.08);
+  border: 1px solid transparent;
+  border-bottom-color: rgba(244, 220, 162, 0.08);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   box-shadow: none;
+  will-change: transform, width, border-radius;
 }
 
+/* On scroll the bar detaches from the top edge and becomes a floating pill. */
 .navbar.scrolled {
-  background: rgba(12, 9, 7, 0.88);
-  border-bottom-color: rgba(244, 220, 162, 0.14);
-  box-shadow: 0 18px 44px rgba(4, 3, 2, 0.28);
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1220px, calc(100vw - 28px));
+  height: 54px;
+  border-radius: 999px;
+  border-color: rgba(244, 220, 162, 0.16);
+  background: rgba(14, 10, 8, 0.9);
+  box-shadow: 0 20px 48px rgba(4, 3, 2, 0.42);
+}
+
+.navbar.scrolled .nav-container {
+  width: 100%;
+  padding: 0 10px 0 12px;
+}
+
+/* Condense the pill: drop the brand subtitle, tighten gaps, never wrap. */
+.navbar.scrolled .nav-brand-copy span {
+  display: none;
+}
+
+/* Match the logo mark to the pill's fully-rounded corners when detached,
+   and drop its border so it reads as one piece with the pill. */
+.navbar.scrolled .nav-logo-mark {
+  border-radius: 999px;
+  border-color: transparent;
+}
+
+.navbar.scrolled .nav-links {
+  gap: 2px;
+}
+
+.navbar.scrolled .nav-links a:not(.btn-primary):not(.btn-secondary) {
+  font-size: 0.82rem;
+  padding: 6px 11px;
+}
+
+.navbar.scrolled .nav-actions {
+  gap: 8px;
+}
+
+/* Nav content must stay on one line in every language. */
+.nav-brand-copy strong,
+.nav-links a:not(.btn-primary):not(.btn-secondary),
+.nav-login,
+.nav-cta {
+  white-space: nowrap;
 }
 
 .nav-container {
@@ -1991,11 +2045,12 @@ button {
 .nav-logo-mark {
   position: relative;
   display: inline-flex;
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   align-items: center;
   justify-content: center;
-  border-radius: 18px;
+  border-radius: 13px;
+  transition: border-radius 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   background:
     linear-gradient(180deg, rgba(255, 243, 214, 0.12), rgba(255, 243, 214, 0.02)),
     rgba(21, 16, 12, 0.8);
@@ -2006,40 +2061,42 @@ button {
 }
 
 .nav-logo-mark img {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
 }
 
 .nav-brand-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .nav-brand-copy strong {
   font-family: "Space Grotesk", sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.97rem;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .nav-brand-copy span {
   font-family: "Manrope", sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-muted);
+  line-height: 1.1;
 }
 
 .nav-links {
-  gap: 10px;
+  gap: 6px;
 }
 
 .nav-links a:not(.btn-primary):not(.btn-secondary) {
   color: var(--text-secondary);
   border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 0.92rem;
+  padding: 7px 13px;
+  font-size: 0.85rem;
 }
 
 .nav-links a:not(.btn-primary):not(.btn-secondary)::after {
@@ -2054,15 +2111,18 @@ button {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.nav-login {
-  min-width: 106px;
-}
-
-.nav-cta {
-  min-width: 122px;
+/* Nav buttons ride smaller than the page's large pill buttons.
+   Scoped under .nav-actions so it beats the base .btn-primary padding. */
+.nav-actions .nav-login,
+.nav-actions .nav-cta {
+  min-height: 34px;
+  padding: 0 13px;
+  font-size: 0.83rem;
+  min-width: 0;
+  gap: 6px;
 }
 
 .nav-mobile-toggle {
@@ -2156,20 +2216,20 @@ button {
 }
 
 .landing-container {
-  width: min(1240px, calc(100vw - 56px));
+  width: min(1320px, calc(100vw - 64px));
   margin: 0 auto;
   position: relative;
 }
 
 .landing-section {
   position: relative;
-  padding: 120px 0;
+  padding: 84px 0;
 }
 
 .landing-intro {
   position: relative;
   overflow: clip;
-  padding: 34px 0 92px;
+  padding: 26px 0 64px;
   border-bottom: 1px solid rgba(244, 220, 162, 0.08);
 }
 
@@ -2215,7 +2275,7 @@ button {
 .landing-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-  gap: 54px;
+  gap: 46px;
   align-items: center;
 }
 
@@ -2251,11 +2311,11 @@ button {
 .landing-hero-title,
 .section-title,
 .landing-proof-title {
-  margin: 22px 0 0;
+  margin: 20px 0 0;
   font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(2.3rem, 5.2vw, 4.4rem);
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+  font-size: clamp(1.95rem, 3.6vw, 3.3rem);
+  line-height: 1.03;
+  letter-spacing: -0.04em;
 }
 
 .landing-hero-title {
@@ -2277,18 +2337,18 @@ html:lang(hi) .landing-hero-title,
 html:lang(bn) .landing-hero-title,
 html:lang(ur) .landing-hero-title,
 html:lang(ar) .landing-hero-title {
-  font-size: clamp(2.1rem, 4.6vw, 3.8rem);
-  line-height: 1.02;
+  font-size: clamp(1.8rem, 3.2vw, 2.85rem);
+  line-height: 1.06;
 }
 
 .landing-hero-lead,
 .section-copy,
 .landing-proof-text {
-  margin-top: 26px;
-  max-width: 58ch;
+  margin-top: 22px;
+  max-width: 62ch;
   color: var(--text-secondary);
-  font-size: 1.12rem;
-  line-height: 1.75;
+  font-size: 1.04rem;
+  line-height: 1.7;
 }
 
 .landing-hero-actions {
@@ -3780,7 +3840,7 @@ html:lang(ar) .landing-hero-title {
 
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 84px;
+    padding-top: 72px;
   }
 
   .nav-container,
@@ -4599,5 +4659,48 @@ html:lang(ar) .landing-hero-title {
 
   .stat-massive {
     font-size: clamp(48px, 12vw, 100px);
+  }
+}
+
+/* Subtle licensing pointer at the end of the pricing section */
+.pricing-licensing-link {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.pricing-licensing-link a {
+  color: var(--accent-primary-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pricing-licensing-link a:hover {
+  color: var(--accent-primary);
+}
+
+/* Landing → /features pointer between proof and pricing */
+.landing-breakdown-link {
+  margin: 1rem auto 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+.landing-breakdown-link a {
+  color: var(--accent-primary-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+.landing-breakdown-link a:hover {
+  color: var(--accent-primary);
+}
+
+/* Mobile: tighter nav gutter so the logo doesn't sit far from the edge.
+   Overrides the shared container inset for the navbar only. Pill state keeps
+   its own left/right padding (higher specificity). */
+@media (max-width: 1024px) {
+  .nav-container {
+    width: 100%;
+    padding: 0 12px;
   }
 }

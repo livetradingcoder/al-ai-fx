@@ -64,6 +64,15 @@ export default async function RootLayout({
                 </p>
               </div>
               <div>
+                <h4>Product</h4>
+                <div className="footer-links">
+                  <Link href="/features">Features</Link>
+                  <Link href="/#pricing">Pricing</Link>
+                  <Link href="/roadmap">Roadmap</Link>
+                  <Link href="/licensing">Licensing &amp; source</Link>
+                </div>
+              </div>
+              <div>
                 <h4>Legal</h4>
                 <div className="footer-links">
                   <Link href="/privacy-policy">Privacy Policy</Link>
@@ -76,8 +85,7 @@ export default async function RootLayout({
             <p className="footer-note">
               &copy; {new Date().getFullYear()} AL-ai-FX Algorithms. GoldBot is a
               trademark of AL-ai-FX. Trading carries risk and past performance
-              does not guarantee future results. See Disclaimer, Privacy Policy,
-              Terms & Conditions, and Refund Policy.
+              does not guarantee future results.
             </p>
           </footer>
           </NextIntlClientProvider>

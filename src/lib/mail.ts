@@ -368,11 +368,11 @@ export async function sendSubscriberWelcomeEmail(email: string) {
   }
 
   const { html, text } = renderEmailTemplate({
-    buttonLabel: "Browse the lessons",
-    buttonUrl: "https://www.algotradingschool.com/en",
+    buttonLabel: "Open your field guide",
+    buttonUrl: "https://www.algotradingschool.com/en/playbook",
     eyebrow: "Algo Trading School",
     intro:
-      "You're on the list. From time to time we'll send you a new plain-language lesson on automated trading — same tone as the site: no signals, no promises.",
+      "You're on the list. Start with the field guide — the whole curriculum condensed to one page. From time to time we'll send you a new plain-language lesson on automated trading, same tone as the site: no signals, no promises.",
     title: "Welcome to Algo Trading School",
     detailLines: [
       `Email: ${email}`,

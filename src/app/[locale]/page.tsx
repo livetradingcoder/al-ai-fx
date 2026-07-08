@@ -11,13 +11,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight, Clock3, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
-  buildComingSoonProducts,
-  buildContactOffers,
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
+import { GoldGlyph, SectionWireframe } from "@/components/GoldGlyph";
+import { getProofMetrics } from "@/lib/landing-data";
 
 const TESTIMONIALS = [
   "photo_2026-04-15 9.21.38 p.m..jpeg",
@@ -37,239 +37,6 @@ const HERO_PILLS = [
   "Holiday liquidity protection",
   "Account-locked cloud builds",
 ];
-
-const getProofMetrics = (t: any) => [
-  {
-    value: "< 15s",
-    label: t("metric1Label"),
-    detail: t("metric1Detail"),
-  },
-  {
-    value: "1:1",
-    label: t("metric2Label"),
-    detail: t("metric2Detail"),
-  },
-  {
-    value: "24/7",
-    label: t("metric3Label"),
-    detail: t("metric3Detail"),
-  },
-];
-
-const getFeaturePanels = (t: any) => [
-  {
-    eyebrow: t("adaptiveRecovery"),
-    title: t("adaptiveRecoveryTitle"),
-    body: t("adaptiveRecoveryBody"),
-    bullets: [
-      t("structuredHedge"),
-      t("drawdownAware"),
-      t("cleanerPropFirm"),
-    ],
-    glyph: "signal",
-    layout: "feature-panel-large",
-  },
-  {
-    eyebrow: t("liquidityGuard"),
-    title: t("liquidityGuardTitle"),
-    body: t("liquidityGuardBody"),
-    bullets: [t("bankHoliday"), t("sessionAware")],
-    glyph: "shield",
-    layout: "feature-panel-tall",
-  },
-  {
-    eyebrow: t("privateBuild"),
-    title: t("privateBuildTitle"),
-    body: t("privateBuildBody"),
-    bullets: [t("accountSpecific"), t("noLaggy")],
-    glyph: "vault",
-    layout: "feature-panel-compact",
-  },
-  {
-    eyebrow: t("executionCharacter"),
-    title: t("executionCharacterTitle"),
-    body: t("executionCharacterBody"),
-    bullets: [t("fastDeployment"), t("clearSetup"), t("mt5Native")],
-    glyph: "halo",
-    layout: "feature-panel-wide",
-  },
-];
-
-const getExecutionFlow = (t: any) => [
-  {
-    title: t("flow1Title"),
-    copy: t("flow1Copy"),
-    eta: t("flow1Eta"),
-    glyph: "wallet",
-  },
-  {
-    title: t("flow2Title"),
-    copy: t("flow2Copy"),
-    eta: t("flow2Eta"),
-    glyph: "halo",
-  },
-  {
-    title: t("flow3Title"),
-    copy: t("flow3Copy"),
-    eta: t("flow3Eta"),
-    glyph: "vault",
-  },
-  {
-    title: t("flow4Title"),
-    copy: t("flow4Copy"),
-    eta: t("flow4Eta"),
-    glyph: "signal",
-  },
-  {
-    title: t("flow5Title"),
-    copy: t("flow5Copy"),
-    eta: t("flow5Eta"),
-    glyph: "launch",
-  },
-];
-
-const getOpsPillars = (t: any) => [
-  {
-    title: t("ops1Title"),
-    copy: t("ops1Copy"),
-    glyph: "shield",
-  },
-  {
-    title: t("ops2Title"),
-    copy: t("ops2Copy"),
-    glyph: "vault",
-  },
-  {
-    title: t("ops3Title"),
-    copy: t("ops3Copy"),
-    glyph: "launch",
-  },
-];
-
-const getCompareRows = (t: any) => [
-  {
-    capability: t("comp1Cap"),
-    goldbot: t("comp1Gb"),
-    typical: t("comp1Typ"),
-  },
-  {
-    capability: t("comp2Cap"),
-    goldbot: t("comp2Gb"),
-    typical: t("comp2Typ"),
-  },
-  {
-    capability: t("comp3Cap"),
-    goldbot: t("comp3Gb"),
-    typical: t("comp3Typ"),
-  },
-  {
-    capability: t("comp4Cap"),
-    goldbot: t("comp4Gb"),
-    typical: t("comp4Typ"),
-  },
-];
-
-function GoldGlyph({
-  kind,
-  ...props
-}: { kind: string } & SVGProps<SVGSVGElement>) {
-  switch (kind) {
-    case "halo":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <circle cx="32" cy="32" r="21" stroke="currentColor" strokeWidth="1.5" />
-          <circle cx="32" cy="32" r="11" stroke="currentColor" strokeWidth="1.5" />
-          <path
-            d="M32 5v10M32 49v10M5 32h10M49 32h10"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
-    case "signal":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <path
-            d="M8 44c6-10 12-15 18-15s10 6 16 6 8-4 14-15"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M8 52c6-10 12-15 18-15s10 6 16 6 8-4 14-15"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity=".45"
-          />
-          <circle cx="26" cy="29" r="4" fill="currentColor" />
-          <circle cx="42" cy="35" r="4" fill="currentColor" />
-        </svg>
-      );
-    case "shield":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <path
-            d="M32 8l18 7v13c0 13-7.6 22.7-18 28-10.4-5.3-18-15-18-28V15l18-7Z"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <path
-            d="m24 32 5.5 5.5L41 25"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    case "vault":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <rect x="10" y="14" width="44" height="36" rx="10" stroke="currentColor" strokeWidth="2" />
-          <circle cx="32" cy="32" r="8" stroke="currentColor" strokeWidth="2" />
-          <path d="M32 24v16M24 32h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      );
-    case "wallet":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <path
-            d="M12 22c0-4.4 3.6-8 8-8h28c2.2 0 4 1.8 4 4v6H20c-4.4 0-8 3.6-8 8v-10Z"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <rect x="12" y="24" width="40" height="26" rx="10" stroke="currentColor" strokeWidth="2" />
-          <circle cx="41.5" cy="37" r="2.5" fill="currentColor" />
-        </svg>
-      );
-    case "launch":
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <path
-            d="M36 12c10 3 16 13 16 24-10 0-20 6-24 16-7-11-6-27 8-40Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M20 44c-3 1-6 4-7 8 4-1 7-4 8-7M26 38l-8 8"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <circle cx="39" cy="25" r="3" fill="currentColor" />
-        </svg>
-      );
-    default:
-      return (
-        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" {...props}>
-          <circle cx="32" cy="32" r="21" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      );
-  }
-}
 
 function HeroConstellation(props: SVGProps<SVGSVGElement>) {
   return (
@@ -305,29 +72,10 @@ function HeroConstellation(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function SectionWireframe(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 320 72" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M4 36h76l18-18h124l18 18h76"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        opacity=".7"
-      />
-      <circle cx="160" cy="18" r="6" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="160" cy="54" r="6" fill="currentColor" />
-      <path d="M160 24v24" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export default function Home() {
   const t = useTranslations("Landing");
   const subscriptionPlans = buildSubscriptionPlans(t);
   const passPlans = buildPassPlans(t);
-  const contactOffers = buildContactOffers(t);
-  const comingSoonProducts = buildComingSoonProducts(t);
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -526,15 +274,15 @@ export default function Home() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="landing-eyebrow">Verified proof</span>
+            <span className="landing-eyebrow">Verified results</span>
             <h2 className="section-title">
-              Screenshots over slogans.
-              <span> Real member performance.</span>
+              Real accounts. Real screenshots.
+              <span> No stock avatars.</span>
             </h2>
             <p className="section-copy">
-              Social proof does not need fake avatars and generic microcards.
-              This section leads with actual result captures and a cleaner,
-              wider gallery treatment.
+              Every capture below is from a live member running GoldBot on MT5 —
+              pulled straight from the terminal, not a rendered mockup. Judge it
+              on the trades, not the marketing.
             </p>
             <div className="proof-chip-row">
               <span>Verified results</span>
@@ -589,52 +337,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="landing-section feature-showcase-section">
-        <div className="landing-container">
-          <motion.div
-            className="section-heading"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="landing-eyebrow">{t("whyGoldBot")}</span>
-            <h2 className="section-title">
-              A bigger, more modern surface for the reasons traders actually care.
-            </h2>
-            <p className="section-copy">
-              The old equal-size cards are gone. This section now reads like a
-              product story with hierarchy, asymmetry, and purpose-built SVG
-              detail.
-            </p>
-          </motion.div>
-
-          <div className="feature-mosaic">
-            {getFeaturePanels(t).map((panel: any, index: number) => (
-              <motion.article
-                key={panel.title}
-                className={`feature-panel ${panel.layout}`}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.65, delay: index * 0.06 }}
-              >
-                <div className="feature-panel-glyph-wrap">
-                  <GoldGlyph kind={panel.glyph} className="feature-panel-glyph" />
-                </div>
-                <span className="feature-panel-eyebrow">{panel.eyebrow}</span>
-                <h3>{panel.title}</h3>
-                <p>{panel.body}</p>
-                <ul className="feature-panel-bullets">
-                  {panel.bullets.map((bullet: string) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="landing-container">
+        <p className="landing-breakdown-link">
+          Want the full breakdown — features, setup, and how GoldBot compares?{" "}
+          <Link href="/features">See how GoldBot works</Link>
+        </p>
+      </div>
 
       <section id="pricing" className="landing-section pricing-showcase-section">
         <div className="landing-container">
@@ -747,257 +455,11 @@ export default function Home() {
                 </span>
               </article>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="landing-section private-access-section">
-        <div className="landing-container">
-          <motion.div
-            className="private-access-shell"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="private-access-header">
-              <div className="private-access-copy">
-                <span className="landing-eyebrow">{t("customAccessEyebrow")}</span>
-                <h2 className="section-title section-title-left">
-                  {t("customAccessTitle")}
-                </h2>
-                <p className="section-copy section-copy-left">
-                  {t("customAccessCopy")}
-                </p>
-              </div>
-
-              <div className="private-access-actions">
-                <Link href="/support" className="btn-primary large">
-                  {t("customAccessPrimaryCta")}
-                </Link>
-                <a href="mailto:support@AL-ai-FX.com" className="btn-secondary large">
-                  {t("customAccessSecondaryCta")}
-                </a>
-              </div>
-            </div>
-
-            <div className="private-access-grid">
-              {contactOffers.map((offer, index) => (
-                <motion.article
-                  key={offer.title}
-                  className={`private-access-card private-access-card-${offer.accent}`}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.6, delay: index * 0.08 }}
-                >
-                  <GoldGlyph kind={offer.glyph} className="private-access-glyph" />
-                  <h3>{offer.title}</h3>
-                  <p>{offer.description}</p>
-                  <ul className="private-access-list">
-                    {offer.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                </motion.article>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="landing-section coming-soon-section">
-        <div className="landing-container">
-          <motion.div
-            className="coming-soon-shell"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="coming-soon-header">
-              <div className="coming-soon-copy">
-                <span className="landing-eyebrow">{t("comingSoonEyebrow")}</span>
-                <h2 className="section-title section-title-left">
-                  {t("comingSoonTitle")}
-                </h2>
-                <p className="section-copy section-copy-left">
-                  {t("comingSoonCopy")}
-                </p>
-              </div>
-
-              <div className="coming-soon-summary">
-                <span className="coming-soon-summary-label">{t("comingSoonSummaryLabel")}</span>
-                <strong>{t("comingSoonSummaryTitle")}</strong>
-                <p>{t("comingSoonSummaryCopy")}</p>
-              </div>
-            </div>
-
-            <div className="coming-soon-board-head">
-              <span>{t("comingSoonBoardProduct")}</span>
-              <span>{t("comingSoonBoardSurface")}</span>
-              <span>{t("comingSoonBoardStatus")}</span>
-            </div>
-
-            <div className="coming-soon-grid">
-              {comingSoonProducts.map((product, index) => (
-                <motion.article
-                  key={product.title}
-                  className={`coming-soon-card coming-soon-card-${product.accent}`}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.25 }}
-                  transition={{ duration: 0.6, delay: index * 0.08 }}
-                >
-                  <div className="coming-soon-card-top">
-                    <span className="coming-soon-surface">{product.surfaceLabel}</span>
-                    <span className="coming-soon-status">{product.status}</span>
-                  </div>
-
-                  <div className="coming-soon-card-head">
-                    <GoldGlyph kind={product.glyph} className="coming-soon-card-glyph" />
-
-                    <div>
-                      <span className="coming-soon-card-eyebrow">{product.eyebrow}</span>
-                      <h3>{product.title}</h3>
-                    </div>
-                  </div>
-
-                  <p className="coming-soon-card-copy">{product.description}</p>
-
-                  <ul className="coming-soon-card-list">
-                    {product.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                </motion.article>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="landing-section process-section">
-        <div className="landing-container process-shell">
-          <motion.div
-            className="section-heading"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="landing-eyebrow">How it works</span>
-            <h2 className="section-title">
-              The numbered bubbles are gone.
-              <span> The flow is now glass, gold, and editorial.</span>
-            </h2>
-            <p className="section-copy">
-              Provisioning is presented as a polished setup sequence instead of
-              five generic boxes with giant step numbers.
+            <p className="pricing-licensing-link">
+              Need lifetime access, source code, or a private deal?{" "}
+              <Link href="/licensing">See licensing options</Link>
             </p>
-          </motion.div>
-
-          <SectionWireframe className="process-wireframe" />
-
-          <div className="process-grid">
-            {getExecutionFlow(t).map((step: any, index: number) => (
-              <motion.article
-                key={step.title}
-                className="process-card"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: index * 0.06 }}
-              >
-                <div className="process-card-top">
-                  <GoldGlyph kind={step.glyph} className="process-card-glyph" />
-                  <span className="process-eta">
-                    <Clock3 size={14} />
-                    {step.eta}
-                  </span>
-                </div>
-                <h3>{step.title}</h3>
-                <p>{step.copy}</p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section ops-rebuild-section">
-        <div className="landing-container ops-rebuild-layout">
-          <motion.div
-            className="ops-master-panel"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="landing-eyebrow">{t("riskAwareAutomation")}</span>
-            <h2 className="section-title section-title-left">
-              Built for traders who want clean behavior across changing market conditions.
-            </h2>
-            <p className="section-copy section-copy-left">
-              This section is no longer a basic row of cards. It now anchors the
-              landing with a larger statement panel and supporting operational
-              pillars that feel consistent with the hero.
-            </p>
-            <GoldGlyph kind="signal" className="ops-master-glyph" />
-          </motion.div>
-
-          <div className="ops-pillar-stack">
-            {getOpsPillars(t).map((pillar: any, index: number) => (
-              <motion.article
-                key={pillar.title}
-                className="ops-pillar-card"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: index * 0.08 }}
-              >
-                <GoldGlyph kind={pillar.glyph} className="ops-pillar-glyph" />
-                <h3>{pillar.title}</h3>
-                <p>{pillar.copy}</p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section compare-rebuild-section">
-        <div className="landing-container">
-          <motion.div
-            className="section-heading"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="landing-eyebrow">{t("comparisonEyebrow")}</span>
-            <h2 className="section-title">
-              The last comparison block is rebuilt into a proper modern board.
-            </h2>
-            <p className="section-copy">
-              Same message, better hierarchy. GoldBot is visually separated from
-              the generic public-EA category without relying on a flat default
-              table.
-            </p>
-          </motion.div>
-
-          <div className="compare-board">
-            <div className="compare-board-head">
-              <span>{t("compHead1")}</span>
-              <span>{t("compHead2")}</span>
-              <span>{t("compHead3")}</span>
-            </div>
-
-            {getCompareRows(t).map((row: any) => (
-              <div key={row.capability} className="compare-board-row">
-                <span className="compare-board-capability">{row.capability}</span>
-                <span className="compare-board-good">{row.goldbot}</span>
-                <span className="compare-board-bad">{row.typical}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -1029,12 +491,6 @@ export default function Home() {
               <Link href="/tutorials" className="btn-secondary large">
                 See Setup Tutorials
               </Link>
-            </div>
-
-            <div className="final-cta-footnotes">
-              <span>MT5 only</span>
-              <span>Account-bound builds</span>
-              <span>Cloud compiled delivery</span>
             </div>
           </motion.div>
         </div>

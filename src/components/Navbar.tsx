@@ -26,6 +26,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Lock background scroll while the mobile menu is open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
+
   return (
     <>
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
@@ -47,7 +57,7 @@ export default function Navbar() {
           </Link>
 
           <div className="nav-links desktop-only">
-            <Link href="/#features">{t("features")}</Link>
+            <Link href="/features">{t("features")}</Link>
             <Link href="/#pricing">{t("pricing")}</Link>
             <Link href="/tutorials">{t("tutorials")}</Link>
             <Link href="/faq">{t("faq")}</Link>
@@ -80,7 +90,7 @@ export default function Navbar() {
         <div id="mobile-nav-panel" className="mobile-menu-panel">
           <div className="mobile-menu-shell">
             <div style={{ padding: '1rem' }}><LanguageSwitcher /></div>
-            <Link href="/#features" onClick={() => setIsOpen(false)}>
+            <Link href="/features" onClick={() => setIsOpen(false)}>
               {t("features")}
             </Link>
             <Link href="/#pricing" onClick={() => setIsOpen(false)}>
