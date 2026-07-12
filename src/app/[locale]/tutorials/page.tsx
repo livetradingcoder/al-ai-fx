@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -44,6 +45,14 @@ export default async function Tutorials({
 
   return (
     <main className="main-content" style={{ maxWidth: '1000px', margin: '0 auto', padding: '6rem 2rem' }}>
+      <Image
+        src="/brand/trading-desk-16x9.jpg"
+        alt=""
+        width={1344}
+        height={768}
+        className="page-banner"
+        priority
+      />
       <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{t("platformTutorials")}</h1>
         <p style={{ color: 'var(--text-secondary)' }}>{t("platformTutorialsSubtitle")}</p>

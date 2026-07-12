@@ -58,6 +58,7 @@ export default function Navbar() {
 
           <div className="nav-links desktop-only">
             <Link href="/features">{t("features")}</Link>
+            <Link href="/catalog">{t("robots")}</Link>
             <Link href="/#pricing">{t("pricing")}</Link>
             <Link href="/tutorials">{t("tutorials")}</Link>
             <Link href="/faq">{t("faq")}</Link>
@@ -92,6 +93,9 @@ export default function Navbar() {
             <div style={{ padding: '1rem' }}><LanguageSwitcher /></div>
             <Link href="/features" onClick={() => setIsOpen(false)}>
               {t("features")}
+            </Link>
+            <Link href="/catalog" onClick={() => setIsOpen(false)}>
+              {t("robots")}
             </Link>
             <Link href="/#pricing" onClick={() => setIsOpen(false)}>
               {t("pricing")}

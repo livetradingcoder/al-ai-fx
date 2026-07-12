@@ -16,7 +16,7 @@ import {
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
-import { GoldGlyph, SectionWireframe } from "@/components/GoldGlyph";
+import { GoldGlyph } from "@/components/GoldGlyph";
 import { getProofMetrics } from "@/lib/landing-data";
 
 const TESTIMONIALS = [
@@ -133,6 +133,7 @@ export default function Home() {
   return (
     <main className="main-content landing-shell">
       <section className="landing-intro">
+        <div className="landing-intro-photo" aria-hidden="true" />
         <div className="landing-intro-orb landing-intro-orb-left" aria-hidden="true" />
         <div className="landing-intro-orb landing-intro-orb-right" aria-hidden="true" />
         <HeroConstellation className="landing-intro-constellation" />
@@ -188,8 +189,8 @@ export default function Home() {
             <div className="hero-stage-frame">
               <div className="hero-stage-image-shell">
                 <Image
-                  src="/goldbotmt5.avif"
-                  alt="GoldBot MT5 dashboard preview"
+                  src="/brand/hero-robot-b.jpg"
+                  alt="GoldBot — AI trading robot analyzing a live gold chart"
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 48vw"
@@ -243,7 +244,6 @@ export default function Home() {
             </h2>
             <p className="landing-proof-text">
               GoldBot cannot be installed on MT4 or other trading platforms. A valid MT5 account with your preferred broker is required, and Broker Time must be set to GMT+3 for license locking.</p>
-            <SectionWireframe className="landing-proof-wireframe" />
           </motion.div>
 
           <div className="landing-metric-grid">
@@ -400,14 +400,23 @@ export default function Home() {
           </div>
 
           <div className="pricing-group-shell pricing-group-shell-secondary">
-            <div className="pricing-group-head">
-              <span>{t("freeTrialTitle")}</span>
-              <p>
-                {t("freeTrialActionCopy", {
-                  fallback:
-                    "Take a short hands-on pass through the GoldBot experience before moving into a full recurring plan.",
-                })}
-              </p>
+            <div className="pricing-group-head pricing-group-head-with-art">
+              <div>
+                <span>{t("freeTrialTitle")}</span>
+                <p>
+                  {t("freeTrialActionCopy", {
+                    fallback:
+                      "Take a short hands-on pass through the GoldBot experience before moving into a full recurring plan.",
+                  })}
+                </p>
+              </div>
+              <Image
+                src="/brand/hourglass-chart-16x9.jpg"
+                alt=""
+                width={280}
+                height={158}
+                className="pricing-group-art"
+              />
             </div>
 
             <div className="pricing-showcase-grid pricing-showcase-grid-two">
@@ -459,6 +468,11 @@ export default function Home() {
             <p className="pricing-licensing-link">
               Need lifetime access, source code, or a private deal?{" "}
               <Link href="/licensing">See licensing options</Link>
+            </p>
+
+            <p className="pricing-licensing-link">
+              GoldBot is one of several strategies we ship.{" "}
+              <Link href="/catalog">Browse all robots</Link>
             </p>
           </div>
         </div>

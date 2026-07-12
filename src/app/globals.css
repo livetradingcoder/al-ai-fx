@@ -2241,6 +2241,21 @@ button {
   background: linear-gradient(90deg, transparent, rgba(244, 220, 162, 0.26), transparent);
 }
 
+.landing-intro-photo {
+  position: absolute;
+  inset: 0;
+  background: url("/brand/hero-chart-skyline-16x9.jpg") center 30% / cover no-repeat;
+  opacity: 0.16;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.5) 62%, transparent);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.5) 62%, transparent);
+  pointer-events: none;
+}
+
+.landing-intro > .landing-container {
+  position: relative;
+  z-index: 1;
+}
+
 .landing-intro-orb {
   position: absolute;
   width: 480px;
@@ -2574,11 +2589,35 @@ html:lang(ar) .landing-hero-title {
 }
 
 .landing-proof-band {
-  display: grid;
-  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
-  gap: 34px;
-  align-items: end;
-  margin-top: 82px;
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  margin-top: 56px;
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-proof-band::before {
+  content: "";
+  position: absolute;
+  inset: -28px -32px;
+  background: url("/brand/gold-circuit-16x9.jpg") center / cover no-repeat;
+  opacity: 0.1;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.9), transparent 76%);
+  mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.9), transparent 76%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.landing-proof-copy {
+  max-width: 940px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-proof-band .landing-proof-text {
+  max-width: 76ch;
+  margin-inline: auto;
 }
 
 .landing-proof-title {
@@ -3617,6 +3656,55 @@ html:lang(ar) .landing-hero-title {
   padding: 42px 40px;
   text-align: center;
   overflow: hidden;
+  background:
+    linear-gradient(rgba(9, 7, 3, 0.78), rgba(9, 7, 3, 0.9)),
+    url("/brand/success-laurel-16x9.jpg") center / cover no-repeat;
+  border: 1px solid rgba(244, 220, 162, 0.16);
+}
+
+
+.pricing-group-head-with-art {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.pricing-group-shell-secondary .pricing-group-head-with-art {
+  text-align: left;
+}
+
+.pricing-group-art {
+  width: min(280px, 100%);
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(244, 220, 162, 0.16);
+  opacity: 0.92;
+  justify-self: end;
+}
+
+@media (max-width: 760px) {
+  .pricing-group-head-with-art {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-group-shell-secondary .pricing-group-head-with-art {
+    text-align: center;
+  }
+
+  .pricing-group-art {
+    justify-self: center;
+  }
+}
+
+.page-banner {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(244, 220, 162, 0.16);
+  margin-bottom: 2.2rem;
+  opacity: 0.92;
 }
 
 .final-cta-panel::before {
@@ -4003,6 +4091,31 @@ html:lang(ar) .landing-hero-title {
 
   .dashboard-main {
     padding: 1.5rem 1.25rem 2rem;
+  }
+
+  /* Mobile: the free-trial image stacks awkwardly under long copy. Pull it out
+     of flow and float it behind the section as a faint backdrop instead. (The
+     proof-band circuit is already a backdrop at all widths.) */
+  .pricing-group-art {
+    display: none;
+  }
+
+  .pricing-group-shell-secondary {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .pricing-group-shell-secondary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: url("/brand/hourglass-chart-16x9.jpg") center / cover no-repeat;
+    opacity: 0.12;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 62%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 62%);
+    z-index: -1;
+    pointer-events: none;
   }
 }
 

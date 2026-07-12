@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -25,6 +26,14 @@ export default function LicensingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
+            <Image
+              src="/brand/vault-door-16x9.jpg"
+              alt=""
+              width={1344}
+              height={768}
+              className="page-banner"
+              priority
+            />
             <div className="private-access-header">
               <div className="private-access-copy">
                 <span className="landing-eyebrow">{t("customAccessEyebrow")}</span>
