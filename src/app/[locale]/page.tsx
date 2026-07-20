@@ -25,9 +25,7 @@ const TESTIMONIALS = [
   "photo_2026-04-15 9.21.41 p.m..jpeg",
   "photo_2026-04-15 9.21.49 p.m..jpeg",
   "photo_2026-04-15 9.21.50 p.m..jpeg",
-  "photo_2026-04-15 9.21.56 p.m..jpeg",
   "photo_2026-04-15 9.21.57 p.m..jpeg",
-  "photo_2026-04-15 9.21.58 p.m..jpeg",
 ];
 
 const ALL_IMAGES = [...TESTIMONIALS, ...TESTIMONIALS];
