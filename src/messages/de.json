@@ -12,10 +12,10 @@
   },
   "Landing": {
     "heroEyebrow": "KI-gestützte MT5-Ausführungs-Engine",
-    "heroTitle": "GoldBot – entwickelt für Händler, die <accent>disziplinierte Automatisierung</accent> wollen, nicht Dashboard-Theater.",
+    "heroTitle": "Handle Gold wie eine Maschine. <accent>Denn jetzt hast du eine.</accent>",
     "heroTitlePrefix": "GoldBot – entwickelt für Händler, die es wollen",
     "heroTitleSuffix": "Disziplinierte Automatisierung, kein Dashboard-Theater.",
-    "heroSubtitle": "GoldBot ist ein MT5-EA mit kontogebundener Cloud-Kompilierung und risikobewusster Ausführungslogik, der für den kontrollierten MetaTrader 5-Einsatz entwickelt wurde.",
+    "heroSubtitle": "GoldBot findet den Session-Ausbruch, platziert den Trade und steuert die Absicherung — automatisch, auf deinem MT5-Konto, Minuten nach dem Kauf.",
     "getAccess": "Erhalten Sie Zugang",
     "watchTutorials": "Tutorials ansehen",
     "executionCharacter": "Hinrichtungscharakter",
