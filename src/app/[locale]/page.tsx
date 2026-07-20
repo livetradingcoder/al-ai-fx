@@ -133,7 +133,23 @@ export default function Home() {
   return (
     <main className="main-content landing-shell">
       <section className="landing-intro">
+        {/* Ambient hero backdrop: video on capable screens, still elsewhere.
+            The still is also the poster, so nothing flashes while loading. */}
+        <video
+          className="landing-intro-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/brand/hero-chart-skyline-16x9.jpg"
+          aria-hidden="true"
+        >
+          <source src="/brand/hero-chart-skyline-loop.webm" type="video/webm" />
+          <source src="/brand/hero-chart-skyline-loop.mp4" type="video/mp4" />
+        </video>
         <div className="landing-intro-photo" aria-hidden="true" />
+        <div className="landing-intro-scrim" aria-hidden="true" />
         <div className="landing-intro-orb landing-intro-orb-left" aria-hidden="true" />
         <div className="landing-intro-orb landing-intro-orb-right" aria-hidden="true" />
         <HeroConstellation className="landing-intro-constellation" />
@@ -179,52 +195,6 @@ export default function Home() {
             </div> */}
           </motion.div>
 
-          <motion.div
-            className="landing-hero-stage"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.15 }}
-          >
-            <div className="hero-stage-backplate" aria-hidden="true" />
-            <div className="hero-stage-frame">
-              <div className="hero-stage-image-shell">
-                <Image
-                  src="/brand/hero-robot-b.jpg"
-                  alt="GoldBot — AI trading robot analyzing a live gold chart"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 48vw"
-                  className="hero-stage-image"
-                />
-              </div>
-
-              <div className="hero-floating-card hero-floating-card-top">
-                <div className="hero-floating-meta">
-                  <span>Signal quality</span>
-                  <strong>High confidence</strong>
-                </div>
-                <GoldGlyph kind="signal" className="hero-floating-glyph" />
-              </div>
-
-              {/* <div className="hero-floating-card hero-floating-card-bottom">
-                <div className="hero-floating-meta">
-                  <span>Risk posture</span>
-                  <strong>Adaptive shield on</strong>
-                </div>
-                <GoldGlyph kind="shield" className="hero-floating-glyph" />
-              </div> */}
-
-              <div className="hero-stage-caption">
-                <span className="hero-caption-kicker">{t('executionCharacter')}</span>
-                <h2>{t('builtForControlled')}</h2>
-                <p>
-                  Consistent decision rules, protective recovery logic, and
-                  account-level security are designed into the experience from
-                  the start.
-                </p>
-              </div>
-            </div>
-          </motion.div>
         </div>
 
         <div className="landing-container landing-proof-band">
