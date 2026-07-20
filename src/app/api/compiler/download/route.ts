@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCompiledFilename } from "@/lib/compiler-filename";
+import { objectGet } from "@/lib/object-storage";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -30,24 +31,17 @@ export async function GET(req: Request) {
       return new Response('File not ready', { status: 404 });
     }
 
-    // Fetch the blob metadata to get the actual direct URL if needed, 
-    // or just fetch the blob and stream it.
-    // For Vercel Blob private, we can fetch the blob content with the token.
-    
-    const response = await fetch(job.downloadUrl, {
-      headers: {
-        'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch blob: ${response.statusText}`);
+    // downloadUrl is a storage KEY (e.g. "compiled/AL-ai-FX_<slug>_<job>.ex5")
+    // on S3/MinIO. Legacy rows from the Vercel Blob era hold a full https URL —
+    // those artifacts live in the old store and are treated as expired.
+    if (job.downloadUrl.startsWith("http")) {
+      return new Response('Build artifact expired — request a recompile', { status: 410 });
     }
 
-    const blob = await response.blob();
+    const bytes = await objectGet(job.downloadUrl);
     const fileName = getCompiledFilename(jobId, { robotSlug: job.robot.slug });
 
-    return new Response(blob, {
+    return new Response(new Uint8Array(bytes), {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${fileName}"`,

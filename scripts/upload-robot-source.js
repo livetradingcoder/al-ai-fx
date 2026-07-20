@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /**
- * General-purpose source uploader for onboarding a new robot's v1 .mq5.
- * Mirrors scripts/upload-goldbot-source.js (same AES-256-GCM layout, same .env.local loader).
+ * General-purpose source uploader for onboarding a robot's versioned .mq5.
+ * AES-256-GCM layout [12 IV][16 tag][ct] at sources/<slug>/v<N>.mq5.enc on
+ * S3-compatible storage (MinIO). Post-Vercel migration: uses S3_* env, not
+ * @vercel/blob.
  *
- * Usage: node scripts/upload-robot-source.js <slug> </path/to/source.mq5>
+ * Usage: node scripts/upload-robot-source.js <slug> </path/to/source.mq5> [version]
+ * Env:   S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET,
+ *        SOURCE_ENCRYPTION_KEY  (loaded from .env.local when present)
  */
 const fs = require('fs');
 const path = require('path');
 const { createCipheriv, randomBytes } = require('crypto');
-const { put } = require('@vercel/blob');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 const envPath = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
@@ -36,19 +40,33 @@ function encrypt(plain) {
 async function main() {
   const slug = process.argv[2];
   const srcPath = process.argv[3];
-  if (!slug || !srcPath) throw new Error('Usage: node scripts/upload-robot-source.js <slug> <path.mq5>');
-  if (!process.env.BLOB_READ_WRITE_TOKEN) throw new Error('BLOB_READ_WRITE_TOKEN missing (vercel env pull)');
+  const version = Number(process.argv[4] || 1);
+  if (!slug || !srcPath) throw new Error('Usage: node scripts/upload-robot-source.js <slug> <path.mq5> [version]');
+  for (const k of ['S3_ENDPOINT', 'S3_ACCESS_KEY_ID', 'S3_SECRET_ACCESS_KEY', 'S3_BUCKET']) {
+    if (!process.env[k]) throw new Error(`${k} missing`);
+  }
+
+  const s3 = new S3Client({
+    endpoint: process.env.S3_ENDPOINT,
+    region: process.env.S3_REGION || 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
+    forcePathStyle: true,
+  });
 
   const mq5 = fs.readFileSync(srcPath);
   const enc = encrypt(mq5);
-  const pathname = `sources/${slug}/v1.mq5.enc`;
-  const res = await put(pathname, enc, {
-    access: 'private',
-    addRandomSuffix: false,
-    allowOverwrite: false,
-    contentType: 'application/octet-stream',
-  });
-  console.log(`[upload-robot-source] ${slug}: uploaded ${enc.length} bytes (plain ${mq5.length}) → ${res.pathname}`);
+  const key = `sources/${slug}/v${version}.mq5.enc`;
+  await s3.send(new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    Body: enc,
+    ContentType: 'application/octet-stream',
+    IfNoneMatch: '*', // immutable versions — bump N to publish a new source
+  }));
+  console.log(`[upload-robot-source] ${slug}: uploaded ${enc.length} bytes (plain ${mq5.length}) -> ${key}`);
 }
 
 main().catch((e) => { console.error('[upload-robot-source] FAILED:', e); process.exit(1); });

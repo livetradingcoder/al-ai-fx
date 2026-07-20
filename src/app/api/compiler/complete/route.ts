@@ -1,14 +1,23 @@
+import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { MAX_ATTEMPTS } from '@/lib/compiler-config';
 import { getCompiledBlobPathname } from '@/lib/compiler-filename';
+import { objectPut } from '@/lib/object-storage';
 import { sendCompileReadyEmail } from '@/lib/mail';
 import { buildDashboardMagicLink } from '@/lib/magic-links';
 import { notifyTerminalFailure } from '@/lib/compiler-notify';
 
+// 5MB decoded / ~7MB base64 — a compiled .ex5 is well under 1MB.
+const MAX_BASE64_CHARS = 10 * 1024 * 1024;
+const MAX_DECODED_BYTES = 5 * 1024 * 1024;
+
 type CompletePayload = {
   jobId?: string;
   status?: 'COMPLETED' | 'FAILED';
+  /** Daemon uploads the compiled binary inline; the server stores it in S3/MinIO. */
+  fileDataBase64?: string;
+  /** Legacy Vercel-Blob-era field — no longer accepted for new completions. */
   blobUrl?: string;
   sha256?: string;
   sizeBytes?: number;
@@ -28,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { jobId, status, blobUrl, sha256, sizeBytes, errorMessage } = body;
+  const { jobId, status, fileDataBase64, errorMessage } = body;
 
   if (!jobId || (status !== 'COMPLETED' && status !== 'FAILED')) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
@@ -46,24 +55,31 @@ export async function POST(req: Request) {
   }
 
   if (status === 'COMPLETED') {
-    if (!blobUrl) {
-      return NextResponse.json({ error: 'Missing blobUrl' }, { status: 400 });
+    // The daemon sends the compiled binary inline (base64); the server owns
+    // storage. The daemon never holds storage credentials.
+    if (typeof fileDataBase64 !== 'string' || fileDataBase64.length === 0) {
+      return NextResponse.json({ error: 'Missing fileDataBase64' }, { status: 400 });
     }
-    // Soft consistency check: the daemon (Plan 04-03) uploads to the
-    // robot-scoped pathname getCompiledBlobPathname(jobId, { robotSlug }).
-    // /download reads with the SAME slug. Warn on mismatch — never reject a
-    // good compile over a naming nit.
-    const expectedPath = getCompiledBlobPathname(jobId, { robotSlug: job.robot.slug });
-    if (!blobUrl.includes(expectedPath)) {
-      console.warn(`[complete] blobUrl pathname mismatch for job ${jobId}: expected .../${expectedPath}`);
+    if (fileDataBase64.length > MAX_BASE64_CHARS) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
+    const bytes = Buffer.from(fileDataBase64, 'base64');
+    if (bytes.length === 0 || bytes.length > MAX_DECODED_BYTES) {
+      return NextResponse.json({ error: 'Invalid binary payload' }, { status: 400 });
+    }
+
+    // Robot-scoped storage key — /download reads with the SAME slug.
+    const storageKey = getCompiledBlobPathname(jobId, { robotSlug: job.robot.slug });
+    const digest = createHash('sha256').update(bytes).digest('hex');
+    await objectPut(storageKey, bytes, { contentType: 'application/octet-stream' });
+
     await prisma.compilation.update({
       where: { id: jobId },
       data: {
         status: 'COMPLETED',
-        downloadUrl: blobUrl,
-        sha256: sha256 ?? null,
-        sizeBytes: sizeBytes ?? null,
+        downloadUrl: storageKey,
+        sha256: digest,
+        sizeBytes: bytes.length,
         errorMessage: null,
       },
     });
