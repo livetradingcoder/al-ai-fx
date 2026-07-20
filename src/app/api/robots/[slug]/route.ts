@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { TIER_ENUM_TO_SLUG } from "@/lib/catalog-tiers";
+import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG } from "@/lib/catalog-tiers";
 
 // PUBLIC read-only robot lookup for checkout display. Amounts here are
 // display-only — the charge amount is always resolved server-side in
@@ -23,6 +23,8 @@ export async function GET(
 
   const prices: Record<string, number> = {};
   for (const price of robot.prices) {
+    // Public tiers only — contact-only tiers never surface in checkout.
+    if (!CATALOG_PUBLIC_TIERS.includes(price.tier)) continue;
     prices[TIER_ENUM_TO_SLUG[price.tier]] = price.amount;
   }
 
