@@ -124,7 +124,11 @@ ul {
 .navbar {
   position: fixed;
   top: 0;
-  left: 0;
+  /* Center-anchored in BOTH states: only width/height/radius animate, so the
+     pill contracts symmetrically instead of lurching (left+transform+width
+     interpolating together made the sides "clamp"). */
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   height: 68px;
   background: rgba(13, 17, 23, 0.8);
@@ -134,9 +138,7 @@ ul {
   z-index: 100;
   transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     border-radius 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     background 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1970,17 +1972,20 @@ button {
   will-change: transform, width, border-radius;
 }
 
-/* On scroll the bar detaches from the top edge and becomes a floating pill. */
+/* On scroll the bar detaches from the top edge and becomes a floating pill.
+   left/transform inherited from the base state — only size/shape animate. */
 .navbar.scrolled {
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1220px, calc(100vw - 28px));
+  width: min(1220px, calc(100% - 28px));
   height: 54px;
   border-radius: 999px;
   border-color: rgba(244, 220, 162, 0.16);
   background: rgba(14, 10, 8, 0.9);
   box-shadow: 0 20px 48px rgba(4, 3, 2, 0.42);
+}
+
+.nav-container {
+  transition: padding 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navbar.scrolled .nav-container {
@@ -3582,6 +3587,12 @@ html:lang(ar) .landing-hero-title {
 .process-card h3 {
   margin-top: 28px;
   font-size: 1.5rem;
+  line-height: 1.2;
+  /* Reserve three title lines so every card's body copy starts at the same
+     height regardless of how the title wraps. */
+  min-height: 3.6em;
+  display: flex;
+  align-items: flex-end;
 }
 
 .process-card p {
