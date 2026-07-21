@@ -39,8 +39,13 @@ export async function POST(req: Request) {
     }
 
     const email = String(body.email).trim().toLowerCase();
-    // Whitelist sources — never store arbitrary client strings.
-    const source = body.source === "algotradingschool" ? "algotradingschool" : "unknown";
+    // Whitelist sources — never store arbitrary client strings. The school
+    // sends placement-tagged variants (algotradingschool:hero, :lesson, …).
+    const source =
+      typeof body.source === "string" &&
+      /^algotradingschool(:[a-z0-9-]{1,32})?$/.test(body.source)
+        ? body.source
+        : "unknown";
 
     let isNewSubscriber = true;
     try {
