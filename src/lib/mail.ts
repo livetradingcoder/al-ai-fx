@@ -1,18 +1,17 @@
-// Transport: Mailgun HTTP API (same integration pattern as LTL's trade-cmp
-// mailgunConfig.ts — HTTPS-only, no SMTP ports needed). Replaces the original
-// Mailtrap client, which was never provisioned. The `client` object below is
-// call-compatible with MailtrapClient#send so all sender functions and their
-// no-op-safe `if (!client)` guards are unchanged.
+// Transport: Resend HTTP API (matches the sending stack already verified
+// elsewhere — plain fetch, no SDK dependency, same as the Mailgun client this
+// replaced). The `client` object below is call-compatible with the previous
+// Mailgun/Mailtrap clients so all sender functions and their no-op-safe
+// `if (!client)` guards are unchanged.
 import { buildUnsubscribeUrl } from "@/lib/marketing-unsubscribe";
-const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
-const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
-const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_API_BASE = "https://api.resend.com";
 
 const SENDER_EMAIL = process.env.SMTP_FROM_EMAIL || "hello@al-ai-fx.xyz";
 const FROM_NAME = process.env.SMTP_FROM_NAME || "GoldBot Support";
 
-if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
-  console.warn("[Mail] MAILGUN_API_KEY / MAILGUN_DOMAIN not set. Emails will not be sent.");
+if (!RESEND_API_KEY) {
+  console.warn("[Mail] RESEND_API_KEY not set. Emails will not be sent.");
 }
 
 type MailMessage = {
@@ -24,37 +23,34 @@ type MailMessage = {
   category?: string;
 };
 
-const client =
-  MAILGUN_API_KEY && MAILGUN_DOMAIN
-    ? {
-        async send(msg: MailMessage) {
-          const body = new URLSearchParams({
+const client = RESEND_API_KEY
+  ? {
+      async send(msg: MailMessage) {
+        const response = await fetch(`${RESEND_API_BASE}/emails`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
             from: `${msg.from.name} <${msg.from.email}>`,
-            to: msg.to.map((t) => t.email).join(","),
+            to: msg.to.map((t) => t.email),
             subject: msg.subject,
             html: msg.html,
             text: msg.text,
-          });
-          if (msg.category) {
-            body.set("o:tag", msg.category);
-          }
+            // Resend tag values are ASCII-restricted (letters/numbers/_/-) —
+            // every category used in this file already satisfies that.
+            ...(msg.category ? { tags: [{ name: "category", value: msg.category }] } : {}),
+          }),
+        });
 
-          const response = await fetch(`${MAILGUN_API_BASE}/${MAILGUN_DOMAIN}/messages`, {
-            method: "POST",
-            headers: {
-              Authorization: `Basic ${Buffer.from(`api:${MAILGUN_API_KEY}`).toString("base64")}`,
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body,
-          });
-
-          if (!response.ok) {
-            const data = (await response.json().catch(() => ({}))) as { message?: string };
-            throw new Error(data.message || `Mailgun API error (HTTP ${response.status})`);
-          }
-        },
-      }
-    : null;
+        if (!response.ok) {
+          const data = (await response.json().catch(() => ({}))) as { message?: string };
+          throw new Error(data.message || `Resend API error (HTTP ${response.status})`);
+        }
+      },
+    }
+  : null;
 
 const sender = {
   email: SENDER_EMAIL.toLowerCase(),
@@ -192,7 +188,7 @@ export async function sendPurchaseConfirmationEmail(
  * compile reaches COMPLETED. Carries a signed, expiring magic-link that lands
  * them authenticated in the dashboard where the Download button lives. No-op
  * safe (same `if (!client)` guard as the other senders) — never throws when
- * MAILGUN_API_KEY is unset; the /complete caller wraps it best-effort.
+ * RESEND_API_KEY is unset; the /complete caller wraps it best-effort.
  */
 export async function sendCompileReadyEmail(
   email: string,
@@ -231,7 +227,7 @@ export async function sendCompileReadyEmail(
  * DLVR-03: Sends the buying user a "your build hit a snag" email once their
  * compile reaches terminal FAILED (retries exhausted). Carries a support link
  * so the user can reach the team. No-op safe (same `if (!client)` guard as the
- * other senders) — never throws when MAILGUN_API_KEY is unset; the
+ * other senders) — never throws when RESEND_API_KEY is unset; the
  * notifyTerminalFailure caller wraps it best-effort.
  */
 export async function sendCompileFailedEmail(
@@ -307,7 +303,7 @@ type AdminAlertKind =
 /**
  * Fires the admin alert email via Mailtrap. Recipient is ADMIN_ALERT_EMAIL
  * (env), falling back to SMTP_FROM_EMAIL. Silent (no throw) if
- * MAILGUN_API_KEY is missing — callers must not fail the request
+ * RESEND_API_KEY is missing — callers must not fail the request
  * just because email failed. Best-effort side effect only.
  */
 export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
