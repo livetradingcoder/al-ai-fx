@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
 import { sendSubscriberWelcomeEmail } from "@/lib/mail";
+import { routing } from "@/i18n/routing";
+
+const KNOWN_LOCALES: readonly string[] = routing.locales;
 
 // Public, credential-less subscribe endpoint consumed cross-origin by the
 // education site (algotradingschool.com). CORS is wide open on purpose:
@@ -47,9 +50,19 @@ export async function POST(req: Request) {
         ? body.source
         : "unknown";
 
+    // Never trust an arbitrary client string here — locale gates whether a
+    // subscriber is eligible for locale-restricted sequences (e.g. the
+    // robot pitch, en/es/de only), so an unvalidated value would be a
+    // compliance hole, not just cosmetic. Missing/unknown locale stores as
+    // null (never guessed) — null must be treated as "not eligible".
+    const locale =
+      typeof body.locale === "string" && KNOWN_LOCALES.includes(body.locale)
+        ? body.locale
+        : null;
+
     let isNewSubscriber = true;
     try {
-      await prisma.emailSubscriber.create({ data: { email, source } });
+      await prisma.emailSubscriber.create({ data: { email, source, locale } });
     } catch (err) {
       // Duplicate email = already subscribed. Same success response on
       // purpose: don't let the endpoint act as an email-existence oracle.
@@ -57,6 +70,15 @@ export async function POST(req: Request) {
         throw err;
       }
       isNewSubscriber = false;
+      // A returning subscriber re-submitting the form is treated as an
+      // explicit resubscribe: clears any prior unsubscribe and refreshes
+      // locale/source to the current signup context. Without this, one
+      // unsubscribe would permanently suppress the address with no way
+      // back in short of a manual DB fix.
+      await prisma.emailSubscriber.update({
+        where: { email },
+        data: { unsubscribedAt: null, locale, source },
+      });
     }
 
     // Best-effort welcome email for first-time subscribers only. No-op-safe

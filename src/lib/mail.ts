@@ -3,6 +3,7 @@
 // Mailtrap client, which was never provisioned. The `client` object below is
 // call-compatible with MailtrapClient#send so all sender functions and their
 // no-op-safe `if (!client)` guards are unchanged.
+import { buildUnsubscribeUrl } from "@/lib/marketing-unsubscribe";
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
@@ -67,6 +68,10 @@ function renderEmailTemplate(input: {
   intro: string;
   title: string;
   detailLines: string[];
+  // Marketing-list sends only (never transactional/account mail) — one-click
+  // unsubscribe footer, kept visually separate from detailLines.
+  footerHtml?: string;
+  footerText?: string;
 }) {
   const detailsHtml = input.detailLines
     .map(
@@ -74,6 +79,10 @@ function renderEmailTemplate(input: {
         `<p style="margin:0 0 10px 0;color:#d8d1c3;font-size:15px;line-height:1.7;">${line}</p>`,
     )
     .join("");
+
+  const footerSection = input.footerHtml
+    ? `<p style="margin:20px 0 0;color:#9e9079;font-size:12px;line-height:1.6;">${input.footerHtml}</p>`
+    : "";
 
   const html = `
     <div style="background:#0c0907;padding:32px 16px;font-family:Arial,sans-serif;">
@@ -91,6 +100,7 @@ function renderEmailTemplate(input: {
           If the button does not work, copy and paste this URL into your browser:<br />
           <span style="color:#fff7e3;word-break:break-all;">${input.buttonUrl}</span>
         </p>
+        ${footerSection}
       </div>
     </div>
   `;
@@ -103,6 +113,7 @@ function renderEmailTemplate(input: {
     ...input.detailLines,
     "",
     `${input.buttonLabel}: ${input.buttonUrl}`,
+    ...(input.footerText ? ["", input.footerText] : []),
   ].join("\n");
 
   return { html, text };
@@ -367,17 +378,29 @@ export async function sendSubscriberWelcomeEmail(email: string) {
     return;
   }
 
+  let footerHtml: string | undefined;
+  let footerText: string | undefined;
+  try {
+    const unsubscribeUrl = buildUnsubscribeUrl(email);
+    footerHtml = `You can <a href="${unsubscribeUrl}" style="color:#9e9079;">unsubscribe</a> at any time.`;
+    footerText = `Unsubscribe: ${unsubscribeUrl}`;
+  } catch (err) {
+    // Never let a missing NEXTAUTH_SECRET block the welcome email itself —
+    // it should always be set for the app to function at all, but this
+    // send must stay best-effort regardless.
+    console.error("[Mail] Failed to build unsubscribe link:", err);
+  }
+
   const { html, text } = renderEmailTemplate({
     buttonLabel: "Open your field guide",
-    buttonUrl: "https://www.algotradingschool.com/en/playbook",
+    buttonUrl: "https://www.algotradingschool.vip/en/playbook",
     eyebrow: "Algo Trading School",
     intro:
       "You're on the list. Start with the field guide — the whole curriculum condensed to one page. From time to time we'll send you a new plain-language lesson on automated trading, same tone as the site: no signals, no promises.",
     title: "Welcome to Algo Trading School",
-    detailLines: [
-      `Email: ${email}`,
-      "You can unsubscribe at any time by replying to any email.",
-    ],
+    detailLines: [`Email: ${email}`],
+    footerHtml,
+    footerText,
   });
 
   await client.send({

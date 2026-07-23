@@ -178,10 +178,12 @@ model WebhookDelivery {
 /// (algotradingschool.com) via POST /api/marketing/subscribe.
 /// Deliberately NOT related to User: subscribers are pre-customers.
 model EmailSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  source    String   @default("algotradingschool") // which property captured the lead
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  email          String    @unique
+  source         String    @default("algotradingschool") // which property captured the lead
+  locale         String? // signup-page locale (en/es/de/hi/bn/ur/ar) — gates locale-restricted sequences
+  unsubscribedAt DateTime? // one-click unsubscribe (see /api/marketing/unsubscribe); null = subscribed
+  createdAt      DateTime  @default(now())
 
   @@index([createdAt])
 }
