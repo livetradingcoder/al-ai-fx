@@ -92,7 +92,10 @@ export async function GET(req: Request) {
   //    (Phase 3). sourceVersion + sourceUrl are additive (Phase 4) — the new
   //    daemon (Plan 04-03) fetches the .mq5 from sourceUrl (a short-TTL signed
   //    URL, never source bytes) with Authorization: Bearer COMPILER_SECRET.
-  const origin = new URL(req.url).origin;
+  // Behind Traefik, req.url resolves to the internal origin
+  // (https://localhost:3330) — the daemon would dial its own localhost and
+  // ECONNREFUSED. Always prefer the configured public base URL.
+  const origin = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || new URL(req.url).origin;
   const exp = sourceTokenExpiry();
   const token = signSourceToken(claimed.robot.slug, claimed.sourceVersion, exp);
   const sourceUrl =
