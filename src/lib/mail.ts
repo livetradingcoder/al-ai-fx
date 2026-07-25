@@ -1,17 +1,24 @@
-// Transport: Resend HTTP API (matches the sending stack already verified
-// elsewhere — plain fetch, no SDK dependency, same as the Mailgun client this
-// replaced). The `client` object below is call-compatible with the previous
-// Mailgun/Mailtrap clients so all sender functions and their no-op-safe
-// `if (!client)` guards are unchanged.
+// Transport: Mailgun HTTP API (plain fetch, no SDK dependency — replaces the
+// suspended Resend account; before that this spoke Mailgun/Mailtrap). The
+// `client` object below is call-compatible with the previous transports so
+// all sender functions and their no-op-safe `if (!client)` guards are
+// unchanged. A sending key is sufficient (messages endpoint only).
 import { buildUnsubscribeUrl } from "@/lib/marketing-unsubscribe";
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_API_BASE = "https://api.resend.com";
+const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
+const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
 
 const SENDER_EMAIL = process.env.SMTP_FROM_EMAIL || "hello@al-ai-fx.xyz";
 const FROM_NAME = process.env.SMTP_FROM_NAME || "GoldBot Support";
 
-if (!RESEND_API_KEY) {
-  console.warn("[Mail] RESEND_API_KEY not set. Emails will not be sent.");
+const mailgunConfigured =
+  !!MAILGUN_API_KEY &&
+  !!MAILGUN_DOMAIN &&
+  !MAILGUN_API_KEY.startsWith("SET_ME") &&
+  !MAILGUN_DOMAIN.startsWith("SET_ME");
+
+if (!mailgunConfigured) {
+  console.warn("[Mail] MAILGUN_API_KEY/MAILGUN_DOMAIN not set. Emails will not be sent.");
 }
 
 type MailMessage = {
@@ -23,30 +30,32 @@ type MailMessage = {
   category?: string;
 };
 
-const client = RESEND_API_KEY
+const client = mailgunConfigured
   ? {
       async send(msg: MailMessage) {
-        const response = await fetch(`${RESEND_API_BASE}/emails`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-            "Content-Type": "application/json",
+        const form = new URLSearchParams();
+        form.set("from", `${msg.from.name} <${msg.from.email}>`);
+        for (const t of msg.to) form.append("to", t.email);
+        form.set("subject", msg.subject);
+        form.set("html", msg.html);
+        form.set("text", msg.text);
+        if (msg.category) form.set("o:tag", msg.category);
+
+        const response = await fetch(
+          `${MAILGUN_API_BASE}/${MAILGUN_DOMAIN}/messages`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Basic ${Buffer.from(`api:${MAILGUN_API_KEY}`).toString("base64")}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: form.toString(),
           },
-          body: JSON.stringify({
-            from: `${msg.from.name} <${msg.from.email}>`,
-            to: msg.to.map((t) => t.email),
-            subject: msg.subject,
-            html: msg.html,
-            text: msg.text,
-            // Resend tag values are ASCII-restricted (letters/numbers/_/-) —
-            // every category used in this file already satisfies that.
-            ...(msg.category ? { tags: [{ name: "category", value: msg.category }] } : {}),
-          }),
-        });
+        );
 
         if (!response.ok) {
           const data = (await response.json().catch(() => ({}))) as { message?: string };
-          throw new Error(data.message || `Resend API error (HTTP ${response.status})`);
+          throw new Error(data.message || `Mailgun API error (HTTP ${response.status})`);
         }
       },
     }

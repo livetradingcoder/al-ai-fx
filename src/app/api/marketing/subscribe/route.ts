@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     }
 
     // Best-effort welcome email for first-time subscribers only. No-op-safe
-    // when RESEND_API_KEY is unset; must never fail the subscribe request.
+    // when Mailgun env is unset; must never fail the subscribe request.
     if (isNewSubscriber) {
       try {
         await sendSubscriberWelcomeEmail(email);
