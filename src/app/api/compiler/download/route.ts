@@ -28,6 +28,7 @@ export async function GET(req: Request) {
     }
 
     if (!job.downloadUrl) {
+      console.log(`[pipeline] DOWNLOAD MISS job=${jobId} status=${job.status} (no artifact yet)`);
       return new Response('File not ready', { status: 404 });
     }
 
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
     }
 
     const bytes = await objectGet(job.downloadUrl);
+    console.log(`[pipeline] DOWNLOAD SERVED job=${jobId} user=${session.user.id} bytes=${bytes.length}`);
     const fileName = getCompiledFilename(jobId, { robotSlug: job.robot.slug });
 
     return new Response(new Uint8Array(bytes), {

@@ -56,6 +56,10 @@ export async function PUT(req: Request) {
       }
     });
 
+    console.log(
+      `[pipeline] JOB CREATED job=${job.id} robot=${subscription.robotId} ` +
+      `sub=${subscription.id} mt5=${mt5AccountNumber} sourceVersion=${subscription.robot.sourceVersion}`,
+    );
     return NextResponse.json({ success: true, job }, { status: 200 });
   } catch (error) {
     console.error("Update MT5 error:", error);

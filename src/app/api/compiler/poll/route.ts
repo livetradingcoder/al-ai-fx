@@ -96,6 +96,10 @@ export async function GET(req: Request) {
   // (https://localhost:3330) — the daemon would dial its own localhost and
   // ECONNREFUSED. Always prefer the configured public base URL.
   const origin = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || new URL(req.url).origin;
+  console.log(
+    `[pipeline] JOB CLAIMED job=${claimed.id} robot=${claimed.robot.slug} ` +
+    `v${claimed.sourceVersion} mt5=${claimed.subscription.mt5AccountNumber} origin=${origin}`,
+  );
   const exp = sourceTokenExpiry();
   const token = signSourceToken(claimed.robot.slug, claimed.sourceVersion, exp);
   const sourceUrl =

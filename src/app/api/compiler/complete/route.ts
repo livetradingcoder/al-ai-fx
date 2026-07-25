@@ -69,6 +69,7 @@ export async function POST(req: Request) {
     }
 
     // Robot-scoped storage key — /download reads with the SAME slug.
+    console.log(`[pipeline] BUILD RECEIVED job=${jobId} bytes=${bytes.length}`);
     const storageKey = getCompiledBlobPathname(jobId, { robotSlug: job.robot.slug });
     const digest = createHash('sha256').update(bytes).digest('hex');
     await objectPut(storageKey, bytes, { contentType: 'application/octet-stream' });
@@ -84,6 +85,8 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log(`[pipeline] BUILD STORED job=${jobId} key=${storageKey} sha256=${digest.slice(0, 12)} bytes=${bytes.length}`);
+
     // DLVR-01: notify the buying user their build is ready — best-effort, never
     // fail /complete. Email path is no-op-safe when Mailtrap is unconfigured.
     try {
@@ -91,6 +94,7 @@ export async function POST(req: Request) {
       if (user?.email) {
         const magicLinkUrl = buildDashboardMagicLink({ email: user.email, userId: user.id });
         await sendCompileReadyEmail(user.email, job.robot.name, magicLinkUrl);
+        console.log(`[pipeline] READY EMAIL SENT job=${jobId} to=${user.email}`);
       }
     } catch (e) {
       console.error(`[complete] compile-ready email failed for job ${jobId}:`, e);
