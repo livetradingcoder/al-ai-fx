@@ -1,8 +1,11 @@
 import validator from 'validator';
 
 /**
- * Validates MT5 account number format
- * MT5 accounts are typically 5-12 digit numbers
+ * Validates MT5 account number format.
+ * Broker logins are commonly 5-9 digits, but several brokers issue much
+ * longer ones (a real TheKFMarket login is 13 digits: 4587463239820), so the
+ * upper bound is 15 — tight enough to reject junk, wide enough for real
+ * accounts. MQL5's `long` holds up to 19 digits, so 15 is safe to inject.
  */
 export function validateMT5Account(account: string | number): { valid: boolean; error?: string } {
   const accountStr = String(account).trim();
@@ -11,8 +14,8 @@ export function validateMT5Account(account: string | number): { valid: boolean; 
     return { valid: false, error: 'MT5 account number is required' };
   }
   
-  if (!/^\d{5,12}$/.test(accountStr)) {
-    return { valid: false, error: 'MT5 account must be 5-12 digits' };
+  if (!/^\d{5,15}$/.test(accountStr)) {
+    return { valid: false, error: 'MT5 account must be 5-15 digits' };
   }
   
   return { valid: true };
