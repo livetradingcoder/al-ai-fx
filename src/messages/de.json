@@ -254,9 +254,7 @@
     "step1Desc": "Navigieren Sie zu Ihrem GoldBot-Dashboard und suchen Sie Ihre aktive Lizenz. Klicken Sie auf die Schaltfläche „Kompilieren und herunterladen“, um den Windows-Dienst zum Kompilieren einer neuen .ex5-Datei zu veranlassen, die an Ihre Kontonummer gebunden ist.",
     "step2Title": "Schritt 2: Öffnen Sie den MT5-Datenordner",
     "step2Desc": "Starten Sie MetaTrader 5. Klicken Sie in der oberen Navigation auf Datei und wählen Sie Datenordner öffnen. Navigieren Sie zu MQL5 / Experts und fügen Sie die heruntergeladene GoldBot_v2.ex5 in diesen Ordner ein.",
-    "step3Title": "Schritt 3: Ausführung und VPS-Empfehlungen",
-    "step3Desc1": "Für eine optimale Leistung wird dringend empfohlen, den EA rund um die Uhr auf einem Virtual Private Server (VPS) laufen zu lassen. Dies garantiert eine unterbrechungsfreie Konnektivität und Ausführung.",
-    "step3Desc2": "Wenn Sie sich entscheiden, den EA manuell auf Ihrem lokalen Computer auszuführen, müssen Sie ihn jeden Tag um 7:00 Uhr MEZ einschalten und ihn völlig ununterbrochen laufen lassen, bis ein Trade erfolgreich ausgeführt wird.",
+    "step3Title": "Schritt 3: Experten-Liste aktualisieren",
     "tut2Title": "Konfigurieren der Smart Hedging-Parameter",
     "tut2Duration": "10 Minuten gelesen",
     "tut2Desc": "Tauchen Sie tief in die Erholungsdynamik, Losgrößenmultiplikatoren und die sichere Konfiguration des EA basierend auf Ihrem genauen Startguthaben ein.",
@@ -273,7 +271,11 @@
     "manualFxDesc": "Wichtig: Überprüfen Sie immer selbst die FX-Nachrichten und Wirtschaftskalender. Wenn auf dem Markt ein Feiertag ist, sollte der Bot unbedingt ausgeschaltet bleiben. Wenn mächtige Länder einen Feiertag haben, müssen Sie den Bot manuell ausgeschaltet lassen, da die Volatilität und das dramatisch geringere Marktvolumen zu hohen Spread-Spitzen und unregelmäßigen Bewegungen führen können.",
     "configFlagsTitle": "Konfigurationsflags",
     "configFlagsDesc": "Sie können über das Dashboard auf dem Bildschirm überprüfen, ob der Schutz aktiv ist. Neben dem Feiertagsstatus wird „Aktiv“ angezeigt, wenn heute ein überwachter Feiertag ist. Sie können dies in den Eingaben erzwingen (IgnoreHolidays = true), aber wenn Sie dieses Risiko eingehen, wird unser empfohlenes Setup ungültig.",
-    "backToTutorials": "Zurück zu den Tutorials"
+    "backToTutorials": "Zurück zu den Tutorials",
+    "step4Title": "Schritt 4: Ausführung & VPS-Empfehlungen",
+    "step4Desc1": "Für eine optimale Leistung wird dringend empfohlen, den EA rund um die Uhr auf einem Virtual Private Server (VPS) laufen zu lassen. Dies garantiert eine unterbrechungsfreie Konnektivität und Ausführung.",
+    "step4Desc2": "Wenn Sie sich entscheiden, den EA manuell auf Ihrem lokalen Computer auszuführen, müssen Sie ihn jeden Tag um 7:00 Uhr MEZ einschalten und ihn völlig ununterbrochen laufen lassen, bis ein Trade erfolgreich ausgeführt wird.",
+    "step3Desc": "Der Robot erscheint in MetaTrader ERST nach einer Aktualisierung. Klicken Sie im Navigator (Strg+N, falls ausgeblendet) mit der rechten Maustaste auf Expert Advisors und wählen Sie Aktualisieren. Ihr Build erscheint dann unter Expert Advisors; ziehen Sie ihn auf einen XAUUSD-Chart. Falls er weiterhin fehlt: Prüfen Sie, dass die .ex5 direkt in MQL5 / Experts liegt (nicht in einem Unterordner), und starten Sie MetaTrader neu."
   },
   "FAQ": {
     "title": "Häufig gestellte Fragen",
@@ -345,7 +347,7 @@
     "successStep1": "Laden Sie die .ex5-Datei oben herunter.",
     "successStep2": "Öffnen Sie Ihr MT5-Terminal und gehen Sie zu Datei > Datenordner öffnen.",
     "successStep3": "Navigieren Sie zu MQL5 > Experten und fügen Sie die Datei dort ein.",
-    "successStep4": "Aktualisieren Sie die „Experten“-Liste in Ihrem MT5-Navigator und ziehen Sie den Roboter auf ein XAUUSD-Diagramm.",
+    "successStep4": "Klicken Sie im MT5-Navigator mit der rechten Maustaste auf Expert Advisors und wählen Sie Aktualisieren — der Robot erscheint erst nach dem Aktualisieren. Ziehen Sie ihn dann auf einen XAUUSD-Chart.",
     "successStep5": "Stellen Sie bei den Eingaben sicher, dass Sie Ihren Risikoprozentsatz und Ihre Handelszeiten gemäß dem <tutorialLink>PDF-Leitfaden</tutorialLink> festlegen.",
     "successNote": "Hinweis: Dieser Build ist an das MT5-Konto {account} gebunden. Es wird nicht auf einer anderen Kontonummer ausgeführt."
   }

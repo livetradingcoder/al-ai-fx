@@ -39,10 +39,14 @@ export default async function TutorialDetail({ params }: { params: Promise<{ id:
           </p>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', marginTop: '2rem' }}>{t("step3Title")}</h2>
           <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
-            {t("step3Desc1")}
+            {t("step3Desc")}
+          </p>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', marginTop: '2rem' }}>{t("step4Title")}</h2>
+          <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
+            {t("step4Desc1")}
           </p>
           <p style={{ color: 'var(--text-secondary)' }}>
-            {t("step3Desc2")}
+            {t("step4Desc2")}
           </p>
         </>
       )

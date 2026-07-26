@@ -254,9 +254,7 @@
     "step1Desc": "Navegue hasta su Panel GoldBot y localice su licencia activa. Haga clic en el botón Compilar y descargar para activar el servicio de Windows para compilar un .ex5 nuevo bloqueado en su número de cuenta.",
     "step2Title": "Paso 2: abra la carpeta de datos MT5",
     "step2Desc": "Inicie MetaTrader 5. Haga clic en Archivo en la navegación superior y seleccione Abrir carpeta de datos. Navegue hasta MQL5/Expertos y pegue el GoldBot_v2.ex5 descargado en esta carpeta.",
-    "step3Title": "Paso 3: Ejecución y recomendaciones de VPS",
-    "step3Desc1": "Para un rendimiento óptimo, se recomienda encarecidamente dejar el EA funcionando las 24 horas del día, los 5 días de la semana en un servidor privado virtual (VPS). Esto garantiza una conectividad y ejecución ininterrumpidas.",
-    "step3Desc2": "Si decide ejecutar el EA manualmente en su computadora local, debe encenderlo todos los días a las 7:00 a. m. CET y dejarlo funcionando sin interrupciones hasta que ejecute una operación con éxito.",
+    "step3Title": "Paso 3: Actualizar la lista de Expertos",
     "tut2Title": "Configuración de los parámetros de cobertura inteligente",
     "tut2Duration": "10 minutos de lectura",
     "tut2Desc": "Profundice en la dinámica de recuperación, los multiplicadores del tamaño de los lotes y cómo configurar de forma segura el EA en función de su saldo inicial exacto.",
@@ -273,7 +271,11 @@
     "manualFxDesc": "Importante: consulte siempre las noticias sobre divisas y los calendarios económicos por su cuenta. Cuando el mercado celebra un día festivo, el bot debe mantenerse estrictamente APAGADO. Si los países poderosos tienen un día festivo, debe mantener el bot APAGADO manualmente, porque la volatilidad y el volumen de mercado dramáticamente más bajo pueden causar altos picos de diferenciales y movimientos erráticos.",
     "configFlagsTitle": "Banderas de configuración",
     "configFlagsDesc": "Puede verificar si el guardia está activo a través del tablero en pantalla. Junto al Estado de vacaciones, aparecerá Activo si hoy es un día festivo monitoreado. Puede forzar la omisión de esto en las entradas (IgnoreHolidays = true), pero correr este riesgo invalida nuestra configuración recomendada.",
-    "backToTutorials": "Volver a tutoriales"
+    "backToTutorials": "Volver a tutoriales",
+    "step4Title": "Paso 4: Ejecución y recomendaciones de VPS",
+    "step4Desc1": "Para un rendimiento óptimo, se recomienda encarecidamente dejar el EA funcionando las 24 horas del día, los 5 días de la semana en un servidor privado virtual (VPS). Esto garantiza una conectividad y ejecución ininterrumpidas.",
+    "step4Desc2": "Si decide ejecutar el EA manualmente en su computadora local, debe encenderlo todos los días a las 7:00 a. m. CET y dejarlo funcionando sin interrupciones hasta que ejecute una operación con éxito.",
+    "step3Desc": "El robot NO aparecerá en MetaTrader hasta que actualices. En el panel Navegador (Ctrl+N si está oculto), haz clic derecho en Asesores Expertos y elige Actualizar (Refresh). Tu compilación aparecerá bajo Asesores Expertos; arrástrala a un gráfico de XAUUSD. Si sigue sin aparecer, confirma que el .ex5 está en MQL5 / Experts (no en una subcarpeta) y reinicia MetaTrader."
   },
   "FAQ": {
     "title": "Preguntas frecuentes",
@@ -345,7 +347,7 @@
     "successStep1": "Descargue el archivo .ex5 de arriba.",
     "successStep2": "Abra su Terminal MT5, vaya a Archivo > Abrir carpeta de datos.",
     "successStep3": "Navegue hasta MQL5 > Expertos y pegue el archivo allí.",
-    "successStep4": "Actualice la lista de 'Expertos' en su Navegador MT5 y arrastre el robot a un gráfico XAUUSD.",
+    "successStep4": "En el Navegador de MT5, haz clic derecho en Asesores Expertos y elige Actualizar — el robot solo aparece tras actualizar. Luego arrástralo a un gráfico de XAUUSD.",
     "successStep5": "En las entradas, asegúrese de configurar su porcentaje de riesgo y horario de negociación según la <tutorialLink>guía en PDF</tutorialLink>.",
     "successNote": "Nota: Esta compilación está bloqueada en la cuenta MT5 {cuenta}. No se ejecutará en ningún otro número de cuenta."
   }

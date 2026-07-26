@@ -254,9 +254,7 @@
     "step1Desc": "Navigate to your GoldBot Dashboard and locate your active license. Click the Compile & Download button to trigger the windows service to compile a fresh .ex5 locked to your account number.",
     "step2Title": "Step 2: Open MT5 Data Folder",
     "step2Desc": "Launch MetaTrader 5. Click File in the top navigation, and select Open Data Folder. Navigate to MQL5 / Experts and paste the downloaded GoldBot_v2.ex5 into this folder.",
-    "step3Title": "Step 3: Execution & VPS Recommendations",
-    "step3Desc1": "For optimal performance, it is highly recommended to leave the EA running 24/5 on a Virtual Private Server (VPS). This guarantees uninterrupted connectivity and execution.",
-    "step3Desc2": "If you decide to run the EA manually on your local computer, you must turn it on every day at 7:00 AM CET and leave it running completely uninterrupted until it successfully executes a trade.",
+    "step3Title": "Step 3: Refresh the Experts list",
     "tut2Title": "Configuring the Smart Hedging Parameters",
     "tut2Duration": "10 mins read",
     "tut2Desc": "Deep dive into recovery dynamics, lot sizing multipliers, and how to safely configure the EA based on your exact starting balance.",
@@ -273,7 +271,11 @@
     "manualFxDesc": "Important: Always check the FX news and economic calendars on your own. When the market is observing a holiday, the bot should strictly be kept OFF. If powerful countries have a public holiday, you must keep the bot turned OFF manually, because the volatility and dramatically lower market volume can cause high spread spikes and erratic movements.",
     "configFlagsTitle": "Configuration Flags",
     "configFlagsDesc": "You can verify if the guard is active via the on-screen dashboard. Next to the Holiday Status, it will read Active if today is a monitored holiday. You can force-bypass this in the inputs (IgnoreHolidays = true), but taking this risk invalidates our recommended setup.",
-    "backToTutorials": "Back to Tutorials"
+    "backToTutorials": "Back to Tutorials",
+    "step4Title": "Step 4: Execution & VPS Recommendations",
+    "step4Desc1": "For optimal performance, it is highly recommended to leave the EA running 24/5 on a Virtual Private Server (VPS). This guarantees uninterrupted connectivity and execution.",
+    "step4Desc2": "If you decide to run the EA manually on your local computer, you must turn it on every day at 7:00 AM CET and leave it running completely uninterrupted until it successfully executes a trade.",
+    "step3Desc": "The robot will NOT appear in MetaTrader until you refresh. In the Navigator panel (Ctrl+N if hidden), right-click on Expert Advisors and choose Refresh — on a German terminal this reads Aktualisieren. Your build then appears under Expert Advisors; drag it onto an XAUUSD chart. If it still isn't listed, confirm the .ex5 sits in MQL5 / Experts (not in a sub-folder) and restart MetaTrader."
   },
   "FAQ": {
     "title": "Frequently Asked Questions",
@@ -345,7 +347,7 @@
     "successStep1": "Download the .ex5 file above.",
     "successStep2": "Open your MT5 Terminal, go to File > Open Data Folder.",
     "successStep3": "Navigate to MQL5 > Experts and paste the file there.",
-    "successStep4": "Refresh the 'Experts' list in your MT5 Navigator and drag the robot onto an XAUUSD chart.",
+    "successStep4": "In the MT5 Navigator, right-click Expert Advisors and choose Refresh (Aktualisieren on German terminals) — the robot only appears after refreshing. Then drag it onto an XAUUSD chart.",
     "successStep5": "In the inputs, ensure you set your Risk Percent and Trading Hours as per the <tutorialLink>PDF guide</tutorialLink>.",
     "successNote": "Note: This build is locked to MT5 Account {account}. It will not execute on any other account number."
   }
