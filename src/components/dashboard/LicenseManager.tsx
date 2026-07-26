@@ -112,9 +112,9 @@ export default function LicenseManager({ subscription, latestCompilation: initia
 
   return (
     <div className="glass-panel" style={{ marginBottom: "2rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "1rem" }}>
+      <div className="licence-head">
         <div>
-          <h3 style={{ fontSize: "1.2rem", color: "var(--text-primary)" }}>GoldBot_v2.0_{subscription.tier}</h3>
+          <h3 className="licence-title">GoldBot_v2.0_{subscription.tier}</h3>
           <p style={{ color: "var(--accent-primary)", fontSize: "0.9rem", fontWeight: 600 }}>{subscription.tier.replace("_", " ")} {t("access")}</p>
         </div>
         <div>
@@ -122,10 +122,10 @@ export default function LicenseManager({ subscription, latestCompilation: initia
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+      <div className="licence-grid">
         <div>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("lockedMt5Account")}</p>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="licence-mt5-row">
             <input
               type="text"
               value={mt5Account}
@@ -158,7 +158,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
           </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="licence-download">
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("downloadLatestBuild")}</p>
 
           {compilation?.status === "COMPLETED" && compilation.id ? (

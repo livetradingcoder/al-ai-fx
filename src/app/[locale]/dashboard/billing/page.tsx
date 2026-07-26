@@ -39,7 +39,8 @@ export default async function BillingPage() {
         {orders.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', padding: '1rem 0' }}>{t("noTransactions")}</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="billing-table-wrap">
+          <table className="billing-table">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <th style={{ padding: '1rem 0', color: 'var(--text-secondary)', fontWeight: 500 }}>{t("date")}</th>
@@ -65,6 +66,7 @@ export default async function BillingPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

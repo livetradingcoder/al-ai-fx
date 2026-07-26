@@ -4886,3 +4886,85 @@ html:lang(ar) .landing-hero-title {
     padding: 0 12px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Dashboard licence cards + billing table — mobile.
+   These were inline styles with a hardcoded `1fr 1fr` grid, which cannot carry
+   a media query: at phone widths the labels wrapped to three lines, the MT5
+   input was clipped mid-number and the button copy broke across lines.
+--------------------------------------------------------------------------- */
+.licence-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.licence-title {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  /* tier slugs are long single tokens (GoldBot_v2.0_SIX_MONTHS) — let them
+     break instead of overflowing the card */
+  overflow-wrap: anywhere;
+}
+
+.licence-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.licence-mt5-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.licence-download {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.billing-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 420px; /* below this the four columns collide — scroll instead */
+}
+
+@media (max-width: 768px) {
+  .licence-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .licence-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .licence-mt5-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .licence-mt5-row .btn-primary {
+    width: 100%;
+  }
+
+  .licence-download .btn-primary {
+    align-self: stretch !important;
+    width: 100%;
+    text-align: center;
+  }
+}
