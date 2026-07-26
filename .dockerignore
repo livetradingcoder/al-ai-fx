@@ -1,0 +1,9 @@
+# Build context exclusions. The running app needs NONE of these — robot
+# sources are read from encrypted MinIO storage at job time, so plaintext
+# .mq5 masters must never end up inside the deployed image.
+robots/
+compile-worker/
+.planning/
+.git/
+node_modules/
+.next/

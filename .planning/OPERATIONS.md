@@ -48,7 +48,7 @@ snapshot).
 
 ## B. Launching a NEW robot — the complete checklist
 
-### 1. Prepare the source (visionfx-ea repo)
+### 1. Prepare the source (this repo)
 
 ```
 robots/<slug>/MASTER.mq5          # the editable master
@@ -61,7 +61,7 @@ OnInit gates, no underscores in trade-comment bases). Copy from
 
 Verify:
 ```bash
-node tools/check-source.js robots/<slug>/MASTER.mq5
+node scripts/check-robot-source.js robots/<slug>/MASTER.mq5
 ```
 Do not skip this. Without the contract the daemon's injection silently misses
 and you ship an EA that runs on ANY account.
@@ -69,7 +69,7 @@ and you ship an EA that runs on ANY account.
 ### 2. Upload the encrypted source
 
 ```bash
-tools/release-robot.sh <slug> 1
+scripts/release-robot.sh <slug> 1
 ```
 Freezes an audit copy + sha256 under `releases/v1/`, encrypts, uploads to
 `sources/<slug>/v1.mq5.enc` on MinIO, and prints the SQL for step 3.
@@ -116,8 +116,8 @@ automatically once its rows exist.
 
 ## C. Shipping a NEW VERSION of an existing robot
 
-1. Edit `robots/<slug>/MASTER.mq5`, run `check-source.js`.
-2. `tools/release-robot.sh <slug> <N+1>` — versions are immutable, never
+1. Edit `robots/<slug>/MASTER.mq5`, run `check-robot-source.js`.
+2. `scripts/release-robot.sh <slug> <N+1>` — versions are immutable, never
    overwrite an existing one.
 3. `UPDATE "Robot" SET "sourceVersion"=<N+1> WHERE slug='<slug>';`
 4. New compile jobs use the new version. Existing customers keep their current
