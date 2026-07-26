@@ -29,7 +29,7 @@ test("subscription plans keep the yearly plan featured", () => {
   assert.equal(featuredPlan?.id, "1-year");
   assert.deepEqual(
     plans.map((plan) => plan.price),
-    ["$69", "$199", "$999", "$1,799"],
+    ["$19", "$69", "$299", "$699"],
   );
   assert.equal(plans[2]?.note, "($167 / month)");
   assert.equal(plans[3]?.note, "($149.92 / month)");

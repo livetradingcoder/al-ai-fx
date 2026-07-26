@@ -19,10 +19,10 @@ export interface TierMetadata {
 // Adding a slug to TierId in src/config/pricing.ts forces this map to grow — TS error otherwise.
 export const TIER_METADATA: Record<TierId, TierMetadata> = {
   "free-trial":      { enum: PricingTier.FREE_TRIAL,       amount:     0, priceString: "$0",      durationDays: 3 },
-  "10-days":         { enum: PricingTier.TEN_DAYS,         amount:    69, priceString: "$69",     durationDays: 10 },
-  "1-month":         { enum: PricingTier.ONE_MONTH,        amount:   199, priceString: "$199",    durationDays: 30 },
-  "6-months":        { enum: PricingTier.SIX_MONTHS,       amount:   999, priceString: "$999",    durationDays: 182 },
-  "1-year":          { enum: PricingTier.ONE_YEAR,         amount:  1799, priceString: "$1,799",  durationDays: 365 },
+  "10-days":         { enum: PricingTier.TEN_DAYS,         amount:    19, priceString: "$19",     durationDays: 10 },
+  "1-month":         { enum: PricingTier.ONE_MONTH,        amount:    69, priceString: "$69",     durationDays: 30 },
+  "6-months":        { enum: PricingTier.SIX_MONTHS,       amount:   299, priceString: "$299",    durationDays: 182 },
+  "1-year":          { enum: PricingTier.ONE_YEAR,         amount:   699, priceString: "$699",    durationDays: 365 },
   "lifetime":        { enum: PricingTier.LIFETIME,         amount:  7999, priceString: "$7,999",  durationDays: "lifetime" },
   "lifetime-source": { enum: PricingTier.LIFETIME_SOURCE,  amount: 79999, priceString: "$79,999", durationDays: "lifetime" },
   "secret-test":     { enum: PricingTier.SECRET_TEST_TIER, amount:    10, priceString: "$10",     durationDays: 7 },
