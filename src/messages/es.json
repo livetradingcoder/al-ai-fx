@@ -375,6 +375,7 @@
     "searchNoResults": "Sin coincidencias.",
     "searchNavigate": "navegar",
     "searchSelect": "seleccionar",
-    "searchClose": "cerrar"
+    "searchClose": "cerrar",
+    "guidedSetup": "Configuración"
   }
 }

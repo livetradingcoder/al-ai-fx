@@ -119,12 +119,18 @@ export default async function DashboardOverview() {
             </div>
           ))}
         </div>
-        <p style={{ marginTop: "18px" }}>
+        <p style={{ marginTop: "18px", display: "flex", gap: "18px", flexWrap: "wrap" }}>
           <Link
-            href="/tutorials/1"
+            href="/dashboard/onboarding"
             style={{ color: "var(--accent-primary)", fontSize: "0.88rem", fontWeight: 600 }}
           >
-            {t("openTutorial")} →
+            {t("guidedSetup")} →
+          </Link>
+          <Link
+            href="/tutorials/1"
+            style={{ color: "var(--text-secondary)", fontSize: "0.88rem", fontWeight: 600 }}
+          >
+            {t("openTutorial")}
           </Link>
         </p>
       </section>

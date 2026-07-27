@@ -26,6 +26,7 @@ export default function CommandPalette() {
     const base: Item[] = [
       { group: t("menu"), label: t("overview"), href: "/dashboard" },
       { group: t("menu"), label: t("myLicenses"), href: "/dashboard/licenses" },
+      { group: t("menu"), label: t("guidedSetup"), href: "/dashboard/onboarding" },
       { group: t("menu"), label: t("downloads"), href: "/dashboard/downloads" },
       { group: t("accountGroup"), label: t("billing"), href: "/dashboard/billing" },
       { group: t("accountGroup"), label: t("profile"), href: "/dashboard/profile" },

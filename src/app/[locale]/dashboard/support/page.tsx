@@ -66,6 +66,15 @@ export default async function SupportPage() {
         <p className="card-label">Guides</p>
         <h2 style={{ fontSize: "1.15rem", margin: "0 0 16px" }}>Tutorials</h2>
         <div className="guide-list">
+          <Link href="/dashboard/onboarding" className="guide-row">
+            <span>
+              <span className="guide-title">Guided setup</span>
+              <span className="guide-desc">
+                Walks you from licence to a running robot, tracking what you&apos;ve already done.
+              </span>
+            </span>
+            <span className="guide-meta">5 steps</span>
+          </Link>
           {guides.map((g) => (
             <Link key={g.id} href={`/tutorials/${g.id}`} className="guide-row">
               <span>

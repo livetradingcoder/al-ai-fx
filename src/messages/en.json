@@ -375,6 +375,7 @@
     "searchNoResults": "Nothing matches that.",
     "searchNavigate": "navigate",
     "searchSelect": "select",
-    "searchClose": "close"
+    "searchClose": "close",
+    "guidedSetup": "Setup"
   }
 }

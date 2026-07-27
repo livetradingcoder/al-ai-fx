@@ -375,6 +375,7 @@
     "searchNoResults": "Keine Treffer.",
     "searchNavigate": "navigieren",
     "searchSelect": "auswählen",
-    "searchClose": "schließen"
+    "searchClose": "schließen",
+    "guidedSetup": "Einrichtung"
   }
 }
