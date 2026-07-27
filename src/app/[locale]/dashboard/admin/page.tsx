@@ -200,7 +200,7 @@ export default async function AdminDashboard() {
                       {order.status}
                     </span>
                   </td>
-                  <td data-label="Email" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  <td data-label="Date" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                     {new Date(order.createdAt).toLocaleString()}
                   </td>
                 </tr>
