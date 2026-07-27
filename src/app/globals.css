@@ -5001,18 +5001,23 @@ html:lang(ar) .landing-hero-title {
 .shell {
   display: grid;
   grid-template-columns: 264px 1fr;
+  gap: 18px;
   min-height: 100vh;
-  padding-top: 80px;
+  /* the site navbar is fixed at 0–62px; clear it with room to breathe so the
+     account chip never collides with the floating pill */
+  padding: 104px 24px 40px;
+  align-items: start;
 }
 
 .shell-rail {
-  border-right: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(24, 18, 14, 0.9), rgba(15, 11, 8, 0.9));
-  padding: 28px 18px 40px;
+  padding: 22px 14px 26px;
   position: sticky;
-  top: 80px;
+  top: 104px;
   align-self: start;
-  height: calc(100vh - 80px);
+  max-height: calc(100vh - 144px);
   overflow-y: auto;
 }
 
@@ -5063,15 +5068,22 @@ html:lang(ar) .landing-hero-title {
 }
 
 /* topbar ------------------------------------------------------------------ */
-.shell-main { min-width: 0; }
+.shell-main {
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: rgba(18, 13, 10, 0.55);
+  overflow: hidden;
+}
 
 .shell-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 40px;
+  padding: 20px 30px;
   border-bottom: 1px solid var(--border-color);
+  background: rgba(24, 18, 14, 0.5);
 }
 
 .topbar-eyebrow {
@@ -5115,7 +5127,7 @@ html:lang(ar) .landing-hero-title {
   letter-spacing: 0.04em;
 }
 
-.shell-content { padding: 34px 40px 64px; }
+.shell-content { padding: 30px; }
 
 /* cards ------------------------------------------------------------------- */
 .card {
@@ -5237,7 +5249,11 @@ html:lang(ar) .landing-hero-title {
 
 /* mobile ------------------------------------------------------------------ */
 @media (max-width: 900px) {
-  .shell { grid-template-columns: 1fr; padding-top: 72px; }
+  .shell {
+    grid-template-columns: 1fr;
+    padding: 88px 12px 32px;
+    gap: 12px;
+  }
 
   /* Rail becomes a stacked set of chip rows. The earlier two-column grid
      broke "Admin Overview" across two lines; chips size to their own label
@@ -5245,10 +5261,9 @@ html:lang(ar) .landing-hero-title {
   .shell-rail {
     position: static;
     height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: 14px 14px 16px;
+    padding: 14px;
     display: block;
+    max-height: none;
   }
 
   .rail-group {
@@ -5285,8 +5300,8 @@ html:lang(ar) .landing-hero-title {
 
   .rail-signout { width: auto; }
 
-  .shell-topbar { padding: 16px 18px; }
-  .shell-content { padding: 22px 18px 56px; }
+  .shell-topbar { padding: 14px 16px; }
+  .shell-content { padding: 20px 16px 32px; }
   .topbar-chip { max-width: 46vw; }
   .card { padding: 20px; }
   .card-value { font-size: 1.6rem; }
