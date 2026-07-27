@@ -6082,6 +6082,139 @@ html:lang(ar) .landing-hero-title {
 }
 
 /* ===========================================================================
+   Admin tables. The action buttons used to be raw #10B981/#3B82F6/#8B5CF6
+   rectangles — three saturated colours that belong to no palette on this site.
+   They are quiet chips now; the destructive one is the only coloured thing.
+=========================================================================== */
+.admin-table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.btn-sm {
+  padding: 9px 16px !important;
+  font-size: 0.82rem !important;
+}
+
+.btn-mini {
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-mini:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(244, 220, 162, 0.4);
+  background: rgba(244, 220, 162, 0.08);
+}
+
+.btn-mini:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-mini.is-danger { color: #efa094; border-color: rgba(239, 127, 105, 0.35); }
+.btn-mini.is-danger:hover:not(:disabled) {
+  color: #ffd9d0;
+  border-color: rgba(239, 127, 105, 0.6);
+  background: rgba(239, 127, 105, 0.12);
+}
+
+.btn-mini.is-go { color: #9cd7b4; border-color: rgba(156, 215, 180, 0.35); }
+.btn-mini.is-go:hover:not(:disabled) {
+  color: #d3f3e0;
+  border-color: rgba(156, 215, 180, 0.6);
+  background: rgba(156, 215, 180, 0.12);
+}
+
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.pill[data-tone="live"] {
+  color: #9cd7b4;
+  border-color: rgba(156, 215, 180, 0.45);
+  background: rgba(156, 215, 180, 0.1);
+}
+
+.pill[data-tone="soon"] {
+  color: var(--accent-primary-light);
+  border-color: rgba(244, 220, 162, 0.45);
+  background: rgba(244, 220, 162, 0.08);
+}
+
+.robot-name { display: block; font-weight: 600; color: var(--text-primary); }
+
+.robot-slug {
+  display: block;
+  margin-top: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.cell-note {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.data-table tr[data-dim="true"] td { opacity: 0.55; }
+
+.admin-notice {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  border: 1px solid var(--border-color);
+}
+
+.admin-notice.is-ok {
+  color: #9cd7b4;
+  border-color: rgba(156, 215, 180, 0.35);
+  background: rgba(156, 215, 180, 0.08);
+}
+
+.admin-notice.is-error {
+  color: #efa094;
+  border-color: rgba(239, 127, 105, 0.35);
+  background: rgba(239, 127, 105, 0.08);
+}
+
+.admin-legend {
+  margin: 16px 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.admin-legend strong { color: var(--text-secondary); }
+
+@media (max-width: 760px) {
+  .admin-table-head { flex-direction: column; align-items: stretch; }
+  .row-actions { justify-content: flex-start; }
+}
+
+/* ===========================================================================
    Dashboard form fields. The landing page's .form-input is built for hero-sized
    forms (20px padding, 17px type); inside a card that reads as enormous, so the
    dashboard has its own scale. Everything here is dark on purpose — an unstyled

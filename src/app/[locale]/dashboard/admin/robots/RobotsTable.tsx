@@ -14,9 +14,29 @@ export interface RobotRow {
   artworkUrl: string | null;
   sortOrder: number;
   sourceVersion: number;
+  paidTiers: number;
+  cheapestPaid: number | null;
+  hasFreeTrial: boolean;
+  subscriptions: number;
 }
 
-function UploadSourceButton({ robotId }: { robotId: string }) {
+type Notice = { kind: "ok" | "error"; text: string };
+
+/** What a customer sees on /catalog for this row. */
+function storefront(robot: RobotRow) {
+  if (!robot.active) return { label: "Hidden", tone: "off" as const };
+  if (robot.paidTiers === 0 && !robot.hasFreeTrial)
+    return { label: "Coming soon", tone: "soon" as const };
+  return { label: "Selling", tone: "live" as const };
+}
+
+function UploadSourceButton({
+  robotId,
+  onDone,
+}: {
+  robotId: string;
+  onDone: (n: Notice) => void;
+}) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -31,9 +51,12 @@ function UploadSourceButton({ robotId }: { robotId: string }) {
         fd.set("robotId", robotId);
         fd.set("source", file);
         const res = await uploadRobotSource(fd);
-        alert(`Source uploaded — now at v${res.version}.`);
+        onDone({ kind: "ok", text: `Source uploaded — now at v${res.version}.` });
       } catch (error) {
-        alert(error instanceof Error ? error.message : "Failed to upload source");
+        onDone({
+          kind: "error",
+          text: error instanceof Error ? error.message : "Failed to upload source",
+        });
       }
     });
   }
@@ -42,20 +65,12 @@ function UploadSourceButton({ robotId }: { robotId: string }) {
     <>
       <input ref={fileRef} type="file" accept=".mq5" onChange={onPick} style={{ display: "none" }} />
       <button
+        type="button"
+        className="btn-mini"
         onClick={() => fileRef.current?.click()}
         disabled={isPending}
-        style={{
-          padding: "0.4rem 0.8rem",
-          fontSize: "0.8rem",
-          backgroundColor: "#8B5CF6",
-          color: "#fff",
-          border: "none",
-          borderRadius: "4px",
-          cursor: isPending ? "not-allowed" : "pointer",
-          opacity: isPending ? 0.7 : 1,
-        }}
       >
-        {isPending ? "Uploading…" : "Upload Source"}
+        {isPending ? "Uploading…" : "Upload source"}
       </button>
     </>
   );
@@ -65,132 +80,144 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [editing, setEditing] = useState<RobotRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
-  const getErrorMessage = (error: unknown, fallback: string) =>
-    error instanceof Error ? error.message : fallback;
-
-  async function handleToggle(robotId: string, currentActive: boolean) {
-    setLoadingId(robotId);
+  async function handleToggle(robot: RobotRow) {
+    setLoadingId(robot.id);
+    setNotice(null);
     try {
-      await toggleRobotActive(robotId, currentActive);
+      await toggleRobotActive(robot.id, robot.active);
+      setNotice({
+        kind: "ok",
+        text: robot.active
+          ? `${robot.name} is no longer listed on the catalog.`
+          : `${robot.name} is listed on the catalog.`,
+      });
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to update active status"));
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : "Failed to update active status",
+      });
     } finally {
       setLoadingId(null);
     }
   }
 
   return (
-    <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-        <h2 style={{ fontSize: "1.5rem" }}>All Robots</h2>
-        <button
-          onClick={() => setCreating(true)}
-          style={{
-            padding: "0.5rem 1rem",
-            fontSize: "0.85rem",
-            backgroundColor: "#10B981",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          + Add Robot
+    <section className="card">
+      <div className="admin-table-head">
+        <div>
+          <p className="card-label">Catalog</p>
+          <h2 style={{ fontSize: "1.15rem", margin: 0 }}>All robots</h2>
+        </div>
+        <button type="button" className="btn-primary btn-sm" onClick={() => setCreating(true)}>
+          Add robot
         </button>
       </div>
+
+      {notice && (
+        <p className={`admin-notice is-${notice.kind}`} role="status">
+          {notice.text}
+        </p>
+      )}
+
       <div className="table-wrap">
-      <table className="data-table" style={{ minWidth: "800px" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
-            <th>Slug</th>
-            <th>Name</th>
-            <th>Active</th>
-            <th>Sort</th>
-            <th>Src v</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {robots.length === 0 && (
+        <table className="data-table" style={{ minWidth: "820px" }}>
+          <thead>
             <tr>
-              <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
-                No robots found.
-              </td>
+              <th>Robot</th>
+              <th>On the catalog</th>
+              <th>Pricing</th>
+              <th>Source</th>
+              <th>Licences</th>
+              <th style={{ textAlign: "right" }}>Actions</th>
             </tr>
-          )}
-          {robots.map((robot) => {
-            const isLoading = loadingId === robot.id;
-            return (
-              <tr
-                key={robot.id}
-                style={{
-                  borderBottom: "1px solid rgba(255,255,255,0.05)",
-                  backgroundColor: robot.active ? "transparent" : "rgba(255,255,255,0.03)",
-                }}
-              >
-                <td data-label="Slug" style={{ padding: "1.5rem 1rem", fontFamily: "monospace", fontSize: "0.9rem" }}>{robot.slug}</td>
-                <td data-label="Name" style={{ padding: "1.5rem 1rem" }}>{robot.name}</td>
-                <td data-label="Active" style={{ padding: "1.5rem 1rem" }}>
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      backgroundColor: robot.active ? "#10B981" : "#6b7280",
-                      color: "white",
-                      padding: "0.15rem 0.5rem",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    {robot.active ? "ACTIVE" : "INACTIVE"}
-                  </span>
-                </td>
-                <td data-label="Sort" style={{ padding: "1.5rem 1rem" }}>{robot.sortOrder}</td>
-                <td data-label="Src v" style={{ padding: "1.5rem 1rem" }}>{robot.sourceVersion}</td>
-                <td data-label="Actions" style={{ padding: "1.5rem 1rem", textAlign: "right" }}>
-                  <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-                    <button
-                      onClick={() => handleToggle(robot.id, robot.active)}
-                      disabled={isLoading}
-                      style={{
-                        padding: "0.4rem 0.8rem",
-                        fontSize: "0.8rem",
-                        backgroundColor: robot.active ? "#F59E0B" : "#10B981",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: isLoading ? "not-allowed" : "pointer",
-                        opacity: isLoading ? 0.7 : 1,
-                      }}
-                    >
-                      {robot.active ? "Deactivate" : "Activate"}
-                    </button>
-                    <button
-                      onClick={() => setEditing(robot)}
-                      disabled={isLoading}
-                      style={{
-                        padding: "0.4rem 0.8rem",
-                        fontSize: "0.8rem",
-                        backgroundColor: "#3B82F6",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: isLoading ? "not-allowed" : "pointer",
-                        opacity: isLoading ? 0.7 : 1,
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <UploadSourceButton robotId={robot.id} />
-                  </div>
+          </thead>
+          <tbody>
+            {robots.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                  No robots yet.
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table></div>
+            )}
+            {robots.map((robot) => {
+              const isLoading = loadingId === robot.id;
+              const state = storefront(robot);
+              return (
+                <tr key={robot.id} data-dim={robot.active ? undefined : "true"}>
+                  <td data-label="Robot">
+                    <span className="robot-name">{robot.name}</span>
+                    <span className="robot-slug">/robots/{robot.slug}</span>
+                  </td>
+
+                  <td data-label="On the catalog">
+                    <span className="pill" data-tone={state.tone}>
+                      {state.label}
+                    </span>
+                  </td>
+
+                  <td data-label="Pricing">
+                    {robot.paidTiers > 0 ? (
+                      <>
+                        from ${robot.cheapestPaid}
+                        <span className="cell-note">
+                          {robot.paidTiers} paid tier{robot.paidTiers === 1 ? "" : "s"}
+                          {robot.hasFreeTrial ? " · free trial" : ""}
+                        </span>
+                      </>
+                    ) : robot.hasFreeTrial ? (
+                      <>
+                        Free trial only
+                        <span className="cell-note">no paid tier active</span>
+                      </>
+                    ) : (
+                      <span style={{ color: "var(--text-muted)" }}>No active price</span>
+                    )}
+                  </td>
+
+                  <td data-label="Source">
+                    v{robot.sourceVersion}
+                    <span className="cell-note">used by new builds</span>
+                  </td>
+
+                  <td data-label="Licences">{robot.subscriptions}</td>
+
+                  <td data-label="Actions" className="cell-actions">
+                    <div className="row-actions">
+                      <button
+                        type="button"
+                        className="btn-mini"
+                        onClick={() => setEditing(robot)}
+                        disabled={isLoading}
+                      >
+                        Edit
+                      </button>
+                      <UploadSourceButton robotId={robot.id} onDone={setNotice} />
+                      <button
+                        type="button"
+                        className={`btn-mini ${robot.active ? "is-danger" : "is-go"}`}
+                        onClick={() => handleToggle(robot)}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Saving…" : robot.active ? "Unlist" : "List"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="admin-legend">
+        <strong>Selling</strong> — listed with an active price · <strong>Coming soon</strong> —
+        listed, no price, cannot be bought · <strong>Hidden</strong> — not on the catalog at all.
+      </p>
 
       {editing && <RobotForm robot={editing} mode="edit" onClose={() => setEditing(null)} />}
       {creating && <RobotForm mode="create" onClose={() => setCreating(false)} />}
-    </div>
+    </section>
   );
 }
