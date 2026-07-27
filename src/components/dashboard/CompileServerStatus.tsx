@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type StatusResponse = {
   status: "green" | "stale" | "red";
@@ -24,18 +24,21 @@ const COLORS = {
 
 const LABELS = {
   green: "Online",
-  stale: "Stale (no recent heartbeat)",
+  stale: "Stale",
   red: "Offline",
 } as const;
 
 /**
  * Client tile shown on /dashboard/admin. Polls /api/admin/compiler-status
- * every 15s and renders a color-coded status dot plus queue-health counters.
- * Cleans up its interval on unmount.
+ * every 15s. The card itself stays the same shape as its neighbours — label
+ * and one value — and the queue counters live in a popover, on hover for
+ * mice and on tap for everything else.
  */
 export default function CompileServerStatus() {
   const [data, setData] = useState<StatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,13 +65,33 @@ export default function CompileServerStatus() {
     };
   }, []);
 
+  // Tap-outside and Esc close it; hover-only would strand touch users.
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent | TouchEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   if (error) {
     return (
       <div className="card">
         <p className="card-label">Compile worker</p>
-        <div style={{ marginTop: "0.5rem", color: "#ff4444", fontSize: "0.9rem" }}>
-          Status error: {error}
-        </div>
+        <p className="card-value" style={{ color: "#ff4444", fontSize: "1.1rem" }}>
+          Status error
+        </p>
+        <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: "6px" }}>{error}</p>
       </div>
     );
   }
@@ -77,68 +100,71 @@ export default function CompileServerStatus() {
     return (
       <div className="card">
         <p className="card-label">Compile worker</p>
-        <div style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>Loading…</div>
+        <p className="card-value" style={{ color: "var(--text-muted)" }}>
+          Loading…
+        </p>
       </div>
     );
   }
 
   const color = COLORS[data.status];
-  const label = LABELS[data.status];
+  const rows: [string, string][] = [
+    [
+      "Last heartbeat",
+      data.lastSeenAgoSeconds === null ? "never" : `${data.lastSeenAgoSeconds}s ago`,
+    ],
+    ["In progress", String(data.processingCount)],
+    [`Stuck (> ${data.thresholds.stuckJobMinutes}m)`, String(data.stuckCount)],
+    ["Failed (24h)", String(data.failedLast24h)],
+  ];
+  if (data.oldestPendingAgeSeconds !== null) {
+    rows.push([
+      "Oldest pending",
+      `${Math.floor(data.oldestPendingAgeSeconds / 60)}m ${data.oldestPendingAgeSeconds % 60}s`,
+    ]);
+  }
 
   return (
-    <div className="card">
+    <div className="card stat-pop-wrap" ref={wrapRef}>
       <p className="card-label">Compile worker</p>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          marginTop: "0.75rem",
-        }}
-      >
+      <p className="card-value" style={{ color, display: "flex", alignItems: "center", gap: "10px" }}>
         <span
           aria-hidden
           style={{
-            display: "inline-block",
-            width: 12,
-            height: 12,
+            width: 11,
+            height: 11,
+            flex: "none",
             borderRadius: "50%",
             background: color,
             boxShadow: `0 0 12px ${color}`,
           }}
         />
-        <span
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            color,
-          }}
-        >
-          {label}
-        </span>
-      </div>
-      <div
-        style={{
-          marginTop: "0.75rem",
-          fontSize: "0.85rem",
-          color: "var(--text-secondary)",
-          lineHeight: 1.7,
-        }}
+        {LABELS[data.status]}
+      </p>
+
+      <button
+        type="button"
+        className="stat-pop-trigger"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
       >
-        <div>
-          Last heartbeat: {data.lastSeenAgoSeconds === null ? "never" : `${data.lastSeenAgoSeconds}s ago`}
-        </div>
-        <div>In progress: {data.processingCount}</div>
-        <div>
-          Stuck (&gt; {data.thresholds.stuckJobMinutes}m): {data.stuckCount}
-        </div>
-        <div>Failed (24h): {data.failedLast24h}</div>
-        {data.oldestPendingAgeSeconds !== null && (
-          <div>
-            Oldest pending: {Math.floor(data.oldestPendingAgeSeconds / 60)}m{" "}
-            {data.oldestPendingAgeSeconds % 60}s
-          </div>
-        )}
+        Queue details
+      </button>
+
+      {open && <div className="stat-pop-backdrop" onClick={() => setOpen(false)} role="presentation" />}
+
+      <div className="stat-pop" data-open={open ? "true" : undefined} role="group" aria-label="Queue details">
+        <p className="card-label" style={{ marginBottom: "10px" }}>
+          Queue
+        </p>
+        <dl className="stat-pop-list">
+          {rows.map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );

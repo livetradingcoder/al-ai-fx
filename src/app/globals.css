@@ -5885,3 +5885,107 @@ html:lang(ar) .landing-hero-title {
   .mt5-nav { border-right: none; border-bottom: 1px solid var(--border-color); }
   .mt5-chart { min-height: 120px; }
 }
+
+/* ===========================================================================
+   Stat popover — keeps a metric card the same height as its neighbours and
+   hides the detail rows until asked for: hover on a mouse, tap anywhere else.
+=========================================================================== */
+.stat-pop-wrap { position: relative; }
+
+.stat-pop-trigger {
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.stat-pop-trigger:hover { color: var(--accent-primary-light); }
+
+.stat-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% - 8px);
+  left: 14px;
+  right: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #12100c;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s;
+}
+
+.stat-pop[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .stat-pop-wrap:hover .stat-pop,
+  .stat-pop-wrap:focus-within .stat-pop {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+}
+
+.stat-pop-list { margin: 0; display: grid; gap: 8px; }
+
+.stat-pop-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.85rem;
+}
+
+.stat-pop-list dt { color: var(--text-muted); }
+.stat-pop-list dd { margin: 0; color: var(--text-primary); font-weight: 600; }
+
+.stat-pop-backdrop { display: none; }
+
+/* On phones it becomes a sheet: a floating panel anchored to a card in a
+   scrolling grid ends up half off-screen. */
+@media (max-width: 700px) {
+  .stat-pop {
+    position: fixed;
+    z-index: 60;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 20px 26px;
+    transform: translateY(14px);
+  }
+
+  .stat-pop-wrap:hover .stat-pop,
+  .stat-pop-wrap:focus-within .stat-pop {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .stat-pop[data-open="true"],
+  .stat-pop-wrap:focus-within .stat-pop[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .stat-pop-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(0, 0, 0, 0.55);
+  }
+}
