@@ -5260,3 +5260,124 @@ html:lang(ar) .landing-hero-title {
   .card-value { font-size: 1.6rem; }
   .plate { font-size: 1.05rem; }
 }
+
+/* Post-compile "next steps" inside the licence card. Must beat the inherited
+   `.glass-panel ul li { display:flex }`, which turned each step into two
+   columns and squeezed the text to ~3 words per line on a phone. Numbers are
+   real information here (the steps are sequential), so they come from <ol>. */
+.next-steps {
+  list-style: none;
+  counter-reset: nextstep;
+  margin: 0;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.next-steps li,
+.glass-panel .next-steps li,
+.card .next-steps li {
+  display: block;
+  position: relative;
+  padding-left: 34px;
+  margin: 0 0 12px;
+}
+
+.next-steps li:last-child { margin-bottom: 0; }
+
+.next-steps li::before {
+  counter-increment: nextstep;
+  content: counter(nextstep);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-primary-light);
+  border: 1px solid var(--border-strong, rgba(244, 220, 162, 0.32));
+}
+
+/* Tables on phones: stack each row into label/value pairs instead of
+   scrolling sideways. Horizontal scroll technically worked, but the content
+   was silently clipped ("MT5 A…", "$0.0") with no affordance, so nobody
+   scrolled. Labels come from each cell's data-label. */
+@media (max-width: 760px) {
+  .table-wrap,
+  .billing-table-wrap {
+    overflow-x: visible;
+  }
+
+  .data-table,
+  .billing-table {
+    min-width: 0;
+    display: block;
+  }
+
+  .data-table thead,
+  .billing-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .data-table tbody,
+  .data-table tr,
+  .billing-table tbody,
+  .billing-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table tr,
+  .billing-table tr {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 6px 14px;
+    margin-bottom: 12px;
+    background: rgba(244, 220, 162, 0.02);
+  }
+
+  .data-table td,
+  .billing-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(231, 216, 183, 0.06);
+    text-align: right;
+  }
+
+  .data-table tr td:last-child,
+  .billing-table tr td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before,
+  .billing-table td::before {
+    content: attr(data-label);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    flex: none;
+  }
+
+  /* action buttons get their own full-width row */
+  .data-table td[data-label="Actions"] {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

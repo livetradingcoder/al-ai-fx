@@ -64,8 +64,8 @@ export default function CompileServerStatus() {
 
   if (error) {
     return (
-      <div className="feature-card">
-        <h3 style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>Compile Server</h3>
+      <div className="card">
+        <p className="card-label">Compile worker</p>
         <div style={{ marginTop: "0.5rem", color: "#ff4444", fontSize: "0.9rem" }}>
           Status error: {error}
         </div>
@@ -75,8 +75,8 @@ export default function CompileServerStatus() {
 
   if (!data) {
     return (
-      <div className="feature-card">
-        <h3 style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>Compile Server</h3>
+      <div className="card">
+        <p className="card-label">Compile worker</p>
         <div style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>Loading…</div>
       </div>
     );
@@ -86,8 +86,8 @@ export default function CompileServerStatus() {
   const label = LABELS[data.status];
 
   return (
-    <div className="feature-card">
-      <h3 style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>Compile Server</h3>
+    <div className="card">
+      <p className="card-label">Compile worker</p>
       <div
         style={{
           display: "flex",
@@ -109,8 +109,7 @@ export default function CompileServerStatus() {
         />
         <span
           style={{
-            fontFamily: "Outfit",
-            fontSize: "1.4rem",
+            fontSize: "1.5rem",
             fontWeight: "bold",
             color,
           }}

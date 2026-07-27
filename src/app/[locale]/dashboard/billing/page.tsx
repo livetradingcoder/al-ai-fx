@@ -52,12 +52,12 @@ export default async function BillingPage() {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1.5rem 0' }}>{formatDate(order.createdAt)}</td>
-                  <td style={{ padding: '1.5rem 0' }}>{formatTier(order.pricingTier)}</td>
-                  <td style={{ padding: '1.5rem 0', fontWeight: 'bold' }}>
+                  <td data-label="Date" style={{ padding: '1.5rem 0' }}>{formatDate(order.createdAt)}</td>
+                  <td data-label="Plan" style={{ padding: '1.5rem 0' }}>{formatTier(order.pricingTier)}</td>
+                  <td data-label="Amount" style={{ padding: '1.5rem 0', fontWeight: 'bold' }}>
                     {new Intl.NumberFormat('en-US', { style: 'currency', currency: order.currency }).format(order.amount)}
                   </td>
-                  <td style={{ padding: '1.5rem 0' }}>
+                  <td data-label="Status" style={{ padding: '1.5rem 0' }}>
                     <span style={{ color: order.status === 'SUCCESS' ? 'var(--accent-accent)' : 'var(--text-error)' }}>
                       {order.status}
                     </span>

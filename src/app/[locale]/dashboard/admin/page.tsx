@@ -123,17 +123,17 @@ export default async function AdminDashboard() {
               )}
               {recentSubscriptions.map(sub => (
                 <tr key={sub.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1.5rem 1rem' }}>{sub.user.email}</td>
-                  <td style={{ padding: '1.5rem 1rem', fontFamily: 'monospace' }}>
+                  <td data-label="Email" style={{ padding: '1.5rem 1rem' }}>{sub.user.email}</td>
+                  <td data-label="MT5 Account" style={{ padding: '1.5rem 1rem', fontFamily: 'monospace' }}>
                     {sub.mt5AccountNumber || <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                   </td>
-                  <td style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{sub.tier.replace('_', ' ')}</td>
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Tier" style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{sub.tier.replace('_', ' ')}</td>
+                  <td data-label="Status" style={{ padding: '1.5rem 1rem' }}>
                     <span style={{ color: sub.status === "ACTIVE" ? 'var(--accent-accent)' : 'var(--text-secondary)' }}>
                       {sub.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  <td data-label="Date" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                     {new Date(sub.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
@@ -187,20 +187,20 @@ export default async function AdminDashboard() {
               )}
               {recentOrders.map(order => (
                 <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1.5rem 1rem' }}>{order.user.email}</td>
-                  <td style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{order.pricingTier.replace('_', ' ')}</td>
-                  <td style={{ padding: '1.5rem 1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <td data-label="Email" style={{ padding: '1.5rem 1rem' }}>{order.user.email}</td>
+                  <td data-label="Tier" style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{order.pricingTier.replace('_', ' ')}</td>
+                  <td data-label="Amount" style={{ padding: '1.5rem 1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     ${order.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {order.currency}
                   </td>
-                  <td style={{ padding: '1.5rem 1rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                  <td data-label="Order Ref" style={{ padding: '1.5rem 1rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
                     {order.paygateId || <span style={{ color: 'var(--text-secondary)' }}>N/A</span>}
                   </td>
-                  <td style={{ padding: '1.5rem 1rem' }}>
+                  <td data-label="Status" style={{ padding: '1.5rem 1rem' }}>
                     <span style={{ color: order.status === "SUCCESS" ? 'var(--accent-accent)' : order.status === "PENDING" ? 'var(--text-secondary)' : '#fca5a5' }}>
                       {order.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  <td data-label="Email" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                     {new Date(order.createdAt).toLocaleString()}
                   </td>
                 </tr>

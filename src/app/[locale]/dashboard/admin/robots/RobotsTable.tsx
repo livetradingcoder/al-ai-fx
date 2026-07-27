@@ -129,9 +129,9 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
                   backgroundColor: robot.active ? "transparent" : "rgba(255,255,255,0.03)",
                 }}
               >
-                <td style={{ padding: "1.5rem 1rem", fontFamily: "monospace", fontSize: "0.9rem" }}>{robot.slug}</td>
-                <td style={{ padding: "1.5rem 1rem" }}>{robot.name}</td>
-                <td style={{ padding: "1.5rem 1rem" }}>
+                <td data-label="Slug" style={{ padding: "1.5rem 1rem", fontFamily: "monospace", fontSize: "0.9rem" }}>{robot.slug}</td>
+                <td data-label="Name" style={{ padding: "1.5rem 1rem" }}>{robot.name}</td>
+                <td data-label="Active" style={{ padding: "1.5rem 1rem" }}>
                   <span
                     style={{
                       fontSize: "0.75rem",
@@ -144,9 +144,9 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
                     {robot.active ? "ACTIVE" : "INACTIVE"}
                   </span>
                 </td>
-                <td style={{ padding: "1.5rem 1rem" }}>{robot.sortOrder}</td>
-                <td style={{ padding: "1.5rem 1rem" }}>{robot.sourceVersion}</td>
-                <td style={{ padding: "1.5rem 1rem", textAlign: "right" }}>
+                <td data-label="Sort" style={{ padding: "1.5rem 1rem" }}>{robot.sortOrder}</td>
+                <td data-label="Src v" style={{ padding: "1.5rem 1rem" }}>{robot.sourceVersion}</td>
+                <td data-label="Actions" style={{ padding: "1.5rem 1rem", textAlign: "right" }}>
                   <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
                     <button
                       onClick={() => handleToggle(robot.id, robot.active)}

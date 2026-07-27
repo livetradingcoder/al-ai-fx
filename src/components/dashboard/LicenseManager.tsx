@@ -229,13 +229,17 @@ export default function LicenseManager({ subscription, latestCompilation: initia
       {compilation?.status === "COMPLETED" && (
         <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
           <h4 style={{ color: 'var(--accent-accent)', marginBottom: '1rem', fontSize: '1rem' }}>{t("successSteps")}</h4>
-          <ul style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', paddingLeft: '1.2rem' }}>
-            <li><strong>Step 1:</strong> {t("successStep1")}</li>
-            <li><strong>Step 2:</strong> {t("successStep2")}</li>
-            <li><strong>Step 3:</strong> {t("successStep3")}</li>
-            <li><strong>Step 4:</strong> {t("successStep4")}</li>
-            <li><strong>Step 5:</strong> {t.rich("successStep5", { tutorialLink: (chunks) => <Link href="/tutorials/2" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>{chunks}</Link> })}</li>
-          </ul>
+          {/* Ordered list, not a bullet list: these are sequential and the
+              numbering carries meaning. `.next-steps` overrides the inherited
+              `.glass-panel ul li { display:flex }`, which was splitting the
+              step label and its text into two squeezed columns on phones. */}
+          <ol className="next-steps">
+            <li>{t("successStep1")}</li>
+            <li>{t("successStep2")}</li>
+            <li>{t("successStep3")}</li>
+            <li>{t("successStep4")}</li>
+            <li>{t.rich("successStep5", { tutorialLink: (chunks) => <Link href="/tutorials/2" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>{chunks}</Link> })}</li>
+          </ol>
           <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             ⚠️ {t("successNote", { account: subscription.mt5AccountNumber || "" })}
           </p>
