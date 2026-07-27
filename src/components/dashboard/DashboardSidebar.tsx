@@ -42,6 +42,28 @@ const Icon = {
       <rect x="4" y="8" width="16" height="11" rx="3" /><path d="M12 8V4.5M8.5 13h.01M15.5 13h.01M9.5 16.5h5" />
     </svg>
   ),
+  downloads: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 4v10M8 11l4 4 4-4M5 19h14" />
+    </svg>
+  ),
+  profile: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+    </svg>
+  ),
+  settings: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 008.6 19a1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H2a2 2 0 110-4h.1A1.7 1.7 0 004 8.6a1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V2a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H22a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" />
+    </svg>
+  ),
+  support: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.6" />
+      <path d="M14.6 9.4l3-3M6.4 17.6l3-3M14.6 14.6l3 3M6.4 6.4l3 3" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h11" />
@@ -77,7 +99,19 @@ export default function DashboardSidebar() {
         <p className="rail-group-label">{t("menu")}</p>
         {railLink("/dashboard", Icon.overview, t("overview"))}
         {railLink("/dashboard/licenses", Icon.licence, t("myLicenses"))}
+        {railLink("/dashboard/downloads", Icon.downloads, t("downloads"))}
+      </nav>
+
+      <nav className="rail-group" aria-label={t("accountGroup")}>
+        <p className="rail-group-label">{t("accountGroup")}</p>
         {railLink("/dashboard/billing", Icon.billing, t("billing"))}
+        {railLink("/dashboard/profile", Icon.profile, t("profile"))}
+        {railLink("/dashboard/settings", Icon.settings, t("settings"))}
+      </nav>
+
+      <nav className="rail-group" aria-label={t("helpGroup")}>
+        <p className="rail-group-label">{t("helpGroup")}</p>
+        {railLink("/dashboard/support", Icon.support, t("support"))}
       </nav>
 
       {isAdmin ? (

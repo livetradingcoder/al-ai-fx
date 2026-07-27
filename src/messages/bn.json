@@ -364,6 +364,17 @@
     "stepInstall": "MetaTrader-এ ইনস্টল করুন",
     "stepInstallNote": "MQL5 / Experts-এ কপি করুন, তারপর Experts তালিকা রিফ্রেশ করুন।",
     "openTutorial": "ইনস্টল গাইড খুলুন",
-    "lockedBuild": "লকড বিল্ড"
+    "lockedBuild": "লকড বিল্ড",
+    "downloads": "ডাউনলোড",
+    "profile": "প্রোফাইল",
+    "settings": "সেটিংস",
+    "support": "সহায়তা",
+    "accountGroup": "অ্যাকাউন্ট",
+    "helpGroup": "সাহায্য",
+    "searchPlaceholder": "পেজ, অ্যাকশন, সেটিংস খুঁজুন…",
+    "searchNoResults": "কিছু মেলেনি।",
+    "searchNavigate": "নেভিগেট",
+    "searchSelect": "নির্বাচন",
+    "searchClose": "বন্ধ"
   }
 }

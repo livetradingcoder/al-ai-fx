@@ -364,6 +364,17 @@
     "stepInstall": "MetaTrader میں انسٹال کریں",
     "stepInstallNote": "MQL5 / Experts میں کاپی کریں، پھر Experts کی فہرست ریفریش کریں۔",
     "openTutorial": "انسٹال گائیڈ کھولیں",
-    "lockedBuild": "لاک شدہ بلڈ"
+    "lockedBuild": "لاک شدہ بلڈ",
+    "downloads": "ڈاؤن لوڈز",
+    "profile": "پروفائل",
+    "settings": "ترتیبات",
+    "support": "سپورٹ",
+    "accountGroup": "اکاؤنٹ",
+    "helpGroup": "مدد",
+    "searchPlaceholder": "صفحات، اعمال، ترتیبات تلاش کریں…",
+    "searchNoResults": "کوئی نتیجہ نہیں۔",
+    "searchNavigate": "نیویگیٹ",
+    "searchSelect": "منتخب",
+    "searchClose": "بند"
   }
 }

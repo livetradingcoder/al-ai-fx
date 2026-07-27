@@ -364,6 +364,17 @@
     "stepInstall": "ثبّتها في MetaTrader",
     "stepInstallNote": "انسخها إلى MQL5 / Experts ثم حدّث قائمة الخبراء.",
     "openTutorial": "افتح دليل التثبيت",
-    "lockedBuild": "نسخة مرتبطة"
+    "lockedBuild": "نسخة مرتبطة",
+    "downloads": "التنزيلات",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "support": "الدعم",
+    "accountGroup": "الحساب",
+    "helpGroup": "المساعدة",
+    "searchPlaceholder": "ابحث في الصفحات والإجراءات والإعدادات…",
+    "searchNoResults": "لا نتائج مطابقة.",
+    "searchNavigate": "تنقل",
+    "searchSelect": "اختيار",
+    "searchClose": "إغلاق"
   }
 }

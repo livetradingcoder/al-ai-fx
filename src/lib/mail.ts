@@ -418,3 +418,66 @@ export async function sendSubscriberWelcomeEmail(email: string) {
   });
   console.log(`[Mail] Subscriber welcome email sent to ${email}`);
 }
+
+/**
+ * Support request from the dashboard. Goes to the support inbox with the
+ * sender's address as reply-to context in the body (the transactional domain
+ * is the only allowed From), plus a copy to the customer so they have a
+ * record of what they asked.
+ */
+export async function sendSupportRequestEmail(input: {
+  fromEmail: string;
+  subject: string;
+  message: string;
+  meta?: string[];
+}) {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping support request.");
+    return false;
+  }
+  const to = (process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || "").toLowerCase();
+  if (!to) {
+    console.warn("[Mail] No support recipient configured. Skipping support request.");
+    return false;
+  }
+
+  const staff = renderEmailTemplate({
+    buttonLabel: "Reply to customer",
+    buttonUrl: `mailto:${input.fromEmail}`,
+    eyebrow: "Support request",
+    title: input.subject,
+    intro: input.message,
+    detailLines: [`From: ${input.fromEmail}`, ...(input.meta ?? [])],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email: to }],
+    subject: `[Support] ${input.subject}`,
+    html: staff.html,
+    text: staff.text,
+    category: "SupportRequest",
+  });
+
+  const copy = renderEmailTemplate({
+    buttonLabel: "Open your dashboard",
+    buttonUrl: `${process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz"}/en/dashboard`,
+    eyebrow: "Support",
+    title: "We got your message",
+    intro:
+      "Thanks — your request is with our team and we'll reply to this address. Here's a copy of what you sent.",
+    detailLines: [input.subject, input.message],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email: input.fromEmail }],
+    subject: "We got your message — AL-ai-FX support",
+    html: copy.html,
+    text: copy.text,
+    category: "SupportAck",
+  });
+
+  console.log(`[Mail] Support request from ${input.fromEmail} delivered to ${to}`);
+  return true;
+}

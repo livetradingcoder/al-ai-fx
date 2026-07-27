@@ -364,6 +364,17 @@
     "stepInstall": "Install it in MetaTrader",
     "stepInstallNote": "Copy to MQL5 / Experts, then refresh the Experts list.",
     "openTutorial": "Open the install guide",
-    "lockedBuild": "Locked build"
+    "lockedBuild": "Locked build",
+    "downloads": "Downloads",
+    "profile": "Profile",
+    "settings": "Settings",
+    "support": "Support",
+    "accountGroup": "Account",
+    "helpGroup": "Help",
+    "searchPlaceholder": "Search pages, actions, settings…",
+    "searchNoResults": "Nothing matches that.",
+    "searchNavigate": "navigate",
+    "searchSelect": "select",
+    "searchClose": "close"
   }
 }

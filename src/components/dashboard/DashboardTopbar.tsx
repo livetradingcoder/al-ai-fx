@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import CommandPalette from "@/components/dashboard/CommandPalette";
+
 /**
  * Context strip above the content: which area you're in, and who you're
  * signed in as. No search box — a search that returns nothing would be
@@ -16,7 +18,11 @@ export default function DashboardTopbar() {
 
   const area = pathname.includes("/dashboard/admin")
     ? t("administration")
-    : t("menu");
+    : /\/(profile|settings|billing)$/.test(pathname)
+      ? t("accountGroup")
+      : pathname.includes("/support")
+        ? t("helpGroup")
+        : t("menu");
 
   const title = pathname.includes("/admin/users")
     ? t("manageUsers")
@@ -42,6 +48,7 @@ export default function DashboardTopbar() {
         <p className="topbar-eyebrow">{area}</p>
         <p className="topbar-title">{title}</p>
       </div>
+      <CommandPalette />
       <div className="topbar-chip">
         <span className="topbar-avatar" aria-hidden="true">{initials}</span>
         <span title={email}>{email}</span>
