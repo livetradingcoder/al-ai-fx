@@ -5776,22 +5776,27 @@ html:lang(ar) .landing-hero-title {
   font-weight: 700;
 }
 
-/* MetaTrader mock — the one place customers get lost, drawn rather than
-   described, so the Navigator panel they must right-click is recognisable. */
+/* MetaTrader window, drawn rather than described — customers match what is on
+   their screen to the instruction. Four things have to be recognisable: the
+   Navigator tree, the Algo Trading button, the expert badge in the chart's
+   top-right corner, and the Journal tab. `data-focus` rings whichever of them
+   the current step is talking about. */
 .mt5-mock {
+  margin: 6px 0 0;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
-  background: rgba(10, 8, 6, 0.7);
-  margin-top: 6px;
+  background: #0c0a08;
+  font-size: 0.82rem;
 }
 
-.mt5-mock-bar {
+.mt5-titlebar {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 10px 14px;
+  padding: 9px 14px;
   border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .mt5-dot {
@@ -5803,11 +5808,57 @@ html:lang(ar) .landing-hero-title {
 
 .mt5-mock-title {
   margin-left: 8px;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mt5-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mt5-algo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.mt5-algo-icon { color: var(--text-muted); font-size: 0.7rem; }
+
+/* pressed state — MT5 keeps the button depressed with a green icon */
+.mt5-algo[data-on="true"] {
+  color: var(--text-primary);
+  border-color: rgba(156, 215, 180, 0.5);
+  background: rgba(156, 215, 180, 0.12);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.mt5-algo[data-on="true"] .mt5-algo-icon { color: #7ddba0; }
+
+.mt5-tf-group { display: flex; gap: 4px; }
+
+.mt5-tf {
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.mt5-tf.is-active {
+  color: var(--accent-primary-light);
+  background: rgba(244, 220, 162, 0.12);
 }
 
 .mt5-mock-body { display: grid; grid-template-columns: 232px 1fr; min-height: 190px; }
@@ -5831,8 +5882,8 @@ html:lang(ar) .landing-hero-title {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .mt5-nav-group.is-sub { padding-left: 14px; }
-.mt5-nav-item.is-sub { margin-left: 26px; }
 
 .mt5-nav-item {
   font-size: 0.85rem;
@@ -5844,6 +5895,8 @@ html:lang(ar) .landing-hero-title {
   text-overflow: ellipsis;
 }
 
+.mt5-nav-item.is-sub { margin-left: 26px; }
+
 .mt5-nav-item.is-ea {
   color: var(--accent-primary-light);
   background: rgba(244, 220, 162, 0.1);
@@ -5852,15 +5905,141 @@ html:lang(ar) .landing-hero-title {
 }
 
 .mt5-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 18px;
+  position: relative;
+  padding: 34px 16px 16px;
+  min-height: 170px;
 }
 
-.candle { flex: 1; border-radius: 2px; min-width: 6px; }
-.candle.up { background: rgba(156, 215, 180, 0.75); }
-.candle.down { background: rgba(239, 127, 105, 0.75); }
+/* the expert badge MT5 paints in the chart's top-right corner */
+.mt5-ea-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 62%;
+  padding: 4px 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mt5-face { font-size: 0.95rem; line-height: 1; color: #ef7f69; }
+
+.mt5-ea-badge[data-on="true"] {
+  border-color: rgba(156, 215, 180, 0.45);
+  color: var(--text-primary);
+}
+
+.mt5-ea-badge[data-on="true"] .mt5-face { color: #7ddba0; }
+
+.mt5-chart-tag {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.mt5-candles {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 130px;
+}
+
+/* Real candles: a wick spanning high→low with the open/close body over it. */
+.candle { position: relative; flex: 1; min-width: 5px; }
+
+.candle-wick {
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: currentColor;
+  opacity: 0.8;
+}
+
+.candle-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.candle.up { color: rgba(156, 215, 180, 0.85); }
+.candle.down { color: rgba(239, 127, 105, 0.85); }
+
+.mt5-terminal { border-top: 1px solid var(--border-color); }
+
+.mt5-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mt5-tabs::-webkit-scrollbar { display: none; }
+
+.mt5-tabs span {
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.mt5-tabs span.is-active {
+  color: var(--accent-primary-light);
+  border-bottom-color: var(--accent-primary);
+}
+
+.mt5-journal { padding: 10px 12px; display: grid; gap: 6px; }
+
+.mt5-log {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.mt5-log span { color: var(--text-muted); margin-right: 10px; }
+.mt5-log.is-good { color: #9cd7b4; }
+.mt5-log.is-muted { color: var(--text-muted); }
+
+.mt5-legend {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+/* Ring whatever the step is pointing at; everything else stays quiet. */
+/* outline, not box-shadow: the badge is absolutely positioned and a shadow
+   rule that also sets `position` would drop it out of its corner. */
+.mt5-mock[data-focus="navigator"] .mt5-nav,
+.mt5-mock[data-focus="run"] .mt5-algo[data-on="true"],
+.mt5-mock[data-focus="run"] .mt5-ea-badge,
+.mt5-mock[data-focus="run"] .mt5-journal {
+  outline: 2px solid rgba(244, 220, 162, 0.45);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.mt5-mock[data-focus="navigator"] .mt5-toolbar,
+.mt5-mock[data-focus="navigator"] .mt5-terminal { opacity: 0.55; }
+.mt5-mock[data-focus="run"] .mt5-nav { opacity: 0.55; }
 
 @media (max-width: 760px) {
   .onboarding-card { padding: 22px 18px; }
@@ -5883,7 +6062,19 @@ html:lang(ar) .landing-hero-title {
   .stepper-item + .stepper-item::before { min-width: 10px; flex-basis: 10px; }
   .mt5-mock-body { grid-template-columns: 1fr; }
   .mt5-nav { border-right: none; border-bottom: 1px solid var(--border-color); }
-  .mt5-chart { min-height: 120px; }
+  .mt5-chart { min-height: 150px; padding-top: 44px; }
+  /* The badge is the thing customers check, so it keeps a full row of its own
+     rather than colliding with the symbol label. */
+  .mt5-ea-badge { max-width: calc(100% - 24px); top: 30px; left: 12px; right: 12px; }
+  .mt5-candles { height: 96px; }
+  .mt5-tf-group { display: none; }
+  /* Journal is the tab the step tells you to open — it must be on screen, not
+     scrolled off the end, so the middle tabs drop. */
+  .mt5-tabs span:nth-child(2),
+  .mt5-tabs span:nth-child(3),
+  .mt5-tabs span:nth-child(4) { display: none; }
+  .mt5-toolbar { padding: 8px 10px; }
+  .mt5-legend { font-size: 0.76rem; }
 }
 
 /* ===========================================================================

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Mt5Mock from "./Mt5Mock";
 
 type Props = {
   subscriptionId: string | null;
@@ -231,31 +232,7 @@ export default function Onboarding({
             <p className="card-label">Step 4 — Install</p>
             <h2 className="onboarding-title">Put the file where MetaTrader looks.</h2>
 
-            <div className="mt5-mock" aria-hidden="true">
-              <div className="mt5-mock-bar">
-                <span className="mt5-dot" /><span className="mt5-dot" /><span className="mt5-dot" />
-                <span className="mt5-mock-title">MetaTrader 5 — XAUUSD, M5</span>
-              </div>
-              <div className="mt5-mock-body">
-                <div className="mt5-nav">
-                  <p className="mt5-nav-label">Navigator</p>
-                  <p className="mt5-nav-group">▾ Expert Advisors / Experten</p>
-                  <p className="mt5-nav-group is-sub">▾ alaifx</p>
-                  <p className="mt5-nav-item is-ea is-sub">AL-ai-FX_goldbot…</p>
-                  <p className="mt5-nav-item">Advisors</p>
-                  <p className="mt5-nav-item">Examples</p>
-                </div>
-                <div className="mt5-chart">
-                  {[38, 52, 30, 61, 44, 70, 55, 82, 66, 91].map((h, i) => (
-                    <span
-                      key={i}
-                      className={i % 3 === 1 ? "candle down" : "candle up"}
-                      style={{ height: `${h}%` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            <Mt5Mock focus="navigator" />
 
             <ol className="next-steps" style={{ marginTop: "22px" }}>
               <li>In MetaTrader: <strong>File → Open Data Folder</strong>.</li>
@@ -280,7 +257,10 @@ export default function Onboarding({
           <>
             <p className="card-label">Step 5 — Run it</p>
             <h2 className="onboarding-title">Drag it onto a gold chart.</h2>
-            <ol className="next-steps">
+
+            <Mt5Mock focus="run" />
+
+            <ol className="next-steps" style={{ marginTop: "22px" }}>
               <li>Open an <strong>XAUUSD</strong> chart (M5 is a good default).</li>
               <li>Drag <strong>GoldBot</strong> from the Navigator onto that chart.</li>
               <li>
@@ -288,8 +268,17 @@ export default function Onboarding({
                 as per the guide.
               </li>
               <li>
-                Turn on <strong>Algo Trading</strong> in the toolbar. A smiley face on the chart
-                means it&apos;s live.
+                Press <strong>Algo Trading</strong> in the toolbar. The button stays pressed and
+                its icon turns green.
+              </li>
+              <li>
+                Check the chart&apos;s <strong>top-right corner</strong>: the robot&apos;s name with a
+                smiling face means it is running. A sad face means algo trading is still off.
+              </li>
+              <li>
+                Open the <strong>Journal</strong> tab at the bottom. You want a line reading{" "}
+                <em>expert … loaded successfully</em>, followed by{" "}
+                <em>automated trading is enabled</em>.
               </li>
             </ol>
             <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "18px" }}>
