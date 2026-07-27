@@ -6047,11 +6047,7 @@ html:lang(ar) .landing-hero-title {
   /* The landing page forces every `section h2` to 36px !important on phones.
      The dashboard is not the landing page — take the size back inside the
      shell, or every card heading shouts. */
-  .shell-content h2 {
-    font-size: 1.3rem !important;
-    text-align: left;
-    margin-bottom: 14px;
-  }
+  .shell-content h2 { font-size: 1.3rem !important; }
   .shell-content .onboarding-title { font-size: 1.25rem !important; }
   /* All five nodes have to fit a 360px screen, so the labels go entirely —
      the card heading below already names the current step. */
@@ -6075,6 +6071,63 @@ html:lang(ar) .landing-hero-title {
   .mt5-tabs span:nth-child(4) { display: none; }
   .mt5-toolbar { padding: 8px 10px; }
   .mt5-legend { font-size: 0.76rem; }
+}
+
+/* The landing page centres every h2 and gives it 64px of bottom margin. Card
+   headings in the dashboard are not section titles — they sit left, close to
+   the content they label. */
+.shell-content h2 {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+/* ===========================================================================
+   Dashboard form fields. The landing page's .form-input is built for hero-sized
+   forms (20px padding, 17px type); inside a card that reads as enormous, so the
+   dashboard has its own scale. Everything here is dark on purpose — an unstyled
+   input renders white and blows a hole through the panel.
+=========================================================================== */
+.enroll-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.enroll-input::placeholder { color: var(--text-muted); }
+
+.enroll-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(244, 220, 162, 0.12);
+}
+
+.enroll-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+textarea.enroll-input {
+  min-height: 150px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* Chrome paints its own near-white fill over autofilled fields; the inset
+   shadow trick is the only way to keep them dark. */
+.enroll-input:-webkit-autofill,
+.enroll-input:-webkit-autofill:hover,
+.enroll-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
+  box-shadow: inset 0 0 0 1000px #14110d;
+  transition: background-color 9999s ease-out;
 }
 
 /* ===========================================================================
