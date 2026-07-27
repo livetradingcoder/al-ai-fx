@@ -5399,10 +5399,15 @@ html:lang(ar) .landing-hero-title {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 16px;
+    gap: 12px;
     padding: 9px 0;
     border-bottom: 1px solid rgba(231, 216, 183, 0.06);
     text-align: right;
+    /* long values (emails, filenames) are a bare text node in the cell —
+       without this they run past the card edge instead of wrapping */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
   }
 
   .data-table tr td:last-child,
@@ -5419,7 +5424,18 @@ html:lang(ar) .landing-hero-title {
     text-transform: uppercase;
     color: var(--text-muted);
     text-align: left;
-    flex: none;
+    /* shrinkable, so a long value keeps room; capped so the label itself
+       never eats the row */
+    flex: 0 1 auto;
+    max-width: 40%;
+    overflow-wrap: anywhere;
+  }
+
+  /* plates inside a stacked cell must not force the row wider than the card */
+  .data-table td .plate,
+  .billing-table td .plate {
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   /* action buttons get their own full-width row */
