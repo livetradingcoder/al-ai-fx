@@ -21,6 +21,24 @@ model User {
   updatedAt           DateTime       @updatedAt
   subscriptions       Subscription[]
   orders              Order[]
+  sessions            UserSession[]
+}
+
+/// One row per sign-in. Auth uses JWTs (stateless), so without this table a
+/// signed-in device is invisible and cannot be revoked. The JWT carries `jti`;
+/// a token whose row is missing or revoked is rejected on the next request.
+model UserSession {
+  id         String    @id @default(cuid())
+  jti        String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  @@index([userId])
 }
 
 enum UserRole {

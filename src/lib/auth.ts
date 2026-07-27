@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { headers } from "next/headers";
 import type { NextAuthOptions, Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -120,6 +122,51 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+
+        // Record the sign-in so the device is visible and revocable. JWTs are
+        // stateless; this row is what makes "sign out everywhere" possible.
+        try {
+          const jti = randomUUID();
+          const headerList = await headers();
+          await prisma.userSession.create({
+            data: {
+              jti,
+              userId: user.id,
+              userAgent: headerList.get("user-agent")?.slice(0, 400) ?? null,
+              ip:
+                headerList.get("x-forwarded-for")?.split(",")[0]?.trim().slice(0, 60) ??
+                null,
+            },
+          });
+          token.jti = jti;
+        } catch (err) {
+          // Never block a legitimate sign-in because bookkeeping failed.
+          console.error("[Auth] Could not record session:", err);
+        }
+        return token;
+      }
+
+      // Reject tokens whose session was revoked. Fail OPEN on database
+      // trouble — a DB blip must not sign every customer out.
+      if (typeof token.jti === "string") {
+        try {
+          const row = await prisma.userSession.findUnique({
+            where: { jti: token.jti },
+            select: { revokedAt: true, lastSeenAt: true },
+          });
+          if (!row || row.revokedAt) return null as unknown as JWT;
+
+          // Throttle the write: once every 10 minutes is enough to show
+          // "last used" without a database write per request.
+          if (Date.now() - row.lastSeenAt.getTime() > 10 * 60_000) {
+            await prisma.userSession.update({
+              where: { jti: token.jti },
+              data: { lastSeenAt: new Date() },
+            });
+          }
+        } catch (err) {
+          console.error("[Auth] Session check failed (allowing):", err);
+        }
       }
       return token;
     },

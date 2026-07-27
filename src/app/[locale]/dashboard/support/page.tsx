@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth";
 import SupportForm from "@/components/dashboard/SupportForm";
 
@@ -9,6 +10,16 @@ export const metadata = { title: "Support" };
 export default async function SupportPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
+
+  const tt = await getTranslations("Tutorials");
+  // Same three guides as /tutorials on the site — linked here because most
+  // tickets are answered by them.
+  const guides = [1, 2, 3].map((n) => ({
+    id: String(n),
+    title: tt(`tut${n}Title`),
+    duration: tt(`tut${n}Duration`),
+    description: tt(`tut${n}Desc`),
+  }));
 
   return (
     <>
@@ -19,10 +30,7 @@ export default async function SupportPage() {
         </p>
       </header>
 
-      <div
-        className="card-grid"
-        style={{ gridTemplateColumns: "1fr minmax(240px, 340px)", alignItems: "start" }}
-      >
+      <div className="split-grid split-grid-wide-first">
         <div className="card">
           <SupportForm />
         </div>
@@ -53,6 +61,22 @@ export default async function SupportPage() {
           </p>
         </div>
       </div>
+
+      <section className="card" style={{ marginTop: "20px" }}>
+        <p className="card-label">Guides</p>
+        <h2 style={{ fontSize: "1.15rem", margin: "0 0 16px" }}>Tutorials</h2>
+        <div className="guide-list">
+          {guides.map((g) => (
+            <Link key={g.id} href={`/tutorials/${g.id}`} className="guide-row">
+              <span>
+                <span className="guide-title">{g.title}</span>
+                <span className="guide-desc">{g.description}</span>
+              </span>
+              <span className="guide-meta">{g.duration}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

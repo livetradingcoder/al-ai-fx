@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ProfileForm from "@/components/dashboard/ProfileForm";
+import PasswordForm from "@/components/dashboard/PasswordForm";
 
 export const metadata = { title: "Profile" };
 
@@ -14,6 +15,7 @@ export default async function ProfilePage() {
     where: { id: session.user.id },
     include: { _count: { select: { subscriptions: true, orders: true } } },
   });
+  const hasPassword = Boolean(user?.passwordHash);
   if (!user) redirect("/login");
 
   const initials = (user.name || user.email).replace(/@.*/, "").slice(0, 2).toUpperCase();
@@ -25,10 +27,7 @@ export default async function ProfilePage() {
         <p style={{ color: "var(--text-secondary)" }}>Your account details.</p>
       </header>
 
-      <div
-        className="card-grid"
-        style={{ gridTemplateColumns: "minmax(240px, 320px) 1fr", alignItems: "start" }}
-      >
+      <div className="split-grid">
         <div className="card" style={{ textAlign: "center" }}>
           <span
             className="topbar-avatar"
@@ -81,6 +80,19 @@ export default async function ProfilePage() {
           </p>
         </div>
       </div>
+
+      <section className="card" style={{ marginTop: "20px" }}>
+        <p className="card-label">Password</p>
+        <h2 style={{ fontSize: "1.15rem", margin: "0 0 6px" }}>
+          {hasPassword ? "Change your password" : "Set a password"}
+        </h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginBottom: "20px" }}>
+          {hasPassword
+            ? "Use a strong, unique password. Minimum 8 characters."
+            : "You sign in with emailed links. Setting a password lets you sign in directly as well."}
+        </p>
+        <PasswordForm hasPassword={hasPassword} />
+      </section>
     </>
   );
 }
