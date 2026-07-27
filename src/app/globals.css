@@ -5438,6 +5438,13 @@ html:lang(ar) .landing-hero-title {
     overflow-wrap: anywhere;
   }
 
+  .data-table td .cell-stack {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-items: end;
+    text-align: right;
+  }
+
   /* action buttons get their own full-width row */
   .data-table td[data-label="Actions"] {
     flex-wrap: wrap;
@@ -6198,6 +6205,114 @@ html:lang(ar) .landing-hero-title {
   color: #efa094;
   border-color: rgba(239, 127, 105, 0.35);
   background: rgba(239, 127, 105, 0.08);
+}
+
+/* Wide tables scroll sideways on desktop. Scoped to the desktop query on
+   purpose: the stacked phone layout must be able to drop the minimum to zero,
+   and this rule sits after that media block in the file, so an unscoped
+   version would win and push every row off the card. */
+@media (min-width: 761px) {
+  .data-table.is-wide { min-width: 820px; }
+}
+
+/* Toolbar + pager shared by the admin tables. Both lists grow — robots
+   slowly, users quickly — so search/filter/sort/paginate live in one place. */
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.toolbar-search svg {
+  position: absolute;
+  left: 12px;
+  width: 15px;
+  height: 15px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.toolbar-search input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+}
+
+.toolbar-search input::placeholder { color: var(--text-muted); }
+
+.toolbar-search input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(244, 220, 162, 0.12);
+}
+
+.toolbar-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.toolbar-field select {
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.toolbar-field select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+/* the native dropdown list is OS-rendered — keep its rows readable in dark */
+.toolbar-field option { background: #14110d; color: var(--text-primary); }
+
+.table-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+}
+
+.pager-count { margin: 0; font-size: 0.82rem; color: var(--text-muted); }
+.pager-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.pager-buttons { display: flex; align-items: center; gap: 10px; }
+.pager-page { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+
+/* A stacked cell holds one flex child, not three: without this the value and
+   its sub-line each became their own column and shoved the row off-screen. */
+.cell-stack { display: grid; gap: 3px; min-width: 0; }
+
+.pill[data-tone="bad"] {
+  color: #efa094;
+  border-color: rgba(239, 127, 105, 0.45);
+  background: rgba(239, 127, 105, 0.1);
 }
 
 .admin-legend {

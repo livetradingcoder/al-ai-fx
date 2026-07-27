@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { toggleBlockUser, deleteUser } from "./actions";
+import {
+  TablePager,
+  TableToolbar,
+  useTableView,
+  type FilterDef,
+  type SortDef,
+} from "@/components/dashboard/table-view";
 
 interface Subscription {
   id: string;
@@ -20,129 +27,199 @@ interface UserData {
   subscriptions: Subscription[];
 }
 
-export default function UsersTable({ users, currentUserId }: { users: UserData[], currentUserId: string }) {
+type Notice = { kind: "ok" | "error"; text: string };
+
+const activeCount = (u: UserData) =>
+  u.isDeleted ? 0 : u.subscriptions.filter((s) => s.status === "ACTIVE").length;
+
+const FILTERS: FilterDef<UserData>[] = [
+  { key: "customers", label: "With a licence", test: (u) => activeCount(u) > 0 },
+  { key: "none", label: "No licence", test: (u) => activeCount(u) === 0 && !u.isDeleted },
+  { key: "admins", label: "Admins", test: (u) => u.role === "ADMIN" },
+  { key: "blocked", label: "Blocked", test: (u) => u.isBlocked && !u.isDeleted },
+  { key: "deleted", label: "Deleted", test: (u) => u.isDeleted },
+];
+
+const SORTS: SortDef<UserData>[] = [
+  { key: "newest", label: "Newest first", compare: (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt) },
+  { key: "oldest", label: "Oldest first", compare: (a, b) => +new Date(a.createdAt) - +new Date(b.createdAt) },
+  { key: "licences", label: "Most licences", compare: (a, b) => activeCount(b) - activeCount(a) },
+  { key: "email", label: "Email A–Z", compare: (a, b) => a.email.localeCompare(b.email) },
+];
+
+export default function UsersTable({
+  users,
+  currentUserId,
+}: {
+  users: UserData[];
+  currentUserId: string;
+}) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
-  const getErrorMessage = (error: unknown, fallback: string) => {
-    return error instanceof Error ? error.message : fallback;
-  };
+  const view = useTableView(users, {
+    // MT5 numbers are searchable too: support tickets quote the account, not
+    // the email, so that is what an admin has in hand.
+    search: (user, q) =>
+      user.email.toLowerCase().includes(q) ||
+      user.subscriptions.some((s) => (s.mt5AccountNumber ?? "").includes(q)),
+    filters: FILTERS,
+    sorts: SORTS,
+    pageSize: 25,
+  });
 
-  async function handleToggleBlock(userId: string, currentStatus: boolean) {
-    if (userId === currentUserId) return alert("You cannot block yourself.");
-    
-    setLoadingId(userId);
+  const fail = (error: unknown, fallback: string) =>
+    setNotice({ kind: "error", text: error instanceof Error ? error.message : fallback });
+
+  async function handleToggleBlock(user: UserData) {
+    if (user.id === currentUserId) {
+      return setNotice({ kind: "error", text: "You cannot block yourself." });
+    }
+    setLoadingId(user.id);
+    setNotice(null);
     try {
-      await toggleBlockUser(userId, currentStatus);
+      await toggleBlockUser(user.id, user.isBlocked);
+      setNotice({
+        kind: "ok",
+        text: user.isBlocked ? `${user.email} can sign in again.` : `${user.email} is blocked.`,
+      });
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to update block status"));
+      fail(error, "Failed to update block status");
     } finally {
       setLoadingId(null);
     }
   }
 
-  async function handleDelete(userId: string) {
-    if (userId === currentUserId) return alert("You cannot delete yourself.");
-    if (!confirm("Are you sure you want to permanently delete this user? Their orders and subscriptions will also be removed.")) return;
-    
-    setLoadingId(userId);
+  async function handleDelete(user: UserData) {
+    if (user.id === currentUserId) {
+      return setNotice({ kind: "error", text: "You cannot delete yourself." });
+    }
+    if (
+      !confirm(
+        `Permanently delete ${user.email}? Their orders and subscriptions are removed too.`,
+      )
+    ) {
+      return;
+    }
+    setLoadingId(user.id);
+    setNotice(null);
     try {
-      await deleteUser(userId);
+      await deleteUser(user.id);
+      setNotice({ kind: "ok", text: `${user.email} deleted.` });
     } catch (error) {
-      alert(getErrorMessage(error, "Failed to delete user"));
+      fail(error, "Failed to delete user");
     } finally {
       setLoadingId(null);
     }
   }
 
   return (
-    <div className="card">
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Platform Users</h2>
-      <div className="table-wrap"><table className="data-table">
-        <thead>
-          <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Active Licenses</th>
-            <th>Joined</th>
-            <th>Access</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length === 0 && (
-            <tr>
-              <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No users found.
-              </td>
-            </tr>
-          )}
-          {users.map(user => {
-            const activeSubs = user.subscriptions.filter(s => s.status === 'ACTIVE').length;
-            const isLoading = loadingId === user.id;
-            const isSelf = user.id === currentUserId;
+    <section className="card">
+      <div className="admin-table-head">
+        <div>
+          <p className="card-label">People</p>
+          <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Platform users</h2>
+        </div>
+      </div>
 
-            return (
-              <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', backgroundColor: user.isBlocked ? 'rgba(255, 0, 0, 0.05)' : 'transparent' }}>
-                <td data-label="Email" style={{ padding: '1.5rem 1rem' }}>
-                  {user.email}
-                  {user.isDeleted && <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', backgroundColor: '#6b7280', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>DELETED</span>}
-                  {user.isBlocked && !user.isDeleted && <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', backgroundColor: '#ef4444', color: 'white', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>BLOCKED</span>}
-                </td>
-                <td data-label="Role" style={{ padding: '1.5rem 1rem', opacity: user.isDeleted ? 0.5 : 1 }}>{user.role}</td>
-                <td data-label="Active Licenses" style={{ padding: '1.5rem 1rem', opacity: user.isDeleted ? 0.5 : 1 }}>{user.isDeleted ? 0 : activeSubs}</td>
-                <td data-label="Joined" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', opacity: user.isDeleted ? 0.5 : 1 }}>
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                <td data-label="Access" style={{ padding: '1.5rem 1rem' }}>
-                  <span style={{ color: user.isDeleted ? '#9ca3af' : user.isBlocked ? '#fca5a5' : 'var(--accent-accent)' }}>
-                    {user.isDeleted ? 'Deleted' : user.isBlocked ? 'Restricted' : 'Granted'}
-                  </span>
-                </td>
-                <td data-label="Actions" style={{ padding: '1.5rem 1rem', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    {!isSelf && !user.isDeleted && (
-                      <button
-                        onClick={() => handleToggleBlock(user.id, user.isBlocked)}
-                        disabled={isLoading}
-                        style={{
-                          padding: '0.4rem 0.8rem',
-                          fontSize: '0.8rem',
-                          backgroundColor: user.isBlocked ? '#10B981' : '#F59E0B',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: isLoading ? 'not-allowed' : 'pointer',
-                          opacity: isLoading ? 0.7 : 1
-                        }}
-                      >
-                        {user.isBlocked ? 'Unblock' : 'Block'}
-                      </button>
-                    )}
-                    {!isSelf && !user.isDeleted && (
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        disabled={isLoading}
-                        style={{
-                          padding: '0.4rem 0.8rem',
-                          fontSize: '0.8rem',
-                          backgroundColor: '#EF4444',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: isLoading ? 'not-allowed' : 'pointer',
-                          opacity: isLoading ? 0.7 : 1
-                        }}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+      {notice && (
+        <p className={`admin-notice is-${notice.kind}`} role="status">
+          {notice.text}
+        </p>
+      )}
+
+      <TableToolbar
+        view={view}
+        filters={FILTERS}
+        sorts={SORTS}
+        searchPlaceholder="Search email or MT5 account…"
+      />
+
+      <div className="table-wrap">
+        <table className="data-table is-wide">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Active licences</th>
+              <th>Joined</th>
+              <th>Access</th>
+              <th style={{ textAlign: "right" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {view.pageRows.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                  {users.length === 0 ? "No users yet." : "No users match those filters."}
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table></div>
-    </div>
+            )}
+            {view.pageRows.map((user) => {
+              const isLoading = loadingId === user.id;
+              const isSelf = user.id === currentUserId;
+              const mt5 = user.subscriptions.find((s) => s.mt5AccountNumber)?.mt5AccountNumber;
+
+              return (
+                <tr key={user.id} data-dim={user.isDeleted ? "true" : undefined}>
+                  <td data-label="User">
+                    <span className="cell-stack">
+                      <span className="robot-name">{user.email}</span>
+                      {mt5 && <span className="robot-slug">MT5 {mt5}</span>}
+                    </span>
+                  </td>
+
+                  <td data-label="Role">{user.role}</td>
+
+                  <td data-label="Active licences">{activeCount(user)}</td>
+
+                  <td data-label="Joined">{new Date(user.createdAt).toLocaleDateString()}</td>
+
+                  <td data-label="Access">
+                    <span
+                      className="pill"
+                      data-tone={user.isDeleted ? "off" : user.isBlocked ? "bad" : "live"}
+                    >
+                      {user.isDeleted ? "Deleted" : user.isBlocked ? "Blocked" : "Active"}
+                    </span>
+                  </td>
+
+                  <td data-label="Actions" className="cell-actions">
+                    <div className="row-actions">
+                      {isSelf || user.isDeleted ? (
+                        <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                          {isSelf ? "That's you" : "—"}
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className={`btn-mini ${user.isBlocked ? "is-go" : ""}`}
+                            onClick={() => handleToggleBlock(user)}
+                            disabled={isLoading}
+                          >
+                            {user.isBlocked ? "Unblock" : "Block"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-mini is-danger"
+                            onClick={() => handleDelete(user)}
+                            disabled={isLoading}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <TablePager view={view} noun="users" />
+    </section>
   );
 }
