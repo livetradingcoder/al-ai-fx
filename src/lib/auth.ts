@@ -138,7 +138,7 @@ export const authOptions: NextAuthOptions = {
                 null,
             },
           });
-          token.jti = jti;
+          token.sid = jti;
         } catch (err) {
           // Never block a legitimate sign-in because bookkeeping failed.
           console.error("[Auth] Could not record session:", err);
@@ -148,19 +148,27 @@ export const authOptions: NextAuthOptions = {
 
       // Reject tokens whose session was revoked. Fail OPEN on database
       // trouble — a DB blip must not sign every customer out.
-      if (typeof token.jti === "string") {
+      if (typeof token.sid === "string") {
         try {
           const row = await prisma.userSession.findUnique({
-            where: { jti: token.jti },
+            where: { jti: token.sid },
             select: { revokedAt: true, lastSeenAt: true },
           });
-          if (!row || row.revokedAt) return null as unknown as JWT;
+          // Returning null here breaks NextAuth's session callback, so strip
+          // the identity instead: no id/role means our pages treat it as
+          // signed out and redirect to /login.
+          if (!row || row.revokedAt) {
+            delete token.id;
+            delete token.role;
+            delete token.sid;
+            return token;
+          }
 
           // Throttle the write: once every 10 minutes is enough to show
           // "last used" without a database write per request.
           if (Date.now() - row.lastSeenAt.getTime() > 10 * 60_000) {
             await prisma.userSession.update({
-              where: { jti: token.jti },
+              where: { jti: token.sid },
               data: { lastSeenAt: new Date() },
             });
           }
@@ -171,7 +179,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
-      if (session.user && token.role && token.id) {
+      if (session.user && token?.role && token?.id) {
         session.user.role = token.role;
         session.user.id = token.id;
       }

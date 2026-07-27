@@ -19,7 +19,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: UserRole;
-    /** UserSession.jti — lets a stateless JWT be revoked server-side. */
-    jti?: string;
+    /** UserSession.jti. NOT named `jti`: NextAuth owns that claim and would
+     *  overwrite it, which silently breaks revocation lookups. */
+    sid?: string;
   }
 }
