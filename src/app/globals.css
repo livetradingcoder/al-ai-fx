@@ -4988,3 +4988,275 @@ html:lang(ar) .landing-hero-title {
   margin-top: 0.6rem;
   max-width: 34ch;
 }
+
+/* ===========================================================================
+   DASHBOARD SHELL (2026-07-27 redesign)
+   Grouped icon rail + topbar + card system, on the existing gold/near-black
+   tokens. The signature element is `.plate`: the MT5 account lock is this
+   product's whole premise, so account numbers and build filenames are set as
+   engraved monospace plates — customers must transcribe those digits into
+   MetaTrader, and 0/O ambiguity is a support ticket.
+=========================================================================== */
+
+.shell {
+  display: grid;
+  grid-template-columns: 264px 1fr;
+  min-height: 100vh;
+  padding-top: 80px;
+}
+
+.shell-rail {
+  border-right: 1px solid var(--border-color);
+  background: linear-gradient(180deg, rgba(24, 18, 14, 0.9), rgba(15, 11, 8, 0.9));
+  padding: 28px 18px 40px;
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.rail-group + .rail-group { margin-top: 26px; }
+
+.rail-group-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 12px;
+  margin-bottom: 10px;
+}
+
+.rail-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rail-link:hover { background: rgba(244, 220, 162, 0.06); color: var(--text-primary); }
+
+.rail-link[aria-current="page"] {
+  background: rgba(244, 220, 162, 0.1);
+  color: var(--accent-primary-light);
+  font-weight: 700;
+  box-shadow: inset 2px 0 0 var(--accent-primary);
+}
+
+.rail-link svg { width: 18px; height: 18px; flex: none; opacity: 0.9; }
+
+.rail-signout {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* topbar ------------------------------------------------------------------ */
+.shell-main { min-width: 0; }
+
+.shell-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 40px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.topbar-eyebrow {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.topbar-title { font-size: 1.15rem; font-weight: 700; margin-top: 2px; }
+
+.topbar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  max-width: 260px;
+}
+
+.topbar-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-avatar {
+  width: 30px; height: 30px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, var(--accent-primary-light), var(--accent-secondary));
+  color: #1a1207;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.shell-content { padding: 34px 40px 64px; }
+
+/* cards ------------------------------------------------------------------- */
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  padding: 26px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.card-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.card-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+
+/* the signature: engraved account/build plate ----------------------------- */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-strong, rgba(244, 220, 162, 0.32));
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(244, 220, 162, 0.07), rgba(244, 220, 162, 0.02));
+  font-family: "Space Grotesk", ui-monospace, monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary-light);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.plate-sm { font-size: 0.95rem; padding: 8px 12px; letter-spacing: 0.06em; }
+.plate svg { width: 15px; height: 15px; flex: none; opacity: 0.85; }
+
+/* onboarding checklist ---------------------------------------------------- */
+.steps { display: flex; flex-direction: column; gap: 2px; }
+
+.step-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(231, 216, 183, 0.07);
+}
+.step-row:last-child { border-bottom: none; }
+
+.step-mark {
+  width: 26px; height: 26px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.step-row[data-state="done"] .step-mark {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #1a1207;
+}
+.step-row[data-state="now"] .step-mark {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary-light);
+}
+.step-row[data-state="done"] .step-title { color: var(--text-secondary); }
+.step-row[data-state="now"] .step-title { color: var(--accent-primary-light); }
+
+.step-title { font-weight: 600; }
+.step-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+/* tables ------------------------------------------------------------------ */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 560px;
+}
+
+.data-table th {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(231, 216, 183, 0.06);
+  font-size: 0.92rem;
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table .num { font-variant-numeric: tabular-nums; }
+
+/* mobile ------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; padding-top: 72px; }
+
+  .shell-rail {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 18px 14px 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 4px 12px;
+    align-items: start;
+  }
+
+  .rail-group + .rail-group { margin-top: 0; }
+
+  .shell-topbar { padding: 16px 18px; }
+  .shell-content { padding: 22px 18px 56px; }
+  .topbar-chip { max-width: 46vw; }
+  .card { padding: 20px; }
+  .card-value { font-size: 1.6rem; }
+  .plate { font-size: 1.05rem; }
+}

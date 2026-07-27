@@ -352,6 +352,18 @@
     "successNote": "نوٹ: یہ تعمیر MT5 اکاؤنٹ {account} میں مقفل ہے۔ یہ کسی دوسرے اکاؤنٹ نمبر پر عمل نہیں کرے گا۔",
     "stepOneLabel": "مرحلہ 1 — اپنا MT5 اکاؤنٹ لاک کریں",
     "stepTwoLabel": "مرحلہ 2 — اپنا بلڈ حاصل کریں",
-    "compileNeedsMt5": "اوپر اپنا MT5 اکاؤنٹ نمبر درج کریں اور Save & Lock دبائیں — اس کے بعد یہ بٹن فعال ہو جائے گا۔"
+    "compileNeedsMt5": "اوپر اپنا MT5 اکاؤنٹ نمبر درج کریں اور Save & Lock دبائیں — اس کے بعد یہ بٹن فعال ہو جائے گا۔",
+    "manageRobots": "روبوٹس کا انتظام",
+    "gettingStarted": "آغاز کریں",
+    "stepAccount": "اکاؤنٹ بن گیا",
+    "stepAccountNote": "آپ سائن اِن ہیں۔",
+    "stepLock": "اپنا MT5 اکاؤنٹ لاک کریں",
+    "stepLockNote": "ہر بلڈ صرف ایک اکاؤنٹ پر چلتا ہے۔",
+    "stepBuild": "اپنا بلڈ حاصل کریں",
+    "stepBuildNote": "ہم اسے آپ کے اکاؤنٹ نمبر پر کمپائل کرتے ہیں۔",
+    "stepInstall": "MetaTrader میں انسٹال کریں",
+    "stepInstallNote": "MQL5 / Experts میں کاپی کریں، پھر Experts کی فہرست ریفریش کریں۔",
+    "openTutorial": "انسٹال گائیڈ کھولیں",
+    "lockedBuild": "لاک شدہ بلڈ"
   }
 }

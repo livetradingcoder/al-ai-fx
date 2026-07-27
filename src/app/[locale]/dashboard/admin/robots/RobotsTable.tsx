@@ -81,7 +81,7 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
   }
 
   return (
-    <div className="glass-panel" style={{ overflowX: "auto" }}>
+    <div className="card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <h2 style={{ fontSize: "1.5rem" }}>All Robots</h2>
         <button
@@ -99,22 +99,16 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
           + Add Robot
         </button>
       </div>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          textAlign: "left",
-          minWidth: "800px",
-        }}
-      >
+      <div className="table-wrap">
+      <table className="data-table" style={{ minWidth: "800px" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--border-color)" }}>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500 }}>Slug</th>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500 }}>Name</th>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500 }}>Active</th>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500 }}>Sort</th>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500 }}>Src v</th>
-            <th style={{ padding: "1rem", color: "var(--text-secondary)", fontWeight: 500, textAlign: "right" }}>Actions</th>
+            <th>Slug</th>
+            <th>Name</th>
+            <th>Active</th>
+            <th>Sort</th>
+            <th>Src v</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -193,7 +187,7 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
             );
           })}
         </tbody>
-      </table>
+      </table></div>
 
       {editing && <RobotForm robot={editing} mode="edit" onClose={() => setEditing(null)} />}
       {creating && <RobotForm mode="create" onClose={() => setCreating(false)} />}

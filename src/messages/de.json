@@ -352,6 +352,18 @@
     "successNote": "Hinweis: Dieser Build ist an das MT5-Konto {account} gebunden. Es wird nicht auf einer anderen Kontonummer ausgeführt.",
     "stepOneLabel": "Schritt 1 — MT5-Konto festlegen",
     "stepTwoLabel": "Schritt 2 — Build abrufen",
-    "compileNeedsMt5": "Geben Sie oben Ihre MT5-Kontonummer ein und klicken Sie auf Speichern & Sperren — danach wird diese Schaltfläche aktiv."
+    "compileNeedsMt5": "Geben Sie oben Ihre MT5-Kontonummer ein und klicken Sie auf Speichern & Sperren — danach wird diese Schaltfläche aktiv.",
+    "manageRobots": "Roboter verwalten",
+    "gettingStarted": "Erste Schritte",
+    "stepAccount": "Konto erstellt",
+    "stepAccountNote": "Sie sind angemeldet.",
+    "stepLock": "MT5-Konto festlegen",
+    "stepLockNote": "Jeder Build läuft nur auf einem Konto.",
+    "stepBuild": "Build abrufen",
+    "stepBuildNote": "Wir kompilieren ihn auf Ihre Kontonummer.",
+    "stepInstall": "In MetaTrader installieren",
+    "stepInstallNote": "Nach MQL5 / Experts kopieren, dann Experten-Liste aktualisieren.",
+    "openTutorial": "Installationsanleitung öffnen",
+    "lockedBuild": "Gebundener Build"
   }
 }

@@ -352,6 +352,18 @@
     "successNote": "Nota: Esta compilación está bloqueada en la cuenta MT5 {cuenta}. No se ejecutará en ningún otro número de cuenta.",
     "stepOneLabel": "Paso 1 — Bloquea tu cuenta MT5",
     "stepTwoLabel": "Paso 2 — Obtén tu compilación",
-    "compileNeedsMt5": "Introduce arriba tu número de cuenta MT5 y pulsa Guardar y bloquear — este botón se activa después."
+    "compileNeedsMt5": "Introduce arriba tu número de cuenta MT5 y pulsa Guardar y bloquear — este botón se activa después.",
+    "manageRobots": "Gestionar robots",
+    "gettingStarted": "Primeros pasos",
+    "stepAccount": "Cuenta creada",
+    "stepAccountNote": "Has iniciado sesión.",
+    "stepLock": "Bloquea tu cuenta MT5",
+    "stepLockNote": "Cada compilación funciona en una sola cuenta.",
+    "stepBuild": "Obtén tu compilación",
+    "stepBuildNote": "La compilamos para tu número de cuenta.",
+    "stepInstall": "Instálala en MetaTrader",
+    "stepInstallNote": "Cópiala en MQL5 / Experts y actualiza la lista de Expertos.",
+    "openTutorial": "Abrir la guía de instalación",
+    "lockedBuild": "Compilación bloqueada"
   }
 }

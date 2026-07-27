@@ -352,6 +352,18 @@
     "successNote": "ملاحظة: هذا الإصدار مقفل بحساب MT5 {account}. ولن يتم تنفيذه على أي رقم حساب آخر.",
     "stepOneLabel": "الخطوة 1 — اربط حساب MT5",
     "stepTwoLabel": "الخطوة 2 — احصل على نسختك",
-    "compileNeedsMt5": "أدخل رقم حساب MT5 بالأعلى واضغط حفظ وقفل — عندها يصبح هذا الزر فعّالاً."
+    "compileNeedsMt5": "أدخل رقم حساب MT5 بالأعلى واضغط حفظ وقفل — عندها يصبح هذا الزر فعّالاً.",
+    "manageRobots": "إدارة الروبوتات",
+    "gettingStarted": "البداية",
+    "stepAccount": "تم إنشاء الحساب",
+    "stepAccountNote": "أنت مسجّل الدخول.",
+    "stepLock": "اربط حساب MT5",
+    "stepLockNote": "كل نسخة تعمل على حساب واحد فقط.",
+    "stepBuild": "احصل على نسختك",
+    "stepBuildNote": "نجمّعها على رقم حسابك.",
+    "stepInstall": "ثبّتها في MetaTrader",
+    "stepInstallNote": "انسخها إلى MQL5 / Experts ثم حدّث قائمة الخبراء.",
+    "openTutorial": "افتح دليل التثبيت",
+    "lockedBuild": "نسخة مرتبطة"
   }
 }

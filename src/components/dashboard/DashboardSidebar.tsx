@@ -6,19 +6,48 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 
-function getLinkStyle(isActive: boolean, accent: "primary" | "secondary" = "secondary") {
-  if (isActive) {
-    return {
-      color: accent === "primary" ? "var(--accent-primary)" : "var(--accent-accent)",
-      fontWeight: "700",
-    };
-  }
-
-  return {
-    color: "var(--text-secondary)",
-    fontWeight: "500",
-  };
-}
+/* Six small glyphs for the rail — inline, so the dashboard gains no icon
+   dependency and each icon inherits currentColor for its active state. */
+const Icon = {
+  overview: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </svg>
+  ),
+  licence: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="6" width="18" height="13" rx="2.5" /><path d="M7 11h4M7 15h7" />
+      <circle cx="16.5" cy="11" r="1.6" />
+    </svg>
+  ),
+  billing: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" /><path d="M2.5 10h19" />
+    </svg>
+  ),
+  admin: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l7 3v5.5c0 4.3-2.9 8.2-7 9.5-4.1-1.3-7-5.2-7-9.5V6z" />
+    </svg>
+  ),
+  users: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="8" r="3.2" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" />
+      <path d="M16 5.2a3.2 3.2 0 010 5.6M18 20c0-2.2-.8-3.9-2-5" />
+    </svg>
+  ),
+  robots: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="8" width="16" height="11" rx="3" /><path d="M12 8V4.5M8.5 13h.01M15.5 13h.01M9.5 16.5h5" />
+    </svg>
+  ),
+  logout: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h11" />
+    </svg>
+  ),
+};
 
 export default function DashboardSidebar() {
   const { data: session } = useSession();
@@ -31,102 +60,45 @@ export default function DashboardSidebar() {
   const isActive = (path: string) =>
     pathname === `${localePrefix}${path}` || pathname === path;
 
+  const railLink = (href: string, icon: React.ReactNode, label: string) => (
+    <Link
+      href={href}
+      className="rail-link"
+      aria-current={isActive(href) ? "page" : undefined}
+    >
+      {icon}
+      {label}
+    </Link>
+  );
+
   return (
-    <aside className="dashboard-sidebar">
-      <div style={{ marginBottom: "2rem" }}>
-        <h3
-          style={{
-            fontSize: "0.9rem",
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-            marginBottom: "1rem",
-          }}
-        >
-          {t("menu")}
-        </h3>
-        <ul style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-          <li>
-            <Link href="/dashboard" style={getLinkStyle(isActive("/dashboard"), "primary")}>
-              {t("overview")}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/dashboard/licenses"
-              style={getLinkStyle(isActive("/dashboard/licenses"))}
-            >
-              {t("myLicenses")}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/dashboard/billing"
-              style={getLinkStyle(isActive("/dashboard/billing"))}
-            >
-              {t("billing")}
-            </Link>
-          </li>
-          <li style={{ marginTop: "2rem" }}>
-            <button
-              type="button"
-              onClick={() => void signOut({ callbackUrl: `${localePrefix || ""}/login` })}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-                padding: 0,
-                font: "inherit",
-              }}
-            >
-              {t("logout")} &rarr;
-            </button>
-          </li>
-        </ul>
-      </div>
+    <aside className="shell-rail">
+      <nav className="rail-group" aria-label={t("menu")}>
+        <p className="rail-group-label">{t("menu")}</p>
+        {railLink("/dashboard", Icon.overview, t("overview"))}
+        {railLink("/dashboard/licenses", Icon.licence, t("myLicenses"))}
+        {railLink("/dashboard/billing", Icon.billing, t("billing"))}
+      </nav>
 
       {isAdmin ? (
-        <div style={{ marginBottom: "2rem" }}>
-          <h3
-            style={{
-              fontSize: "0.9rem",
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              marginBottom: "1rem",
-            }}
-          >
-            {t("administration")}
-          </h3>
-          <ul style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-            <li>
-              <Link
-                href="/dashboard/admin"
-                style={getLinkStyle(isActive("/dashboard/admin"), "secondary")}
-              >
-                {t("adminOverview")}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard/admin/users"
-                style={getLinkStyle(isActive("/dashboard/admin/users"), "primary")}
-              >
-                {t("manageUsers")} &rarr;
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard/admin/robots"
-                style={getLinkStyle(isActive("/dashboard/admin/robots"), "primary")}
-              >
-                Manage Robots &rarr;
-              </Link>
-            </li>
-          </ul>
-        </div>
+        <nav className="rail-group" aria-label={t("administration")}>
+          <p className="rail-group-label">{t("administration")}</p>
+          {railLink("/dashboard/admin", Icon.admin, t("adminOverview"))}
+          {railLink("/dashboard/admin/users", Icon.users, t("manageUsers"))}
+          {railLink("/dashboard/admin/robots", Icon.robots, t("manageRobots"))}
+        </nav>
       ) : null}
+
+      <div className="rail-group">
+        <button
+          type="button"
+          className="rail-link rail-signout"
+          onClick={() => void signOut({ callbackUrl: `${localePrefix}/login` })}
+        >
+          {Icon.logout}
+          {t("logout")}
+        </button>
+      </div>
     </aside>
   );
 }

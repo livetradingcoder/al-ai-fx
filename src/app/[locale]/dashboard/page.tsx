@@ -5,10 +5,17 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+const LockIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+    <path d="M8.5 10.5V7.5a3.5 3.5 0 017 0v3" />
+  </svg>
+);
+
 export default async function DashboardOverview() {
   const t = await getTranslations("Dashboard");
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.id) {
     redirect("/login");
   }
@@ -19,91 +26,156 @@ export default async function DashboardOverview() {
       subscriptions: {
         where: { status: "ACTIVE" },
         include: {
-          compilations: {
-            orderBy: { createdAt: "desc" },
-            take: 1
-          }
+          compilations: { orderBy: { createdAt: "desc" }, take: 1 },
         },
         orderBy: { createdAt: "desc" },
-        take: 1
-      }
-    }
+        take: 1,
+      },
+    },
   });
 
   const activeSub = user?.subscriptions[0];
+  const build = activeSub?.compilations[0];
+  const hasPlan = Boolean(activeSub);
+  const hasAccount = Boolean(activeSub?.mt5AccountNumber);
+  const hasBuild = build?.status === "COMPLETED" && Boolean(build.id);
+
+  // The checklist is the page's spine: it reflects real rows, so a customer
+  // always sees exactly which of the four things is still outstanding.
+  const steps = [
+    { done: true, title: t("stepAccount"), note: t("stepAccountNote") },
+    { done: hasAccount, title: t("stepLock"), note: t("stepLockNote") },
+    { done: hasBuild, title: t("stepBuild"), note: t("stepBuildNote") },
+    { done: false, title: t("stepInstall"), note: t("stepInstallNote") },
+  ];
+  const currentIndex = steps.findIndex((s) => !s.done);
 
   return (
-    <div style={{ maxWidth: '900px' }}>
-      <header style={{ marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{t("welcomeBack")} {user?.name || t("trader")}</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>{t("dashboardSubtitle")}</p>
+    <>
+      <header style={{ marginBottom: "28px" }}>
+        <h1 style={{ fontSize: "2.1rem", marginBottom: "0.35rem" }}>
+          {t("welcomeBack")} {user?.name || t("trader")}
+        </h1>
+        <p style={{ color: "var(--text-secondary)" }}>{t("dashboardSubtitle")}</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
-        
-        {/* Active Subscription Card */}
-        <div className="feature-card" style={{ borderLeft: '4px solid var(--accent-primary)' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '0.5rem' }}>{t("activePlan")}</h3>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>
-            {activeSub?.tier ? activeSub.tier.replace('_', ' ') : t("noActivePlan")}
-          </div>
-          <p style={{ color: activeSub ? 'var(--accent-accent)' : 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>
-            ● {activeSub ? t("active") : t("inactive")}
+      <div className="card-grid" style={{ marginBottom: "20px" }}>
+        <div className="card">
+          <p className="card-label">{t("activePlan")}</p>
+          <p className="card-value">
+            {activeSub?.tier ? activeSub.tier.replace(/_/g, " ") : t("noActivePlan")}
+          </p>
+          <p
+            style={{
+              marginTop: "10px",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: hasPlan ? "var(--accent-success)" : "var(--text-muted)",
+            }}
+          >
+            ● {hasPlan ? t("active") : t("inactive")}
           </p>
         </div>
 
-        {/* Linked Account Card */}
-        <div className="feature-card">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '0.5rem' }}>{t("registeredMt5")}</h3>
-          <div style={{ fontSize: '2rem', fontWeight: 'bold', fontFamily: 'Outfit, sans-serif', marginBottom: '1rem' }}>
-            {activeSub?.mt5AccountNumber || t("notLinked")}
-          </div>
-          <Link href="/dashboard/licenses" style={{ color: 'var(--accent-primary)', fontSize: '0.9rem', fontWeight: '600' }}>
-            {activeSub?.mt5AccountNumber ? t("changeAccount") : t("linkAccountNow")}
-          </Link>
+        <div className="card">
+          <p className="card-label">{t("registeredMt5")}</p>
+          {hasAccount ? (
+            <p className="plate">
+              {LockIcon}
+              {activeSub?.mt5AccountNumber}
+            </p>
+          ) : (
+            <p className="card-value" style={{ color: "var(--text-muted)" }}>
+              {t("notLinked")}
+            </p>
+          )}
+          <p style={{ marginTop: "12px" }}>
+            <Link
+              href="/dashboard/licenses"
+              style={{ color: "var(--accent-primary)", fontSize: "0.88rem", fontWeight: 600 }}
+            >
+              {hasAccount ? t("changeAccount") : t("linkAccountNow")}
+            </Link>
+          </p>
         </div>
       </div>
 
+      <section className="card" style={{ marginBottom: "20px" }}>
+        <p className="card-label">{t("gettingStarted")}</p>
+        <div className="steps">
+          {steps.map((step, i) => (
+            <div
+              key={step.title}
+              className="step-row"
+              data-state={step.done ? "done" : i === currentIndex ? "now" : "todo"}
+            >
+              <span className="step-mark">{step.done ? "✓" : i + 1}</span>
+              <span>
+                <span className="step-title">{step.title}</span>
+                <span className="step-note" style={{ display: "block" }}>
+                  {step.note}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <p style={{ marginTop: "18px" }}>
+          <Link
+            href="/tutorials/1"
+            style={{ color: "var(--accent-primary)", fontSize: "0.88rem", fontWeight: 600 }}
+          >
+            {t("openTutorial")} →
+          </Link>
+        </p>
+      </section>
+
       <section>
-        <h2 style={{ fontSize: '1.8rem', textAlign: 'left', marginBottom: '1.5rem' }}>{t("downloadEA")}</h2>
-        {activeSub ? (
-          <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ marginBottom: '0.5rem' }}>GoldBot_v2.0_{activeSub.tier}.ex5</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                {activeSub.mt5AccountNumber 
-                  ? t("lockedToAccount", { account: activeSub.mt5AccountNumber }) 
+        <h2 style={{ fontSize: "1.3rem", textAlign: "left", marginBottom: "14px" }}>
+          {t("downloadEA")}
+        </h2>
+        {hasPlan ? (
+          <div className="card licence-head" style={{ marginBottom: 0 }}>
+            <div style={{ minWidth: 0 }}>
+              <p className="card-label">{t("lockedBuild")}</p>
+              <p className="plate plate-sm">
+                GoldBot_v2.0_{activeSub?.tier}.ex5
+              </p>
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.86rem", marginTop: "10px" }}>
+                {hasAccount
+                  ? t("lockedToAccount", { account: activeSub?.mt5AccountNumber ?? "" })
                   : t("linkToDownload")}
               </p>
             </div>
-            {activeSub.mt5AccountNumber ? (
-              user?.subscriptions[0]?.compilations[0]?.id ? (
-                <a 
-                  href={`/api/compiler/download?jobId=${user.subscriptions[0].compilations[0].id}`} 
-                  download 
-                  className="btn-primary" 
-                  style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}
-                >
-                  {t("downloadBuild")}
-                </a>
-              ) : (
-                <Link href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
-                  {t("manageDownload")}
-                </Link>
-              )
+            {hasAccount && hasBuild ? (
+              <a
+                href={`/api/compiler/download?jobId=${build?.id}`}
+                download
+                className="btn-primary"
+                style={{ textDecoration: "none", whiteSpace: "nowrap" }}
+              >
+                {t("downloadBuild")}
+              </a>
             ) : (
-              <Link href="/dashboard/licenses" className="btn-primary" style={{ textDecoration: 'none', padding: '0.8rem 2rem' }}>
-                {t("setupLicense")}
+              <Link
+                href="/dashboard/licenses"
+                className="btn-primary"
+                style={{ textDecoration: "none", whiteSpace: "nowrap" }}
+              >
+                {hasAccount ? t("manageDownload") : t("setupLicense")}
               </Link>
             )}
           </div>
         ) : (
-          <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{t("noSubscription")}</p>
-            <Link href="/#pricing" className="btn-primary">{t("viewPricing")}</Link>
+          <div className="card" style={{ textAlign: "center", padding: "40px 26px" }}>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "18px" }}>
+              {t("noSubscription")}
+            </p>
+            <Link href="/#pricing" className="btn-primary">
+              {t("viewPricing")}
+            </Link>
           </div>
         )}
       </section>
-    </div>
+    </>
   );
 }

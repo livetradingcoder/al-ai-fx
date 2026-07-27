@@ -352,6 +352,18 @@
     "successNote": "Note: This build is locked to MT5 Account {account}. It will not execute on any other account number.",
     "stepOneLabel": "Step 1 — Lock your MT5 account",
     "stepTwoLabel": "Step 2 — Get your build",
-    "compileNeedsMt5": "Enter your MT5 account number above and press Save & Lock — this button unlocks after that."
+    "compileNeedsMt5": "Enter your MT5 account number above and press Save & Lock — this button unlocks after that.",
+    "manageRobots": "Manage robots",
+    "gettingStarted": "Getting started",
+    "stepAccount": "Account created",
+    "stepAccountNote": "You're signed in.",
+    "stepLock": "Lock your MT5 account",
+    "stepLockNote": "Each build runs on one account only.",
+    "stepBuild": "Get your build",
+    "stepBuildNote": "We compile it to your account number.",
+    "stepInstall": "Install it in MetaTrader",
+    "stepInstallNote": "Copy to MQL5 / Experts, then refresh the Experts list.",
+    "openTutorial": "Open the install guide",
+    "lockedBuild": "Locked build"
   }
 }

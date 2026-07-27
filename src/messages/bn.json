@@ -352,6 +352,18 @@
     "successNote": "দ্রষ্টব্য: এই বিল্ডটি MT5 অ্যাকাউন্ট {account}-এ লক করা আছে। এটি অন্য কোনো অ্যাকাউন্ট নম্বরে কার্যকর হবে না।",
     "stepOneLabel": "ধাপ ১ — আপনার MT5 অ্যাকাউন্ট লক করুন",
     "stepTwoLabel": "ধাপ ২ — আপনার বিল্ড নিন",
-    "compileNeedsMt5": "উপরে আপনার MT5 অ্যাকাউন্ট নম্বর দিন এবং Save & Lock চাপুন — এরপরই এই বোতামটি সক্রিয় হবে।"
+    "compileNeedsMt5": "উপরে আপনার MT5 অ্যাকাউন্ট নম্বর দিন এবং Save & Lock চাপুন — এরপরই এই বোতামটি সক্রিয় হবে।",
+    "manageRobots": "রোবট পরিচালনা",
+    "gettingStarted": "শুরু করুন",
+    "stepAccount": "অ্যাকাউন্ট তৈরি",
+    "stepAccountNote": "আপনি সাইন ইন করেছেন।",
+    "stepLock": "আপনার MT5 অ্যাকাউন্ট লক করুন",
+    "stepLockNote": "প্রতিটি বিল্ড কেবল একটি অ্যাকাউন্টে চলে।",
+    "stepBuild": "আপনার বিল্ড নিন",
+    "stepBuildNote": "আমরা এটি আপনার অ্যাকাউন্ট নম্বরে কম্পাইল করি।",
+    "stepInstall": "MetaTrader-এ ইনস্টল করুন",
+    "stepInstallNote": "MQL5 / Experts-এ কপি করুন, তারপর Experts তালিকা রিফ্রেশ করুন।",
+    "openTutorial": "ইনস্টল গাইড খুলুন",
+    "lockedBuild": "লকড বিল্ড"
   }
 }

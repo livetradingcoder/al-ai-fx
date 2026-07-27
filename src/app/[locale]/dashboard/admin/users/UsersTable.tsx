@@ -55,17 +55,17 @@ export default function UsersTable({ users, currentUserId }: { users: UserData[]
   }
 
   return (
-    <div className="glass-panel" style={{ overflowX: 'auto' }}>
+    <div className="card">
       <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Platform Users</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+      <div className="table-wrap"><table className="data-table">
         <thead>
           <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Role</th>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Active Licenses</th>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Joined</th>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Access</th>
-            <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500, textAlign: 'right' }}>Actions</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Active Licenses</th>
+            <th>Joined</th>
+            <th>Access</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -142,7 +142,7 @@ export default function UsersTable({ users, currentUserId }: { users: UserData[]
             );
           })}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

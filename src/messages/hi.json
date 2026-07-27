@@ -352,6 +352,18 @@
     "successNote": "नोट: यह बिल्ड MT5 अकाउंट {अकाउंट} पर लॉक है। यह किसी अन्य खाता संख्या पर निष्पादित नहीं होगा.",
     "stepOneLabel": "चरण 1 — अपना MT5 खाता लॉक करें",
     "stepTwoLabel": "चरण 2 — अपना बिल्ड लें",
-    "compileNeedsMt5": "ऊपर अपना MT5 खाता नंबर दर्ज करें और Save & Lock दबाएँ — उसके बाद ही यह बटन सक्रिय होगा।"
+    "compileNeedsMt5": "ऊपर अपना MT5 खाता नंबर दर्ज करें और Save & Lock दबाएँ — उसके बाद ही यह बटन सक्रिय होगा।",
+    "manageRobots": "रोबोट प्रबंधित करें",
+    "gettingStarted": "शुरू करें",
+    "stepAccount": "खाता बन गया",
+    "stepAccountNote": "आप साइन इन हैं।",
+    "stepLock": "अपना MT5 खाता लॉक करें",
+    "stepLockNote": "हर बिल्ड केवल एक खाते पर चलता है।",
+    "stepBuild": "अपना बिल्ड लें",
+    "stepBuildNote": "हम इसे आपके खाता नंबर पर कंपाइल करते हैं।",
+    "stepInstall": "MetaTrader में इंस्टॉल करें",
+    "stepInstallNote": "MQL5 / Experts में कॉपी करें, फिर Experts सूची रिफ़्रेश करें।",
+    "openTutorial": "इंस्टॉल गाइड खोलें",
+    "lockedBuild": "लॉक बिल्ड"
   }
 }

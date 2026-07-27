@@ -66,7 +66,7 @@ export default async function AdminDashboard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>Platform Overview</h1>
+        <h1 style={{ fontSize: '2.1rem', marginBottom: '1.75rem' }}>Platform Overview</h1>
 
         {showAlertFlag && (
           <div style={{ padding: '1rem 1.5rem', marginBottom: '2rem', background: 'rgba(255, 68, 68, 0.1)', border: '1px solid rgba(255, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', color: '#ff4444', fontWeight: 500 }}>
@@ -83,34 +83,34 @@ export default async function AdminDashboard() {
           </div>
         )}
 
-        <div className="features-grid" style={{ marginBottom: '4rem' }}>
-          <div className="feature-card">
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Total Active Users</h3>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', marginTop: '0.5rem', color: 'var(--text-primary)' }}>{totalUsers}</div>
+        <div className="card-grid" style={{ marginBottom: '24px' }}>
+          <div className="card">
+            <p className="card-label">Active users</p>
+            <p className="card-value num">{totalUsers}</p>
           </div>
-          <div className="feature-card">
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Total Revenue Generated</h3>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', color: 'var(--accent-primary)', marginTop: '0.5rem' }}>
+          <div className="card">
+            <p className="card-label">Revenue generated</p>
+            <p className="card-value num" style={{ color: 'var(--accent-primary)' }}>
               ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
+            </p>
           </div>
-          <div className="feature-card">
-            <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>EA Compilations Today</h3>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', fontFamily: 'Outfit', marginTop: '0.5rem', color: 'var(--text-primary)' }}>{todayCompilations}</div>
+          <div className="card">
+            <p className="card-label">Compilations today</p>
+            <p className="card-value num">{todayCompilations}</p>
           </div>
           <CompileServerStatus />
         </div>
 
-        <div className="glass-panel" style={{ overflowX: 'auto', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Licenses Issued</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+        <div className="card" style={{ marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '1rem' }}>Recent Licenses Issued</h2>
+          <div className="table-wrap"><table className="data-table">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>MT5 Account</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
+                <th>Email</th>
+                <th>MT5 Account</th>
+                <th>Tier</th>
+                <th>Status</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +139,7 @@ export default async function AdminDashboard() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
 
         <div className="glass-panel" style={{ marginBottom: '2rem' }}>
@@ -165,16 +165,16 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="glass-panel" style={{ overflowX: 'auto', marginTop: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Order Transactions</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '1rem' }}>Recent Order Transactions</h2>
+          <div className="table-wrap"><table className="data-table">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Email</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Tier</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Order Ref (Paygate ID)</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Status</th>
-                <th style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Date</th>
+                <th>Email</th>
+                <th>Tier</th>
+                <th>Amount</th>
+                <th>Order Ref (Paygate ID)</th>
+                <th>Status</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
@@ -206,7 +206,7 @@ export default async function AdminDashboard() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
