@@ -349,6 +349,9 @@
     "successStep3": "Navigieren Sie zu MQL5 > Experten und fügen Sie die Datei dort ein.",
     "successStep4": "Klicken Sie im MT5-Navigator mit der rechten Maustaste auf Expert Advisors und wählen Sie Aktualisieren — der Robot erscheint erst nach dem Aktualisieren. Ziehen Sie ihn dann auf einen XAUUSD-Chart.",
     "successStep5": "Stellen Sie bei den Eingaben sicher, dass Sie Ihren Risikoprozentsatz und Ihre Handelszeiten gemäß dem <tutorialLink>PDF-Leitfaden</tutorialLink> festlegen.",
-    "successNote": "Hinweis: Dieser Build ist an das MT5-Konto {account} gebunden. Es wird nicht auf einer anderen Kontonummer ausgeführt."
+    "successNote": "Hinweis: Dieser Build ist an das MT5-Konto {account} gebunden. Es wird nicht auf einer anderen Kontonummer ausgeführt.",
+    "stepOneLabel": "Schritt 1 — MT5-Konto festlegen",
+    "stepTwoLabel": "Schritt 2 — Build abrufen",
+    "compileNeedsMt5": "Geben Sie oben Ihre MT5-Kontonummer ein und klicken Sie auf Speichern & Sperren — danach wird diese Schaltfläche aktiv."
   }
 }

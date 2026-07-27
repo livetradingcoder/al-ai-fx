@@ -349,6 +349,9 @@
     "successStep3": "Navegue hasta MQL5 > Expertos y pegue el archivo allí.",
     "successStep4": "En el Navegador de MT5, haz clic derecho en Asesores Expertos y elige Actualizar — el robot solo aparece tras actualizar. Luego arrástralo a un gráfico de XAUUSD.",
     "successStep5": "En las entradas, asegúrese de configurar su porcentaje de riesgo y horario de negociación según la <tutorialLink>guía en PDF</tutorialLink>.",
-    "successNote": "Nota: Esta compilación está bloqueada en la cuenta MT5 {cuenta}. No se ejecutará en ningún otro número de cuenta."
+    "successNote": "Nota: Esta compilación está bloqueada en la cuenta MT5 {cuenta}. No se ejecutará en ningún otro número de cuenta.",
+    "stepOneLabel": "Paso 1 — Bloquea tu cuenta MT5",
+    "stepTwoLabel": "Paso 2 — Obtén tu compilación",
+    "compileNeedsMt5": "Introduce arriba tu número de cuenta MT5 y pulsa Guardar y bloquear — este botón se activa después."
   }
 }

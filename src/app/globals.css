@@ -4968,3 +4968,23 @@ html:lang(ar) .landing-hero-title {
     text-align: center;
   }
 }
+
+/* Licence card step labels + the reason a disabled action is disabled.
+   A tester repeatedly tapped "Compile & Download" on mobile with no response:
+   it is disabled until the MT5 account is saved, and nothing said so. */
+.licence-step-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.licence-blocked-hint {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted, #9e9079);
+  margin-top: 0.6rem;
+  max-width: 34ch;
+}

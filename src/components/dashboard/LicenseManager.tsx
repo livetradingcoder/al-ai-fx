@@ -124,6 +124,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
 
       <div className="licence-grid">
         <div>
+          <p className="licence-step-label">{t("stepOneLabel")}</p>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("lockedMt5Account")}</p>
           <div className="licence-mt5-row">
             <input
@@ -159,6 +160,7 @@ export default function LicenseManager({ subscription, latestCompilation: initia
         </div>
 
         <div className="licence-download">
+          <p className="licence-step-label">{t("stepTwoLabel")}</p>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "0.5rem" }}>{t("downloadLatestBuild")}</p>
 
           {compilation?.status === "COMPLETED" && compilation.id ? (
@@ -171,14 +173,27 @@ export default function LicenseManager({ subscription, latestCompilation: initia
               {t("downloadLatestEx5")}
             </a>
           ) : (
-            <button
-              className="btn-primary"
-              disabled={isPolling || !mt5Account || isEditing}
-              style={{ border: "none", alignSelf: "flex-start", opacity: (isPolling || !mt5Account || isEditing) ? 0.6 : 1 }}
-              onClick={handleUpdateMt5}
-            >
-              {isPolling ? t("compiling", { status: compilation?.status || "" }) : t("compileAndDownloadEx5")}
-            </button>
+            <>
+              <button
+                className="btn-primary"
+                disabled={isPolling || !mt5Account || isEditing}
+                style={{
+                  border: "none",
+                  alignSelf: "flex-start",
+                  opacity: (isPolling || !mt5Account || isEditing) ? 0.45 : 1,
+                  cursor: (isPolling || !mt5Account || isEditing) ? "not-allowed" : "pointer",
+                  boxShadow: (isPolling || !mt5Account || isEditing) ? "none" : undefined,
+                }}
+                onClick={handleUpdateMt5}
+              >
+                {isPolling ? t("compiling", { status: compilation?.status || "" }) : t("compileAndDownloadEx5")}
+              </button>
+              {/* Testers tapped this button repeatedly with nothing happening: it is
+                  disabled until the MT5 account is locked, which the UI never said. */}
+              {!isPolling && (!mt5Account || isEditing) && (
+                <p className="licence-blocked-hint">{t("compileNeedsMt5")}</p>
+              )}
+            </>
           )}
 
           {timedOut && (

@@ -349,6 +349,9 @@
     "successStep3": "Navigate to MQL5 > Experts and paste the file there.",
     "successStep4": "In the MT5 Navigator, right-click Expert Advisors and choose Refresh (Aktualisieren on German terminals) — the robot only appears after refreshing. Then drag it onto an XAUUSD chart.",
     "successStep5": "In the inputs, ensure you set your Risk Percent and Trading Hours as per the <tutorialLink>PDF guide</tutorialLink>.",
-    "successNote": "Note: This build is locked to MT5 Account {account}. It will not execute on any other account number."
+    "successNote": "Note: This build is locked to MT5 Account {account}. It will not execute on any other account number.",
+    "stepOneLabel": "Step 1 — Lock your MT5 account",
+    "stepTwoLabel": "Step 2 — Get your build",
+    "compileNeedsMt5": "Enter your MT5 account number above and press Save & Lock — this button unlocks after that."
   }
 }
