@@ -239,10 +239,11 @@ export default function Onboarding({
               <div className="mt5-mock-body">
                 <div className="mt5-nav">
                   <p className="mt5-nav-label">Navigator</p>
-                  <p className="mt5-nav-group">▾ Expert Advisors</p>
-                  <p className="mt5-nav-item is-ea">GoldBot</p>
-                  <p className="mt5-nav-item">Moving Average</p>
-                  <p className="mt5-nav-item">MACD Sample</p>
+                  <p className="mt5-nav-group">▾ Expert Advisors / Experten</p>
+                  <p className="mt5-nav-group is-sub">▾ alaifx</p>
+                  <p className="mt5-nav-item is-ea is-sub">AL-ai-FX_goldbot…</p>
+                  <p className="mt5-nav-item">Advisors</p>
+                  <p className="mt5-nav-item">Examples</p>
                 </div>
                 <div className="mt5-chart">
                   {[38, 52, 30, 61, 44, 70, 55, 82, 66, 91].map((h, i) => (
@@ -258,7 +259,10 @@ export default function Onboarding({
 
             <ol className="next-steps" style={{ marginTop: "22px" }}>
               <li>In MetaTrader: <strong>File → Open Data Folder</strong>.</li>
-              <li>Open <strong>MQL5 / Experts</strong> and paste the .ex5 there (not in a sub-folder).</li>
+              <li>
+                Open <strong>MQL5 / Experts</strong> and paste the .ex5 there. A sub-folder is
+                fine — it shows up as a folder inside <em>Expert Advisors</em>.
+              </li>
               <li>
                 In the Navigator panel, right-click <strong>Expert Advisors</strong> and choose{" "}
                 <strong>Refresh</strong> — <em>Aktualisieren</em> on German terminals. The robot

@@ -5733,7 +5733,15 @@ html:lang(ar) .landing-hero-title {
 }
 
 .onboarding-card { padding: 30px; }
-.onboarding-title { font-size: 1.7rem; line-height: 1.2; margin: 6px 0 12px; }
+/* `section h2` in the landing styles is more specific than a bare class, so
+   the card scopes it — otherwise the step heading renders at 48px. */
+.onboarding-card .onboarding-title {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  margin: 6px 0 12px;
+  text-align: left;
+  font-weight: 700;
+}
 
 .onboarding-lead {
   color: var(--text-secondary);
@@ -5802,7 +5810,7 @@ html:lang(ar) .landing-hero-title {
   white-space: nowrap;
 }
 
-.mt5-mock-body { display: grid; grid-template-columns: 190px 1fr; min-height: 190px; }
+.mt5-mock-body { display: grid; grid-template-columns: 232px 1fr; min-height: 190px; }
 
 .mt5-nav { border-right: 1px solid var(--border-color); padding: 14px; }
 
@@ -5815,13 +5823,25 @@ html:lang(ar) .landing-hero-title {
   margin-bottom: 10px;
 }
 
-.mt5-nav-group { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
+.mt5-nav-group {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mt5-nav-group.is-sub { padding-left: 14px; }
+.mt5-nav-item.is-sub { margin-left: 26px; }
 
 .mt5-nav-item {
   font-size: 0.85rem;
   color: var(--text-muted);
   padding: 5px 8px;
   border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mt5-nav-item.is-ea {
@@ -5844,11 +5864,23 @@ html:lang(ar) .landing-hero-title {
 
 @media (max-width: 760px) {
   .onboarding-card { padding: 22px 18px; }
-  .onboarding-title { font-size: 1.35rem; }
-  .stepper { gap: 0; }
+  .onboarding-card .onboarding-title { font-size: 1.25rem; }
+  /* The landing page forces every `section h2` to 36px !important on phones.
+     The dashboard is not the landing page — take the size back inside the
+     shell, or every card heading shouts. */
+  .shell-content h2 {
+    font-size: 1.3rem !important;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  .shell-content .onboarding-title { font-size: 1.25rem !important; }
+  /* All five nodes have to fit a 360px screen, so the labels go entirely —
+     the card heading below already names the current step. */
+  .stepper { margin-bottom: 18px; }
   .stepper-label { display: none; }
-  .stepper-node[data-state="current"] .stepper-label { display: inline; }
-  .stepper-item { flex: 0 0 auto; }
+  .stepper-node { padding: 6px 4px; }
+  .stepper-mark { width: 28px; height: 28px; }
+  .stepper-item + .stepper-item::before { min-width: 10px; flex-basis: 10px; }
   .mt5-mock-body { grid-template-columns: 1fr; }
   .mt5-nav { border-right: none; border-bottom: 1px solid var(--border-color); }
   .mt5-chart { min-height: 120px; }
