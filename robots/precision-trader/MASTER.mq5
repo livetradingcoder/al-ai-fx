@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                 GoldEA Vision.mq5|
-//|                                                    GoldEA Vision |
-//|                                               https://visionfx.cc|
+//|                                       AL-ai-FX PrecisionTrader.mq5|
+//|                                                        AL-ai-FX |
+//|                                             https://al-ai-fx.xyz|
 //+------------------------------------------------------------------+
-#property copyright "GoldEA Vision"
-#property link "https://visionfx.cc"
+#property copyright "AL-ai-FX"
+#property link "https://al-ai-fx.xyz"
 #property version "1.00"
-#property description "GoldEA Vision - Simple and Effective"
+#property description "PrecisionTrader - single-range breakout with hedge management"
 
 /////////////////////////////////////////////////////////////////////////
 // LICENSING & PROTECTION
@@ -14,42 +14,42 @@
 bool ExpiredON = true;
 datetime ExpiredTime = D'2050.2.5 23:59:59';
 // Set AccountProtectON to false to allow on any account
-bool AccountProtectON = true;
-const long allowed_accounts[] = {5112157, 50156064, 82242362};
+bool AccountProtectON = false;
+const long allowed_accounts[] = {0};
 /////////////////////////////////////////////////////////////////////////
 
 #include <Trade\Trade.mqh>
 CTrade trade;
 
 //--- User Inputs
-input string BS = "---------GoldEA Vision---------";
+input string BS = "---------AL-ai-FX PrecisionTrader---------";
 input double LotSize = 0.03;  // Lot Size
-input double x = 15.0;         // Multiplier (x)
-input ENUM_TIMEFRAMES RangeTimeframe = PERIOD_H1; // Range Build Timeframe
+const double x = 15.0;         // Multiplier (x)
+const ENUM_TIMEFRAMES RangeTimeframe = PERIOD_H1; // Range Build Timeframe
 
-input string TS = "---------Time Settings---------";
-input int StartHour = 7;       // Start Hour (0-23)
-input int StartMinute = 0;     // Start Minute (0-59)
-input int StopHour = 10;       // Stop Hour (0-23)
-input int StopMinute = 2;      // Stop Minute (0-59)
+const string TS = "---------Time Settings---------";
+const int StartHour = 7;       // Start Hour (0-23)
+const int StartMinute = 0;     // Start Minute (0-59)
+const int StopHour = 10;       // Stop Hour (0-23)
+const int StopMinute = 2;      // Stop Minute (0-59)
 
-input string HS = "---------Hedge Management---------";
-input bool UseHedgeBreakeven = false;      // Enable Hedge Breakeven
-input double HedgeBreakevenTrigger = 0.5;  // Breakeven Trigger (points)
-input double HedgeBreakevenOffset = 0.1;   // Breakeven Offset (points)
-input bool UseEarlyCut = false;            // Enable Early Cut on Re-Entry
-input double EarlyCutThreshold = 2.0;      // Re-entry Distance Inside Range to Close (points)
+const string HS = "---------Hedge Management---------";
+const bool UseHedgeBreakeven = false;      // Enable Hedge Breakeven
+const double HedgeBreakevenTrigger = 0.5;  // Breakeven Trigger (points)
+const double HedgeBreakevenOffset = 0.1;   // Breakeven Offset (points)
+const bool UseEarlyCut = false;            // Enable Early Cut on Re-Entry
+const double EarlyCutThreshold = 2.0;      // Re-entry Distance Inside Range to Close (points)
 
 //--- Hardcoded Settings
 
 const int MagicNumber = 20260502;
-const string comm = "GoldEA Vision";
-input double StopLossFB = 15.0;     // Primary Buy Stop Loss (points)
-input double TakeProfitFB = 5.0;    // Primary Buy Take Profit (points)
-input double Buffer = 0.16;         // Range Entry Buffer
-input double StopLossFS = 15.0;     // Primary Sell Stop Loss (points)
-input double TakeProfitFS = 5.0;    // Primary Sell Take Profit (points)
-input double TakeProfitST = 1.3;    // Hedge Take Profit (points)
+const string comm = "PrecisionTrader";
+const double StopLossFB = 15.0;     // Primary Buy Stop Loss (points)
+const double TakeProfitFB = 5.0;    // Primary Buy Take Profit (points)
+const double Buffer = 0.16;         // Range Entry Buffer
+const double StopLossFS = 15.0;     // Primary Sell Stop Loss (points)
+const double TakeProfitFS = 5.0;    // Primary Sell Take Profit (points)
+const double TakeProfitST = 1.3;    // Hedge Take Profit (points)
 
 int lotdigit = 3;
 bool StartTrade = false;
@@ -68,7 +68,7 @@ int OnInit() {
     for (int i = 0; i < ArraySize(allowed_accounts); i++) {
       if (account == allowed_accounts[i]) {
         IsAccount = true;
-        Print("GoldEA Vision: Account verified.");
+        Print("PrecisionTrader: Account verified.");
         break;
       }
     }
@@ -83,17 +83,17 @@ int OnInit() {
     IsExpired = true;
 
   if (ExpiredON && IsExpired) {
-    Print("GoldEA Vision: EA has expired.");
+    Print("PrecisionTrader: EA has expired.");
     return (INIT_FAILED);
   }
 
   if (AccountProtectON && !IsAccount) {
-    Print("GoldEA Vision: Unauthorized account.");
+    Print("PrecisionTrader: Unauthorized account.");
     return (INIT_FAILED);
   }
 
   trade.SetExpertMagicNumber(MagicNumber);
-  Print("GoldEA Vision: Initialized successfully.");
+  Print("PrecisionTrader: Initialized successfully.");
 
   // Determine Lot Digits
   double min_volume = SymbolInfoDouble(NULL, SYMBOL_VOLUME_MIN);
@@ -146,7 +146,7 @@ void ManageHedge() {
                 targetSL = NormalizeDouble(targetSL, _Digits);
                 if (curSL < targetSL) {
                   if (trade.PositionModify(ticket, targetSL, curTP)) {
-                    Print("GoldEA Vision: Hedge Buy SL moved to Breakeven at ", targetSL);
+                    Print("PrecisionTrader: Hedge Buy SL moved to Breakeven at ", targetSL);
                   }
                   // Refresh position state
                   if (!PositionSelectByTicket(ticket)) continue;
@@ -161,7 +161,7 @@ void ManageHedge() {
                 targetSL = NormalizeDouble(targetSL, _Digits);
                 if (curSL == 0 || curSL > targetSL) {
                   if (trade.PositionModify(ticket, targetSL, curTP)) {
-                    Print("GoldEA Vision: Hedge Sell SL moved to Breakeven at ", targetSL);
+                    Print("PrecisionTrader: Hedge Sell SL moved to Breakeven at ", targetSL);
                   }
                   // Refresh position state
                   if (!PositionSelectByTicket(ticket)) continue;
@@ -177,14 +177,14 @@ void ManageHedge() {
               double bid = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_BID), _Digits);
               if (bid <= openPrice - EarlyCutThreshold) {
                 if (trade.PositionClose(ticket)) {
-                  Print("GoldEA Vision: Early Cut triggered for Hedge Buy position. Closed at ", bid, " (Threshold: ", openPrice - EarlyCutThreshold, ")");
+                  Print("PrecisionTrader: Early Cut triggered for Hedge Buy position. Closed at ", bid, " (Threshold: ", openPrice - EarlyCutThreshold, ")");
                 }
               }
             } else if (posType == POSITION_TYPE_SELL) {
               double ask = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK), _Digits);
               if (ask >= openPrice + EarlyCutThreshold) {
                 if (trade.PositionClose(ticket)) {
-                  Print("GoldEA Vision: Early Cut triggered for Hedge Sell position. Closed at ", ask, " (Threshold: ", openPrice + EarlyCutThreshold, ")");
+                  Print("PrecisionTrader: Early Cut triggered for Hedge Sell position. Closed at ", ask, " (Threshold: ", openPrice + EarlyCutThreshold, ")");
                 }
               }
             }

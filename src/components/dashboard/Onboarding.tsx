@@ -58,7 +58,7 @@ export default function Onboarding({
     setError("");
     try {
       const res = await fetch("/api/licenses/update-mt5", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscriptionId, mt5AccountNumber: account }),
       });

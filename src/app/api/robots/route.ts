@@ -13,27 +13,35 @@ export async function GET() {
 
   return NextResponse.json(
     {
-      robots: robots.map((robot) => {
-        const prices: Record<string, number> = {};
-        for (const price of robot.prices) {
-          // Public tiers only — LIFETIME/LIFETIME_SOURCE/SECRET_TEST_TIER are
-          // contact-only and must never surface as checkout chips.
-          if (!CATALOG_PUBLIC_TIERS.includes(price.tier)) continue;
-          prices[TIER_ENUM_TO_SLUG[price.tier]] = price.amount;
-        }
-        return {
-          slug: robot.slug,
-          name: robot.name,
-          shortDescription: robot.shortDescription,
-          artworkUrl: robot.artworkUrl,
-          prices,
-        };
-      }),
+      robots: robots
+        // Coming-soon robots (listed in the catalog, no active prices) must not
+        // reach the checkout picker — there is nothing to charge for yet.
+        .filter((robot) =>
+          robot.prices.some((price) =>
+            CATALOG_PUBLIC_TIERS.includes(price.tier),
+          ),
+        )
+        .map((robot) => {
+          const prices: Record<string, number> = {};
+          for (const price of robot.prices) {
+            // Public tiers only — LIFETIME/LIFETIME_SOURCE/SECRET_TEST_TIER are
+            // contact-only and must never surface as checkout chips.
+            if (!CATALOG_PUBLIC_TIERS.includes(price.tier)) continue;
+            prices[TIER_ENUM_TO_SLUG[price.tier]] = price.amount;
+          }
+          return {
+            slug: robot.slug,
+            name: robot.name,
+            shortDescription: robot.shortDescription,
+            artworkUrl: robot.artworkUrl,
+            prices,
+          };
+        }),
     },
     {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },
-    }
+    },
   );
 }
