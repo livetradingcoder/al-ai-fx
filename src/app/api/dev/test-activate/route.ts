@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { email?: unknown; tier?: unknown; robot?: unknown };
+  let body: { email?: unknown; tier?: unknown; robot?: unknown; ref?: unknown; amount?: unknown };
   try {
     body = await req.json();
   } catch {
