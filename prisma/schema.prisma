@@ -22,6 +22,8 @@ model User {
   subscriptions       Subscription[]
   orders              Order[]
   sessions            UserSession[]
+  affiliate           Affiliate?
+  referredBy          Referral?
 }
 
 /// One row per sign-in. Auth uses JWTs (stateless), so without this table a
@@ -74,6 +76,8 @@ model Order {
   pricingTier PricingTier
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  commission Commission?
 }
 
 model Robot {
@@ -204,4 +208,168 @@ model EmailSubscriber {
   createdAt      DateTime  @default(now())
 
   @@index([createdAt])
+}
+
+// ===========================================================================
+// Affiliate program
+//
+// Attribution lives on the USER, not the cookie: someone who clicks a link,
+// claims a free trial today and buys three weeks later still pays the
+// referrer. The cookie only carries a code long enough to create that link.
+// ===========================================================================
+
+/// One row per user who joined the program. `code` is what appears in links.
+model Affiliate {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code          String          @unique // uppercase, link-safe, e.g. "ALX7K2QD"
+  status        AffiliateStatus @default(ACTIVE)
+  rateOverride  Float? // percent; set per-affiliate, wins over the tier ladder
+  payoutMethod  String? // free text: "USDT TRC20", "Wise", …
+  payoutAddress String?
+  note          String? // admin-only
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  clicks      AffiliateClick[]
+  referrals   Referral[]
+  commissions Commission[]
+  payouts     AffiliatePayout[]
+
+  @@index([status])
+}
+
+enum AffiliateStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+/// Admin-editable commission ladder. An affiliate's rate is the highest tier
+/// whose threshold their lifetime total (earned or referral count, per
+/// AffiliateSettings.tierBasis) has reached.
+model AffiliateTier {
+  id        String   @id @default(cuid())
+  name      String // Bronze / Silver / Gold
+  threshold Float // min lifetime commission earned, or min referrals
+  rate      Float // percent of order value
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+/// Singleton (id = "default"). Everything an admin can tune without a deploy.
+model AffiliateSettings {
+  id               String    @id @default("default")
+  cookieDays       Int       @default(30)
+  tierBasis        TierBasis @default(VOLUME)
+  defaultRate      Float     @default(15) // used when no tier matches
+  referredDiscount Float     @default(15) // percent off a referred user's FIRST order
+  minPayout        Float     @default(50)
+  holdDays         Int       @default(14) // matches the refund window
+  lifetimeScope    Boolean   @default(true) // earn on every order, not just the first
+  blockSelfReferral Boolean  @default(true)
+  updatedAt        DateTime  @updatedAt
+}
+
+enum TierBasis {
+  VOLUME // lifetime commission earned, in dollars
+  REFERRALS // number of referred users who bought
+}
+
+/// Raw click on a referral link. Kept separate from Referral so the funnel
+/// (clicks → signups → sales) is measurable; IPs are hashed, never stored raw.
+model AffiliateClick {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  ipHash      String? // sha256(ip + secret) — for abuse checks, not identification
+  userAgent   String?
+  referer     String?
+  landingPath String?
+  country     String?
+  createdAt   DateTime  @default(now())
+
+  @@index([affiliateId, createdAt])
+}
+
+/// The attribution record. One per referred user, ever.
+model Referral {
+  id             String    @id @default(cuid())
+  affiliateId    String
+  affiliate      Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUserId String    @unique
+  referredUser   User      @relation(fields: [referredUserId], references: [id], onDelete: Cascade)
+  code           String // the code as used, kept even if the affiliate later changes it
+  landingPath    String?
+  ipHash         String? // signup IP — same hash as the click, for same-device flagging
+  createdAt      DateTime  @default(now())
+
+  commissions Commission[]
+
+  @@index([affiliateId, createdAt])
+}
+
+/// One per paid order by a referred user. Money is only ever payable after
+/// `holdUntil` passes and an admin approves it.
+model Commission {
+  id             String           @id @default(cuid())
+  orderId        String           @unique
+  order          Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  affiliateId    String
+  affiliate      Affiliate        @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referralId     String
+  referral       Referral         @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  orderAmount    Float
+  rate           Float // percent applied, frozen at creation
+  amount         Float // orderAmount * rate / 100
+  status         CommissionStatus @default(PENDING)
+  holdUntil      DateTime
+  approvedAt     DateTime?
+  paidAt         DateTime?
+  payoutId       String?
+  payout         AffiliatePayout? @relation(fields: [payoutId], references: [id])
+  reversedReason String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([affiliateId, status])
+  @@index([status, holdUntil])
+}
+
+enum CommissionStatus {
+  PENDING // inside the refund window
+  APPROVED // payable
+  PAID
+  REVERSED // order refunded or fraudulent
+}
+
+/// A withdrawal request and its settlement. Payments happen outside the
+/// system; this records what was owed, sent, and by which reference.
+model AffiliatePayout {
+  id          String       @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate    @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount      Float
+  method      String?
+  address     String?
+  reference   String? // tx hash / bank reference, filled when marked paid
+  status      PayoutStatus @default(REQUESTED)
+  adminNote   String?
+  requestedAt DateTime     @default(now())
+  paidAt      DateTime?
+  updatedAt   DateTime     @updatedAt
+
+  commissions Commission[]
+
+  @@index([affiliateId, status])
+  @@index([status, requestedAt])
+}
+
+enum PayoutStatus {
+  REQUESTED
+  PAID
+  REJECTED
 }

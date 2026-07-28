@@ -105,7 +105,15 @@ export async function GET(req: Request) {
 
     let result;
     try {
-      result = await provisionSubscription(email, tier, robotSlug, orderRef, amount, currency);
+      result = await provisionSubscription(
+        email,
+        tier,
+        robotSlug,
+        orderRef,
+        amount,
+        currency,
+        url.searchParams.get("ref"),
+      );
     } catch (err) {
       if (
         err instanceof UnknownTierError ||

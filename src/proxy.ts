@@ -4,6 +4,38 @@ import { withAuth } from "next-auth/middleware";
 import createIntlMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
 
+// Referral capture. The short link /r/CODE does the full job (click log +
+// cookie), but affiliates also paste plain URLs with ?ref=CODE onto pages we
+// don't control, so any request carrying one drops the cookie here. Middleware
+// runs on the edge and cannot touch the database, hence cookie only — the code
+// is validated later, when it is turned into a Referral row.
+const REF_COOKIE = 'alx_ref';
+const REF_PARAMS = ['ref', 'aff', 'affiliate', 'referral', 'referralCode'];
+const REF_COOKIE_DAYS = 30;
+
+function refCodeFrom(req: NextRequest) {
+  for (const param of REF_PARAMS) {
+    const value = req.nextUrl.searchParams.get(param);
+    if (value) {
+      const code = value.trim().toUpperCase().slice(0, 32);
+      if (/^[A-Z0-9]{4,32}$/.test(code)) return code;
+    }
+  }
+  return null;
+}
+
+function withRefCookie(res: NextResponse, code: string | null) {
+  if (!code) return res;
+  res.cookies.set(REF_COOKIE, code, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: REF_COOKIE_DAYS * 86_400,
+  });
+  return res;
+}
+
 const intlMiddleware = createIntlMiddleware(routing);
 
 // CSRF Protection Middleware
@@ -61,12 +93,14 @@ export default withAuth(
       return csrfResponse;
     }
     
+    const refCode = refCodeFrom(req);
+
     // Skip next-intl for API routes
     if (!req.nextUrl.pathname.startsWith('/api/')) {
-      return intlMiddleware(req);
+      return withRefCookie(intlMiddleware(req), refCode);
     }
-    
-    return NextResponse.next();
+
+    return withRefCookie(NextResponse.next(), refCode);
   },
   {
     secret: process.env.NEXTAUTH_SECRET,

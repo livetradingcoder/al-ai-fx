@@ -1,5 +1,6 @@
 import { PricingTier, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { attachReferral, recordCommission } from "@/lib/affiliate";
 import { sendPurchaseConfirmationEmail } from "@/lib/mail";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
@@ -43,6 +44,7 @@ export async function provisionSubscription(
   paygateId?: string,
   amount?: number,
   currency?: string,
+  refCode?: string | null,
 ) {
   const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
@@ -112,6 +114,12 @@ export async function provisionSubscription(
     throw err;
   }
 
+  // Attribution before money: the referral row has to exist for the commission
+  // to hang off. `refCode` rides along on the Paygate callback URL for paid
+  // orders; the free-trial route passes the cookie straight in. Either way this
+  // is a no-op once the user already has a referrer — the first one keeps them.
+  await attachReferral({ userId: user.id, code: refCode });
+
   let orderId = null;
   if (paygateId && amount !== undefined) {
     const order = await prisma.order.create({
@@ -125,6 +133,8 @@ export async function provisionSubscription(
       },
     });
     orderId = order.id;
+
+    await recordCommission({ orderId: order.id, userId: user.id, amount });
   }
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)

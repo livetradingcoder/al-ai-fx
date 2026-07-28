@@ -4,6 +4,8 @@ import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
+import { cookies } from "next/headers";
+import { REF_COOKIE, referredDiscountFor } from "@/lib/affiliate";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
@@ -84,8 +86,24 @@ export async function POST(req: Request) {
       );
     }
 
-    const amount = resolved.amount.toFixed(2);
+    // A referred customer's first paid order is discounted. Resolved here, on
+    // the server, from the same price the catalog charges everyone else — the
+    // client never gets to name a discount.
+    const discountPercent = await referredDiscountFor(email);
+    const chargeable =
+      discountPercent > 0
+        ? Math.round(resolved.amount * (100 - discountPercent)) / 100
+        : resolved.amount;
+
+    const amount = chargeable.toFixed(2);
     const orderRef = crypto.randomUUID();
+
+    // The referral code the buyer arrived with. Paygate hands our callback URL
+    // back verbatim, which is the only way this survives: the webhook is called
+    // by Paygate, not by the buyer's browser, so there is no cookie to read
+    // there. Deliberately outside the HMAC — attribution is not authorisation,
+    // and forging a callback still requires the webhook secret.
+    const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
     const requestUrl = new URL(req.url);
     const callbackBase =
       process.env.PAYGATE_CALLBACK_URL_BASE ||
@@ -99,6 +117,7 @@ export async function POST(req: Request) {
     callbackUrl.searchParams.set("currency", currency);
     callbackUrl.searchParams.set("amount", amount);
     callbackUrl.searchParams.set("robot", robotSlug);
+    if (refCode) callbackUrl.searchParams.set("ref", refCode);
 
     // PHASE 6 SECURITY: robotSlug is bound into the HMAC to block robot-swap
     // replay (an unsigned slug would let an attacker swap the robot identity on
@@ -166,6 +185,8 @@ export async function POST(req: Request) {
       provider,
       currency,
       amount,
+      listPrice: resolved.amount.toFixed(2),
+      discountPercent,
       ipnToken: walletJson.ipn_token || null,
       callbackUrl: walletJson.callback_url || callbackUrl.toString(),
     });

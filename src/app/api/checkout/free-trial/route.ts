@@ -3,6 +3,8 @@ import { provisionSubscription } from "@/lib/subscriptions";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { checkFreeTrialRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { cookies } from "next/headers";
+import { REF_COOKIE } from "@/lib/affiliate";
 import { validateEmail } from "@/lib/validation";
 
 export async function POST(req: Request) {
@@ -59,7 +61,18 @@ export async function POST(req: Request) {
 
     let result;
     try {
-      result = await provisionSubscription(normalizedEmail, "free-trial", robotSlug);
+      // A trial earns nothing, but it still binds the customer to whoever sent
+      // them: when they upgrade weeks later, the commission is already owed.
+      const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
+      result = await provisionSubscription(
+        normalizedEmail,
+        "free-trial",
+        robotSlug,
+        undefined,
+        undefined,
+        undefined,
+        refCode,
+      );
     } catch (err) {
       if (err instanceof UnknownTierError || err instanceof UnknownRobotError || err instanceof UnknownRobotPriceError) {
         // Defensive: resolveRobotPrice above already validated this, but matches
