@@ -47,6 +47,10 @@ export async function POST(req: Request) {
   const email = String(body.email ?? "").trim().toLowerCase();
   const tier = String(body.tier ?? "1-month").trim();
   const robot = String(body.robot ?? "goldbot").trim().toLowerCase();
+  // Optional referral code, so an affiliate attribution can be exercised
+  // end-to-end without a real card. Mirrors what the Paygate callback carries.
+  const ref = body.ref ? String(body.ref).trim().toUpperCase() : null;
+  const amount = body.amount === undefined ? 0 : Number(body.amount);
 
   if (!email.includes("@")) {
     return NextResponse.json({ error: "Valid email required" }, { status: 400 });
@@ -60,7 +64,7 @@ export async function POST(req: Request) {
   );
 
   try {
-    const result = await provisionSubscription(email, tier, robot, paygateId, 0, "USD");
+    const result = await provisionSubscription(email, tier, robot, paygateId, amount, "USD", ref);
     console.warn(`[TestActivate] result: ${JSON.stringify(result)}`);
     return NextResponse.json({ ok: true, testOrder: paygateId, ...result });
   } catch (err) {

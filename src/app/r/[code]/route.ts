@@ -22,7 +22,11 @@ export async function GET(
   const to = url.searchParams.get("to");
   // Only same-site paths: an open redirect here would be a phishing gift.
   const dest = to && to.startsWith("/") && !to.startsWith("//") ? to : "/";
-  const redirect = NextResponse.redirect(new URL(dest, url.origin), 302);
+  // Behind Traefik the request origin is the container's own https://localhost:3330,
+  // which would send every clicker to a dead address — same trap the compile
+  // worker hit. The public URL is the configured one.
+  const origin = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || url.origin;
+  const redirect = NextResponse.redirect(new URL(dest, origin), 302);
 
   const { success } = await checkApiRateLimit(getClientIdentifier(req));
   if (!success) return redirect;
