@@ -8,7 +8,8 @@
     "tutorials": "Tutoriales",
     "faq": "Preguntas frecuentes",
     "login": "Acceso",
-    "getAccess": "Obtener acceso"
+    "getAccess": "Obtener acceso",
+    "refer": "Recomienda y gana"
   },
   "Landing": {
     "heroEyebrow": "Motor de ejecución MT5 asistido por IA",
@@ -379,5 +380,6 @@
     "guidedSetup": "Configuración",
     "affiliate": "Afiliados",
     "manageAffiliates": "Programa de afiliados"
-  }
+  },
+  "Nav": {}
 }

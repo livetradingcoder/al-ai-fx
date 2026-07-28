@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // rather than failing the whole sitemap.
   }
 
-  const dynamicPaths = ["/catalog", ...robotSlugs.map((slug) => `/robots/${slug}`)];
+  const dynamicPaths = ["/catalog", "/refer", ...robotSlugs.map((slug) => `/robots/${slug}`)];
   const lastModified = new Date();
 
   for (const pathname of dynamicPaths) {

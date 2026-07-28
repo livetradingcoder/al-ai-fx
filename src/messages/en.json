@@ -8,7 +8,8 @@
     "tutorials": "Tutorials",
     "faq": "FAQ",
     "login": "Login",
-    "getAccess": "Get Access"
+    "getAccess": "Get Access",
+    "refer": "Refer & earn"
   },
   "Landing": {
     "heroEyebrow": "AI-assisted MT5 execution engine",
@@ -379,5 +380,6 @@
     "guidedSetup": "Setup",
     "affiliate": "Affiliate",
     "manageAffiliates": "Affiliate programme"
-  }
+  },
+  "Nav": {}
 }

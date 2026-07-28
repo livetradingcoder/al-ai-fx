@@ -8,7 +8,8 @@
     "tutorials": "Tutorials",
     "faq": "FAQ",
     "login": "Login",
-    "getAccess": "Erhalten Sie Zugang"
+    "getAccess": "Erhalten Sie Zugang",
+    "refer": "Empfehlen & verdienen"
   },
   "Landing": {
     "heroEyebrow": "KI-gestützte MT5-Ausführungs-Engine",
@@ -379,5 +380,6 @@
     "guidedSetup": "Einrichtung",
     "affiliate": "Partnerprogramm",
     "manageAffiliates": "Partnerprogramm"
-  }
+  },
+  "Nav": {}
 }

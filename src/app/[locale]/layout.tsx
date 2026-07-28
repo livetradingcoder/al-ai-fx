@@ -70,6 +70,7 @@ export default async function RootLayout({
                   <Link href="/#pricing">Pricing</Link>
                   <Link href="/roadmap">Roadmap</Link>
                   <Link href="/licensing">Licensing &amp; source</Link>
+                  <Link href="/refer">Refer &amp; earn</Link>
                 </div>
               </div>
               <div>

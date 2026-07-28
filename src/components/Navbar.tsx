@@ -62,6 +62,7 @@ export default function Navbar() {
             <Link href="/#pricing">{t("pricing")}</Link>
             <Link href="/tutorials">{t("tutorials")}</Link>
             <Link href="/faq">{t("faq")}</Link>
+            <Link href="/refer">{t("refer")}</Link>
           </div>
 
           <div className="nav-actions desktop-only">
@@ -102,6 +103,9 @@ export default function Navbar() {
             </Link>
             <Link href="/tutorials" onClick={() => setIsOpen(false)}>
               {t("tutorials")}
+            </Link>
+            <Link href="/refer" onClick={() => setIsOpen(false)}>
+              {t("refer")}
             </Link>
             <Link href="/faq" onClick={() => setIsOpen(false)}>
               {t("faq")}

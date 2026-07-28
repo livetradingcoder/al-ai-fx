@@ -8,7 +8,8 @@
     "tutorials": "سبق",
     "faq": "اکثر پوچھے گئے سوالات",
     "login": "لاگ ان",
-    "getAccess": "رسائی حاصل کریں۔"
+    "getAccess": "رسائی حاصل کریں۔",
+    "refer": "ریفر کریں اور کمائیں"
   },
   "Landing": {
     "heroEyebrow": "AI کی مدد سے MT5 ایگزیکیوشن انجن",
@@ -379,5 +380,6 @@
     "guidedSetup": "سیٹ اپ",
     "affiliate": "ملحقہ پروگرام",
     "manageAffiliates": "ملحقہ پروگرام"
-  }
+  },
+  "Nav": {}
 }
