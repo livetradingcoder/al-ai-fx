@@ -6329,6 +6329,67 @@ html:lang(ar) .landing-hero-title {
   .row-actions { justify-content: flex-start; }
 }
 
+/* Affiliate: share box + tier progress. */
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.share-link {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.share-link.is-code {
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: var(--accent-primary-light);
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.share-buttons a { text-decoration: none; }
+
+.tier-editor { display: grid; gap: 10px; margin-top: 12px; }
+
+.tier-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tier-row > .enroll-input:first-child { flex: 1 1 160px; }
+
+.tier-bar {
+  height: 6px;
+  margin: 12px 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.tier-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-primary-light));
+}
+
 /* ===========================================================================
    Dashboard form fields. The landing page's .form-input is built for hero-sized
    forms (20px padding, 17px type); inside a card that reads as enormous, so the

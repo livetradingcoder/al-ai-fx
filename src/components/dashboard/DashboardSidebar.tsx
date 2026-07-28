@@ -47,6 +47,11 @@ const Icon = {
       <path d="M5 12h4l2.5-6 3 12L17 12h2" />
     </svg>
   ),
+  affiliate: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="8" r="3" /><path d="M4 20c0-3 2.2-5 5-5s5 2 5 5" /><path d="M17 8h4M19 6v4" />
+    </svg>
+  ),
   downloads: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 4v10M8 11l4 4 4-4M5 19h14" />
@@ -106,6 +111,7 @@ export default function DashboardSidebar() {
         {railLink("/dashboard/licenses", Icon.licence, t("myLicenses"))}
         {railLink("/dashboard/onboarding", Icon.setup, t("guidedSetup"))}
         {railLink("/dashboard/downloads", Icon.downloads, t("downloads"))}
+        {railLink("/dashboard/affiliate", Icon.affiliate, t("affiliate"))}
       </nav>
 
       <nav className="rail-group" aria-label={t("accountGroup")}>

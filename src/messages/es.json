@@ -376,6 +376,8 @@
     "searchNavigate": "navegar",
     "searchSelect": "seleccionar",
     "searchClose": "cerrar",
-    "guidedSetup": "Configuración"
+    "guidedSetup": "Configuración",
+    "affiliate": "Afiliados",
+    "manageAffiliates": "Programa de afiliados"
   }
 }

@@ -28,6 +28,7 @@ export default function CommandPalette() {
       { group: t("menu"), label: t("myLicenses"), href: "/dashboard/licenses" },
       { group: t("menu"), label: t("guidedSetup"), href: "/dashboard/onboarding" },
       { group: t("menu"), label: t("downloads"), href: "/dashboard/downloads" },
+      { group: t("menu"), label: t("affiliate"), href: "/dashboard/affiliate" },
       { group: t("accountGroup"), label: t("billing"), href: "/dashboard/billing" },
       { group: t("accountGroup"), label: t("profile"), href: "/dashboard/profile" },
       { group: t("accountGroup"), label: t("settings"), href: "/dashboard/settings" },
@@ -39,6 +40,7 @@ export default function CommandPalette() {
         { group: t("administration"), label: t("adminOverview"), href: "/dashboard/admin" },
         { group: t("administration"), label: t("manageUsers"), href: "/dashboard/admin/users" },
         { group: t("administration"), label: t("manageRobots"), href: "/dashboard/admin/robots" },
+        { group: t("administration"), label: t("manageAffiliates"), href: "/dashboard/admin/affiliates" },
       );
     }
     return base;

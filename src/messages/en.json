@@ -376,6 +376,8 @@
     "searchNavigate": "navigate",
     "searchSelect": "select",
     "searchClose": "close",
-    "guidedSetup": "Setup"
+    "guidedSetup": "Setup",
+    "affiliate": "Affiliate",
+    "manageAffiliates": "Affiliate programme"
   }
 }
