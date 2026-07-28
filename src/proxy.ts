@@ -95,8 +95,12 @@ export default withAuth(
     
     const refCode = refCodeFrom(req);
 
-    // Skip next-intl for API routes
-    if (!req.nextUrl.pathname.startsWith('/api/')) {
+    // Skip next-intl for API routes and for /r/<code> — the referral link is a
+    // route handler, not a page, so a locale rewrite turns it into a 404.
+    const skipIntl =
+      req.nextUrl.pathname.startsWith('/api/') || req.nextUrl.pathname.startsWith('/r/');
+
+    if (!skipIntl) {
       return withRefCookie(intlMiddleware(req), refCode);
     }
 
