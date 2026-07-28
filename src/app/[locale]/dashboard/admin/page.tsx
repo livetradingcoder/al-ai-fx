@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
+import LicencesTable from "./LicencesTable";
+import OrdersTable from "./OrdersTable";
 import { HEARTBEAT_DEAD_SECONDS } from "@/lib/compiler-config";
 
 export default async function AdminDashboard() {
@@ -34,21 +36,40 @@ export default async function AdminDashboard() {
     }
   });
 
-  // 4. Recent Licenses/Subscriptions
-  const recentSubscriptions = await prisma.subscription.findMany({
-    take: 10,
+  // 4. Licences. The table searches, filters and paginates in the browser, so
+  // send a working set rather than a 10-row slice — capped so the page stays
+  // cheap if the platform grows into thousands.
+  const subscriptionRows = await prisma.subscription.findMany({
+    take: 500,
     orderBy: { createdAt: 'desc' },
-    include: {
-      user: true
-    }
+    include: { user: { select: { email: true } }, robot: { select: { name: true } } },
   });
+  const licences = subscriptionRows.map((sub) => ({
+    id: sub.id,
+    email: sub.user.email,
+    mt5AccountNumber: sub.mt5AccountNumber,
+    robot: sub.robot?.name ?? '—',
+    tier: sub.tier,
+    status: sub.status,
+    createdAt: sub.createdAt.toISOString(),
+  }));
 
-  // 5. Recent Orders
-  const recentOrders = await prisma.order.findMany({
-    take: 15,
+  // 5. Orders, same treatment.
+  const orderRows = await prisma.order.findMany({
+    take: 500,
     orderBy: { createdAt: 'desc' },
-    include: { user: true }
+    include: { user: { select: { email: true } } },
   });
+  const orders = orderRows.map((order) => ({
+    id: order.id,
+    email: order.user.email,
+    tier: order.pricingTier,
+    amount: order.amount,
+    currency: order.currency,
+    paygateId: order.paygateId,
+    status: order.status,
+    createdAt: order.createdAt.toISOString(),
+  }));
 
   // 6. DLVR-04 dashboard flag: stale compile-worker heartbeat OR recent terminal failures.
   // Mailtrap-independent — satisfies "admin alerted via email OR dashboard flag" without
@@ -101,62 +122,25 @@ export default async function AdminDashboard() {
           <CompileServerStatus />
         </div>
 
-        <div className="card" style={{ marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '1.15rem', marginBottom: '1rem' }}>Recent Licenses Issued</h2>
-          <div className="table-wrap"><table className="data-table">
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th>Email</th>
-                <th>MT5 Account</th>
-                <th>Tier</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentSubscriptions.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No licenses found.
-                  </td>
-                </tr>
-              )}
-              {recentSubscriptions.map(sub => (
-                <tr key={sub.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td data-label="Email" style={{ padding: '1.5rem 1rem' }}>{sub.user.email}</td>
-                  <td data-label="MT5 Account" style={{ padding: '1.5rem 1rem', fontFamily: 'monospace' }}>
-                    {sub.mt5AccountNumber || <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
-                  </td>
-                  <td data-label="Tier" style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{sub.tier.replace('_', ' ')}</td>
-                  <td data-label="Status" style={{ padding: '1.5rem 1rem' }}>
-                    <span style={{ color: sub.status === "ACTIVE" ? 'var(--accent-accent)' : 'var(--text-secondary)' }}>
-                      {sub.status}
-                    </span>
-                  </td>
-                  <td data-label="Date" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    {new Date(sub.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table></div>
-        </div>
+        <LicencesTable licences={licences} />
+
+        <OrdersTable orders={orders} />
 
         <div className="glass-panel" style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>SMTP Configuration</h2>
+          <h2 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>Email delivery</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr)', gap: '1.5rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Host / Port</label>
-              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`} />
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`} />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>From Name & Email</label>
-              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`} />
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`} />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Username</label>
-              <input disabled type="text" className="form-input" style={{opacity: 0.7, maxWidth: '500px'}} value={process.env.SMTP_USER || ''} />
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={process.env.SMTP_USER || ''} />
             </div>
           </div>
           <div style={{ marginTop: '2rem' }}>
@@ -164,50 +148,6 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ overflowX: 'auto', marginTop: '2rem' }}>
-          <h2 style={{ fontSize: '1.15rem', marginBottom: '1rem' }}>Recent Order Transactions</h2>
-          <div className="table-wrap"><table className="data-table">
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th>Email</th>
-                <th>Tier</th>
-                <th>Amount</th>
-                <th>Order Ref (Paygate ID)</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    No orders found.
-                  </td>
-                </tr>
-              )}
-              {recentOrders.map(order => (
-                <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td data-label="Email" style={{ padding: '1.5rem 1rem' }}>{order.user.email}</td>
-                  <td data-label="Tier" style={{ padding: '1.5rem 1rem', whiteSpace: 'nowrap' }}>{order.pricingTier.replace('_', ' ')}</td>
-                  <td data-label="Amount" style={{ padding: '1.5rem 1rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                    ${order.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {order.currency}
-                  </td>
-                  <td data-label="Order Ref" style={{ padding: '1.5rem 1rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                    {order.paygateId || <span style={{ color: 'var(--text-secondary)' }}>N/A</span>}
-                  </td>
-                  <td data-label="Status" style={{ padding: '1.5rem 1rem' }}>
-                    <span style={{ color: order.status === "SUCCESS" ? 'var(--accent-accent)' : order.status === "PENDING" ? 'var(--text-secondary)' : '#fca5a5' }}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td data-label="Date" style={{ padding: '1.5rem 1rem', fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    {new Date(order.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table></div>
-        </div>
       </div>
     </div>
   );
