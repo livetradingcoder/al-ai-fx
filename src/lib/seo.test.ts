@@ -44,7 +44,7 @@ test("home metadata uses a share-safe og image", () => {
   const images = metadata.openGraph?.images;
   const image = Array.isArray(images) ? images[0] : images;
 
-  assert.equal(typeof image === "string" ? image : (image as any)?.url, "https://www.al-ai-fx.xyz/goldbot-social.png");
+  assert.equal(typeof image === "string" ? image : (image as any)?.url, "https://www.al-ai-fx.xyz/og/goldbot-share-1200x630.jpg");
   assert.equal((metadata.twitter as any)?.card, "summary_large_image");
 });
 

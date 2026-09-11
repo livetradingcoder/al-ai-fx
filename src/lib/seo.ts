@@ -4,7 +4,10 @@ import { routing } from "@/i18n/routing";
 
 export const SITE_URL = "https://www.al-ai-fx.xyz";
 const SITE_NAME = "GoldBot by AL-ai-FX";
-const OG_IMAGE_URL = `${SITE_URL}/goldbot-social.png`;
+// The hero, not a stock robot render: the share card should look like the page
+// it links to. New filename rather than overwriting the old one, because
+// WhatsApp/Facebook cache previews by image URL and would keep the robot.
+const OG_IMAGE_URL = `${SITE_URL}/og/goldbot-share-1200x630.jpg`;
 const LAST_MODIFIED = new Date("2026-04-19T00:00:00.000Z");
 
 export type Locale = (typeof routing.locales)[number];
