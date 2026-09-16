@@ -10,6 +10,7 @@ import {notFound} from 'next/navigation';
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
+import NdeskWidget from "@/components/NdeskWidget";
 import { authOptions } from "@/lib/auth";
 import { getPageMetadata, SITE_URL } from "@/lib/seo";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
           <NextIntlClientProvider messages={messages}>
             <MarketingScripts />
             <MarketingPageTracker />
+            <NdeskWidget />
             <Navbar />
           {children}
           <footer className="footer">

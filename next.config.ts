@@ -39,7 +39,11 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.paygate.to https://checkout.paygate.to https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://connect.facebook.net; frame-src 'self' https://checkout.paygate.to https://www.facebook.com;"
+            // nDesk support chat needs four of these: the loader script, its
+            // stylesheet and fonts from the CDN, its API and websocket for live
+            // messages, and a frame because the chat UI renders in an iframe.
+            // Without them the loader is blocked and the bubble never appears.
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://cdn.ndesk.chat; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.ndesk.chat; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.ndesk.chat; connect-src 'self' https://api.paygate.to https://checkout.paygate.to https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://*.ndesk.chat wss://*.ndesk.chat; frame-src 'self' https://checkout.paygate.to https://www.facebook.com https://*.ndesk.chat;"
           }
         ]
       }
