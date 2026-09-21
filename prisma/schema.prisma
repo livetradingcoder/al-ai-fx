@@ -429,3 +429,20 @@ model CouponRedemption {
   @@index([couponId, createdAt])
   @@index([email])
 }
+
+/// One row per free-trial claim, for abuse limits.
+///
+/// The unique index on Subscription already stops the SAME account claiming a
+/// robot's trial twice; this table is what stops one person doing it from a
+/// dozen throwaway addresses. Identifiers are hashed — enough to recognise a
+/// repeat, not enough to identify anyone.
+model TrialClaim {
+  id        String   @id @default(cuid())
+  robotSlug String
+  ipHash    String?
+  emailHash String
+  createdAt DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+  @@index([createdAt])
+}

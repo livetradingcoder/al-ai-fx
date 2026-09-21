@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -44,6 +45,8 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
   const t = useTranslations("Checkout");
   const locale = useLocale();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const urlTier = (searchParams?.get("tier") || "1-month") as TierId;
   const urlRobot = searchParams?.get("robot") || "";
   const robotNameParam = searchParams?.get("name") || "your robot";
@@ -134,6 +137,18 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
   };
   const robotName = robot?.name ?? robotNameParam;
   const isFreeTrial = tier === "free-trial";
+
+  // Reflect the picker in the address bar: the URL a buyer copies (or lands on
+  // after Back) should be the robot and plan they are actually looking at.
+  useEffect(() => {
+    if (!selectedSlug) return;
+    const next = new URLSearchParams(searchParams?.toString() ?? "");
+    if (next.get("robot") === selectedSlug && next.get("tier") === tier) return;
+    next.set("robot", selectedSlug);
+    next.set("tier", tier);
+    if (robot?.name) next.set("name", robot.name);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  }, [selectedSlug, tier, robot?.name, pathname, router, searchParams]);
 
   // Mirrors the server rule in create-session: a coupon and the referral
   // discount never stack — whichever is cheaper for the buyer wins.

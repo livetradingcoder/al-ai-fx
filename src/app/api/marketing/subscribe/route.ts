@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     // sends placement-tagged variants (algotradingschool:hero, :lesson, …).
     const source =
       typeof body.source === "string" &&
-      /^algotradingschool(:[a-z0-9-]{1,32})?$/.test(body.source)
+      /^(algotradingschool|al-ai-fx)(:[a-z0-9-]{1,32})?$/.test(body.source)
         ? body.source
         : "unknown";
 

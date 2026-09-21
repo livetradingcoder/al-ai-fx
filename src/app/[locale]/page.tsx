@@ -9,6 +9,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import NotifyMeForm from "@/components/marketing/NotifyMeForm";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -105,6 +106,33 @@ export default function Home() {
 
     frame = window.requestAnimationFrame(loop);
     return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  // The free trial belongs to whichever robot prices it at zero — and may be
+  // unavailable to this visitor entirely (per-IP cooldown or monthly cap), so
+  // the card has to ask rather than assume.
+  const [trial, setTrial] = useState<{
+    offered: boolean;
+    robotSlug?: string;
+    robotName?: string;
+    available: boolean;
+    message?: string;
+    resetsAt?: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/checkout/free-trial/availability")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setTrial(data);
+      })
+      .catch(() => {
+        /* the card falls back to its default link */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const scrollLeft = () => {
@@ -361,7 +389,7 @@ export default function Home() {
                     ))}
                   </ul>
                   <Link href={`/checkout?tier=${plan.id}&robot=goldbot&name=GoldBot`} className="btn-primary fill">
-                    Select Plan
+                    Get GoldBot
                   </Link>
                 </article>
               ))}
@@ -403,9 +431,38 @@ export default function Home() {
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
-                  <Link href={`/checkout?tier=${plan.id}&robot=goldbot&name=GoldBot`} className="btn-primary fill">
-                    Select Plan
-                  </Link>
+                  {trial && trial.offered && !trial.available ? (
+                    <>
+                      <span
+                        className="btn-secondary fill"
+                        aria-disabled="true"
+                        style={{ textAlign: "center", opacity: 0.75 }}
+                      >
+                        Currently unavailable
+                      </span>
+                      <p className="pricing-tier-note" style={{ marginTop: "0.6rem" }}>
+                        {trial.message}
+                        {trial.resetsAt
+                          ? ` Try again after ${new Date(trial.resetsAt).toLocaleDateString()}.`
+                          : ""}
+                      </p>
+                    </>
+                  ) : trial && !trial.offered ? (
+                    <span
+                      className="btn-secondary fill"
+                      aria-disabled="true"
+                      style={{ textAlign: "center", opacity: 0.75 }}
+                    >
+                      No trial available right now
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/checkout?tier=${plan.id}&robot=${trial?.robotSlug ?? "precision-trader"}&name=${encodeURIComponent(trial?.robotName ?? "PrecisionTrader")}`}
+                      className="btn-primary fill"
+                    >
+                      Start free trial{trial?.robotName ? ` — ${trial.robotName}` : ""}
+                    </Link>
+                  )}
                 </article>
               ))}
 
@@ -428,9 +485,7 @@ export default function Home() {
                   <li>No card required to start</li>
                   <li>Charged only on a profitable trial</li>
                 </ul>
-                <span className="btn-secondary fill pricing-tier-preview-cta" aria-disabled="true">
-                  Notify Me When Ready
-                </span>
+                <NotifyMeForm source="al-ai-fx:pay-after-trial" />
               </article>
             </div>
 

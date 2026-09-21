@@ -4,7 +4,8 @@ import { UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { checkFreeTrialRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { cookies } from "next/headers";
-import { REF_COOKIE } from "@/lib/affiliate";
+import { clientIp, REF_COOKIE } from "@/lib/affiliate";
+import { checkTrialAvailability, hashTrialIp, recordTrialClaim } from "@/lib/trial-limits";
 import { validateEmail } from "@/lib/validation";
 
 export async function POST(req: Request) {
@@ -36,6 +37,17 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.toLowerCase().trim();
     console.log(`[Free Trial] Processing trial for: ${normalizedEmail}`);
+
+    // The per-account unique index stops one account claiming twice; these
+    // limits stop one person doing it from a dozen throwaway addresses.
+    const ipHash = hashTrialIp(clientIp(req));
+    const availability = await checkTrialAvailability(ipHash);
+    if (!availability.available) {
+      return NextResponse.json(
+        { error: availability.message, reason: availability.reason, resetsAt: availability.resetsAt },
+        { status: 429 },
+      );
+    }
 
     // Fail-closed resolve + assert the free-trial price is 0 (Pitfall 6 — a free
     // trial must never be claimable for an inactive/unpriced/misconfigured robot).
@@ -80,6 +92,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: err.message }, { status: 400 });
       }
       throw err;
+    }
+
+    if (!result.duplicated) {
+      await recordTrialClaim({ robotSlug, email: normalizedEmail, ipHash });
     }
 
     if (result.duplicated && result.alreadyTrialed) {
