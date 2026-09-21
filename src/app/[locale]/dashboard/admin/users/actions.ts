@@ -7,10 +7,7 @@ import { revalidatePath } from "next/cache";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { sendAccountInviteEmail, sendAdminRoleAlertEmail } from "@/lib/mail";
 import { validateEmail } from "@/lib/validation";
-
-// Expected failures come back as values, not throws: Next.js replaces a
-// thrown Server Function error with a generic message in production.
-export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
+import type { ActionResult } from "@/lib/action-result";
 
 type Role = "USER" | "ADMIN";
 

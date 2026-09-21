@@ -8,6 +8,7 @@ import {
   type FilterDef,
   type SortDef,
 } from "@/components/dashboard/table-view";
+import type { ActionResult } from "@/lib/action-result";
 import { createCoupon, deleteCoupon, setCouponActive } from "./actions";
 
 export type CouponRow = {
@@ -96,17 +97,14 @@ export default function CouponsAdmin({
     pageSize: 25,
   });
 
-  const run = (fn: () => Promise<string | void>) =>
+  const run = (fn: () => Promise<ActionResult>) =>
     start(async () => {
       setNotice(null);
       try {
-        const text = await fn();
-        if (text) setNotice({ kind: "ok", text });
-      } catch (err) {
-        setNotice({
-          kind: "error",
-          text: err instanceof Error ? err.message : "Something went wrong",
-        });
+        const res = await fn();
+        setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
+      } catch {
+        setNotice({ kind: "error", text: "Something went wrong" });
       }
     });
 
@@ -257,8 +255,8 @@ export default function CouponsAdmin({
                   expiresAt: form.expiresAt || null,
                   note: form.note || null,
                 });
-                setForm({ ...form, code: "", note: "" });
-                return `${res.code} created.`;
+                if (res.ok) setForm({ ...form, code: "", note: "" });
+                return res;
               })
             }
           >
@@ -344,12 +342,7 @@ export default function CouponsAdmin({
                           type="button"
                           className={`btn-mini ${c.active ? "is-danger" : "is-go"}`}
                           disabled={pending}
-                          onClick={() =>
-                            run(async () => {
-                              await setCouponActive(c.id, !c.active);
-                              return c.active ? `${c.code} switched off.` : `${c.code} is live.`;
-                            })
-                          }
+                          onClick={() => run(() => setCouponActive(c.id, !c.active))}
                         >
                           {c.active ? "Switch off" : "Switch on"}
                         </button>
@@ -358,12 +351,7 @@ export default function CouponsAdmin({
                             type="button"
                             className="btn-mini"
                             disabled={pending}
-                            onClick={() =>
-                              run(async () => {
-                                await deleteCoupon(c.id);
-                                return `${c.code} deleted.`;
-                              })
-                            }
+                            onClick={() => run(() => deleteCoupon(c.id))}
                           >
                             Delete
                           </button>

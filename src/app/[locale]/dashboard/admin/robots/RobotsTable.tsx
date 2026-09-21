@@ -58,12 +58,9 @@ function UploadSourceButton({
         fd.set("robotId", robotId);
         fd.set("source", file);
         const res = await uploadRobotSource(fd);
-        onDone({ kind: "ok", text: `Source uploaded — now at v${res.version}.` });
-      } catch (error) {
-        onDone({
-          kind: "error",
-          text: error instanceof Error ? error.message : "Failed to upload source",
-        });
+        onDone(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
+      } catch {
+        onDone({ kind: "error", text: "Failed to upload source" });
       }
     });
   }
@@ -116,18 +113,10 @@ export default function RobotsTable({ robots }: { robots: RobotRow[] }) {
     setLoadingId(robot.id);
     setNotice(null);
     try {
-      await toggleRobotActive(robot.id, robot.active);
-      setNotice({
-        kind: "ok",
-        text: robot.active
-          ? `${robot.name} is no longer listed on the catalog.`
-          : `${robot.name} is listed on the catalog.`,
-      });
-    } catch (error) {
-      setNotice({
-        kind: "error",
-        text: error instanceof Error ? error.message : "Failed to update active status",
-      });
+      const res = await toggleRobotActive(robot.id, robot.active);
+      setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
+    } catch {
+      setNotice({ kind: "error", text: "Failed to update active status" });
     } finally {
       setLoadingId(null);
     }

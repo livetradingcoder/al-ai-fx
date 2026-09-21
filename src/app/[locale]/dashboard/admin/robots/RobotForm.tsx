@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { createRobot, updateRobot, getRobotPrices, updateRobotPrices } from "./actions";
 import { TIER_METADATA } from "@/lib/pricing-tiers";
+import type { ActionResult } from "@/lib/action-result";
 import type { RobotRow } from "./RobotsTable";
 
 const inputStyle: React.CSSProperties = {
@@ -66,18 +67,15 @@ export default function RobotForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [robot?.id, isCreate]);
 
-  const getErrorMessage = (error: unknown, fallback: string) =>
-    error instanceof Error ? error.message : fallback;
-
   function handleSavePrices() {
     if (!robot) return;
     startPriceTransition(async () => {
       try {
         const rows = tierIds.map((tierId) => ({ tier: tierId, amount: Number(prices[tierId] ?? 0) }));
-        await updateRobotPrices(robot.id, rows);
-        alert("Prices saved");
-      } catch (error) {
-        alert(getErrorMessage(error, "Failed to save prices"));
+        const res = await updateRobotPrices(robot.id, rows);
+        alert(res.ok ? res.message : res.error);
+      } catch {
+        alert("Failed to save prices");
       }
     });
   }
@@ -86,6 +84,7 @@ export default function RobotForm({
     e.preventDefault();
     startTransition(async () => {
       try {
+        let res: ActionResult;
         if (isCreate) {
           const fd = new FormData();
           fd.set("slug", slug);
@@ -95,9 +94,9 @@ export default function RobotForm({
           fd.set("artworkUrl", artworkUrl);
           fd.set("sortOrder", sortOrder);
           if (source) fd.set("source", source);
-          await createRobot(fd);
+          res = await createRobot(fd);
         } else {
-          await updateRobot(robot!.id, {
+          res = await updateRobot(robot!.id, {
             name,
             shortDescription,
             longDescription,
@@ -105,9 +104,10 @@ export default function RobotForm({
             sortOrder: Number(sortOrder),
           });
         }
-        onClose();
-      } catch (error) {
-        alert(getErrorMessage(error, isCreate ? "Failed to create robot" : "Failed to update robot"));
+        if (res.ok) onClose();
+        else alert(res.error);
+      } catch {
+        alert(isCreate ? "Failed to create robot" : "Failed to update robot");
       }
     });
   }

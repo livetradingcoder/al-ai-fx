@@ -8,6 +8,7 @@ import {
   type FilterDef,
   type SortDef,
 } from "@/components/dashboard/table-view";
+import type { ActionResult } from "@/lib/action-result";
 import {
   approveCommission,
   approveDueCommissions,
@@ -79,17 +80,14 @@ type Notice = { kind: "ok" | "error"; text: string } | null;
 
 function useRunner(setNotice: (n: Notice) => void) {
   const [pending, start] = useTransition();
-  const run = (fn: () => Promise<string | void>) =>
+  const run = (fn: () => Promise<ActionResult>) =>
     start(async () => {
       setNotice(null);
       try {
-        const text = await fn();
-        if (text) setNotice({ kind: "ok", text });
-      } catch (err) {
-        setNotice({
-          kind: "error",
-          text: err instanceof Error ? err.message : "Something went wrong",
-        });
+        const res = await fn();
+        setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
+      } catch {
+        setNotice({ kind: "error", text: "Something went wrong" });
       }
     });
   return { pending, run };
@@ -188,9 +186,9 @@ export function AffiliatesPanel({ affiliates }: { affiliates: AffiliateRow[] }) 
                         disabled={pending}
                         onClick={() =>
                           run(async () => {
-                            await setAffiliateRate(a.id, rate.trim() === "" ? null : Number(rate));
-                            setEditing(null);
-                            return `${a.email} now earns ${rate.trim() === "" ? "the tier rate" : `${rate}%`}.`;
+                            const res = await setAffiliateRate(a.id, rate.trim() === "" ? null : Number(rate));
+                            if (res.ok) setEditing(null);
+                            return res;
                           })
                         }
                       >
@@ -247,14 +245,7 @@ export function AffiliatesPanel({ affiliates }: { affiliates: AffiliateRow[] }) 
                       type="button"
                       className={`btn-mini ${a.status === "SUSPENDED" ? "is-go" : "is-danger"}`}
                       disabled={pending}
-                      onClick={() =>
-                        run(async () => {
-                          await setAffiliateStatus(a.id, a.status !== "SUSPENDED");
-                          return a.status === "SUSPENDED"
-                            ? `${a.email} reinstated.`
-                            : `${a.email} suspended — their links stop attributing.`;
-                        })
-                      }
+                      onClick={() => run(() => setAffiliateStatus(a.id, a.status !== "SUSPENDED"))}
                     >
                       {a.status === "SUSPENDED" ? "Reinstate" : "Suspend"}
                     </button>
@@ -313,12 +304,7 @@ export function CommissionsPanel({ commissions }: { commissions: CommissionRow[]
           type="button"
           className="btn-primary btn-sm"
           disabled={pending || due === 0}
-          onClick={() =>
-            run(async () => {
-              const res = await approveDueCommissions();
-              return `${res.approved} commission${res.approved === 1 ? "" : "s"} approved.`;
-            })
-          }
+          onClick={() => run(() => approveDueCommissions())}
         >
           {due > 0 ? `Approve ${due} past hold` : "Nothing due"}
         </button>
@@ -390,10 +376,7 @@ export function CommissionsPanel({ commissions }: { commissions: CommissionRow[]
                         type="button"
                         className="btn-mini is-go"
                         disabled={pending}
-                        onClick={() => run(async () => {
-                          await approveCommission(c.id);
-                          return "Approved.";
-                        })}
+                        onClick={() => run(() => approveCommission(c.id))}
                       >
                         Approve
                       </button>
@@ -406,10 +389,7 @@ export function CommissionsPanel({ commissions }: { commissions: CommissionRow[]
                         onClick={() => {
                           const reason = prompt("Why is this being reversed?") ?? "";
                           if (!reason) return;
-                          run(async () => {
-                            await reverseCommission(c.id, reason);
-                            return "Reversed.";
-                          });
+                          run(() => reverseCommission(c.id, reason));
                         }}
                       >
                         Reverse
@@ -509,10 +489,7 @@ export function PayoutsPanel({ payouts }: { payouts: PayoutRow[] }) {
                           disabled={pending}
                           onClick={() => {
                             const reference = prompt("Transaction reference?") ?? "";
-                            run(async () => {
-                              await markPayoutPaid(p.id, reference);
-                              return `Marked $${p.amount.toFixed(2)} as paid.`;
-                            });
+                            run(() => markPayoutPaid(p.id, reference));
                           }}
                         >
                           Mark paid
@@ -524,10 +501,7 @@ export function PayoutsPanel({ payouts }: { payouts: PayoutRow[] }) {
                           onClick={() => {
                             const note = prompt("Why is this rejected?") ?? "";
                             if (!note) return;
-                            run(async () => {
-                              await rejectPayout(p.id, note);
-                              return "Rejected — the commissions are payable again.";
-                            });
+                            run(() => rejectPayout(p.id, note));
                           }}
                         >
                           Reject
@@ -716,9 +690,9 @@ export function SettingsPanel({ settings, tiers }: { settings: Settings; tiers: 
           disabled={pending}
           onClick={() =>
             run(async () => {
-              await saveProgramSettings(form);
-              await saveTiers(ladder);
-              return "Programme updated. New rates apply to commissions from now on.";
+              const saved = await saveProgramSettings(form);
+              if (!saved.ok) return saved;
+              return saveTiers(ladder);
             })
           }
         >
