@@ -74,19 +74,30 @@ scripts/release-robot.sh <slug> 1
 Freezes an audit copy + sha256 under `releases/v1/`, encrypts, uploads to
 `sources/<slug>/v1.mq5.enc` on MinIO, and prints the SQL for step 3.
 
-### 3. Create the catalog rows (DB)
+### 3. Create the catalog rows — admin UI (no SQL needed)
 
-`Robot` row — slug (must match the upload), name, descriptions, artworkUrl,
-sortOrder, `sourceVersion` = the version you just uploaded, `active` = true.
+`/dashboard/admin/robots` → **Add robot**: slug (must match the upload), name,
+short + long description, artwork URL, sort order. Then **Edit** → prices: one
+row per tier you want to sell, each with an amount and an active flag.
 
-`RobotPrice` rows — one per tier you want to sell (FREE_TRIAL / 1-month /
-3-month / 6-month / LIFETIME…), each with `amount` and `active`.
+Then **Upload source** on that row if you did not use `release-robot.sh` — it
+encrypts, stores the next immutable version, and bumps `sourceVersion` itself.
+Either path is fine; never both for the same version number.
 
-**Coming-soon pattern:** create the Robot with `active=true` but leave every
-RobotPrice `active=false` — the catalog shows the card with a "coming soon"
-badge and checkout excludes it. Flip prices active when you're ready to sell.
+The row's "On the catalog" column tells you the state you actually shipped:
 
-`scripts/setup-launch-catalog.js` is the idempotent example to copy from.
+| State | Means |
+|---|---|
+| **Selling** | listed AND a public tier has an active price |
+| **Coming soon** | listed, no active price — the card shows, checkout refuses |
+| **Hidden** | `active=false`, not on the catalog at all |
+
+**Coming-soon pattern:** create the robot, leave every price inactive. Flip
+prices active when you are ready to sell.
+
+(SQL equivalents still work — `scripts/setup-launch-catalog.js` and
+`scripts/onboard-precision-trader.js` are idempotent examples — but the UI is
+the supported path now.)
 
 ### 4. Windows VM — **NOTHING TO DO**
 
@@ -119,6 +130,9 @@ automatically once its rows exist.
 1. Edit `robots/<slug>/MASTER.mq5`, run `check-robot-source.js`.
 2. `scripts/release-robot.sh <slug> <N+1>` — versions are immutable, never
    overwrite an existing one.
-3. `UPDATE "Robot" SET "sourceVersion"=<N+1> WHERE slug='<slug>';`
+3. Bump the version so new jobs use it — either the SQL the script prints
+   (`UPDATE "Robot" SET "sourceVersion"=<N+1> WHERE slug='<slug>';`) or, if you
+   uploaded through `/dashboard/admin/robots` → **Upload source**, nothing: that
+   button bumps it for you.
 4. New compile jobs use the new version. Existing customers keep their current
    .ex5 until they request a rebuild — there is no forced re-issue.
