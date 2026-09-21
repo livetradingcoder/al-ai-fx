@@ -6,6 +6,8 @@ import { UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { cookies } from "next/headers";
 import { REF_COOKIE, referredDiscountFor } from "@/lib/affiliate";
+import { redeemCoupon, validateCoupon } from "@/lib/coupons";
+import { provisionSubscription } from "@/lib/subscriptions";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
@@ -18,6 +20,7 @@ type CreateSessionPayload = {
   provider?: string;
   currency?: string;
   robotSlug?: string;
+  couponCode?: string;
 };
 
 export async function POST(req: Request) {
@@ -86,24 +89,82 @@ export async function POST(req: Request) {
       );
     }
 
-    // A referred customer's first paid order is discounted. Resolved here, on
-    // the server, from the same price the catalog charges everyone else — the
-    // client never gets to name a discount.
+    // Two possible discounts, and they do NOT stack: whichever is cheaper for
+    // the customer wins. Stacking a 35% affiliate rate on top of a 15% referral
+    // discount on top of a coupon is how a sale ends up costing money.
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
     const discountPercent = await referredDiscountFor(email);
-    const chargeable =
-      discountPercent > 0
-        ? Math.round(resolved.amount * (100 - discountPercent)) / 100
-        : resolved.amount;
+    const referralPrice =
+      discountPercent > 0 ? round2((resolved.amount * (100 - discountPercent)) / 100) : resolved.amount;
+
+    const couponCodeRaw = (body.couponCode || "").trim();
+    let coupon: Awaited<ReturnType<typeof validateCoupon>> | null = null;
+    let couponPrice = resolved.amount;
+    if (couponCodeRaw) {
+      const check = await validateCoupon({ code: couponCodeRaw, robotSlug, tier, email });
+      if (!check.ok) {
+        return NextResponse.json({ error: check.reason }, { status: 400 });
+      }
+      coupon = check;
+      couponPrice = check.priceAfter;
+    }
+
+    const chargeable = Math.min(referralPrice, couponPrice);
+    const couponWon = coupon !== null && couponPrice <= referralPrice;
 
     const amount = chargeable.toFixed(2);
     const orderRef = crypto.randomUUID();
 
-    // The referral code the buyer arrived with. Paygate hands our callback URL
-    // back verbatim, which is the only way this survives: the webhook is called
-    // by Paygate, not by the buyer's browser, so there is no cookie to read
-    // there. Deliberately outside the HMAC — attribution is not authorisation,
-    // and forging a callback still requires the webhook secret.
     const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
+
+    // A code that zeroes the price skips Paygate — there is nothing to charge —
+    // but goes through the SAME provisioning call a paid order does, so the
+    // licence, email, MT5 lock, compile and download all behave identically.
+    // That is the point: a test buyer exercises the real funnel, not a stub.
+    if (chargeable <= 0) {
+      if (!coupon || !coupon.ok) {
+        return NextResponse.json({ error: "This plan requires payment." }, { status: 400 });
+      }
+      try {
+        const result = await provisionSubscription(
+          email,
+          tier,
+          robotSlug,
+          `COUPON-${coupon.code}-${orderRef}`,
+          0,
+          currency,
+          refCode,
+        );
+        await redeemCoupon({
+          couponId: coupon.couponId,
+          email,
+          robotSlug,
+          tier,
+          amountBefore: coupon.priceBefore,
+          amountAfter: 0,
+          userId: result.userId,
+          orderId: result.orderId ?? null,
+        });
+        console.warn(`[coupon] FREE checkout ${coupon.code} -> ${email} (${robotSlug}/${tier})`);
+        return NextResponse.json({
+          freeCheckout: true,
+          orderRef,
+          amount: "0.00",
+          currency,
+          couponCode: coupon.code,
+        });
+      } catch (err) {
+        if (
+          err instanceof UnknownTierError ||
+          err instanceof UnknownRobotError ||
+          err instanceof UnknownRobotPriceError
+        ) {
+          return NextResponse.json({ error: err.message }, { status: 400 });
+        }
+        throw err;
+      }
+    }
     const requestUrl = new URL(req.url);
     const callbackBase =
       process.env.PAYGATE_CALLBACK_URL_BASE ||
@@ -118,6 +179,8 @@ export async function POST(req: Request) {
     callbackUrl.searchParams.set("amount", amount);
     callbackUrl.searchParams.set("robot", robotSlug);
     if (refCode) callbackUrl.searchParams.set("ref", refCode);
+    // Redeemed on the callback, once the money actually arrives.
+    if (couponWon && coupon?.ok) callbackUrl.searchParams.set("coupon", coupon.code);
 
     // PHASE 6 SECURITY: robotSlug is bound into the HMAC to block robot-swap
     // replay (an unsigned slug would let an attacker swap the robot identity on
@@ -187,6 +250,8 @@ export async function POST(req: Request) {
       amount,
       listPrice: resolved.amount.toFixed(2),
       discountPercent,
+      couponCode: couponWon && coupon?.ok ? coupon.code : null,
+      couponLabel: couponWon && coupon?.ok ? coupon.label : null,
       ipnToken: walletJson.ipn_token || null,
       callbackUrl: walletJson.callback_url || callbackUrl.toString(),
     });

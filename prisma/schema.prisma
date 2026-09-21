@@ -96,6 +96,7 @@ model Robot {
   subscriptions Subscription[]
   compilations  Compilation[]
   prices        RobotPrice[]
+  coupons       Coupon[]
 
   @@index([active, sortOrder]) // catalog list query: where active order by sortOrder
 }
@@ -372,4 +373,59 @@ enum PayoutStatus {
   REQUESTED
   PAID
   REJECTED
+}
+
+// ===========================================================================
+// Coupons
+//
+// Built for test buyers first: a FREE coupon skips Paygate entirely and
+// provisions the subscription through the same code path a paid order uses,
+// so the licence, email, MT5 lock, compile and download all behave normally.
+// Percent/fixed codes are ordinary discounts on a real payment.
+// ===========================================================================
+
+model Coupon {
+  id             String      @id @default(cuid())
+  code           String      @unique // stored uppercase; compared uppercase
+  kind           CouponKind  @default(PERCENT)
+  value          Float       @default(100) // percent for PERCENT, dollars for FIXED, ignored for FREE
+  robotId        String? // null = any robot
+  robot          Robot?      @relation(fields: [robotId], references: [id], onDelete: Cascade)
+  tier           PricingTier? // null = any tier
+  maxRedemptions Int? // null = unlimited
+  redeemedCount  Int         @default(0)
+  oncePerEmail   Boolean     @default(true)
+  expiresAt      DateTime?
+  active         Boolean     @default(true)
+  note           String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  redemptions CouponRedemption[]
+
+  @@index([active])
+}
+
+enum CouponKind {
+  PERCENT
+  FIXED
+  FREE
+}
+
+/// One row per use. Also the audit trail for "who got this for nothing".
+model CouponRedemption {
+  id           String   @id @default(cuid())
+  couponId     String
+  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  email        String
+  userId       String?
+  orderId      String?
+  robotSlug    String
+  tier         String
+  amountBefore Float
+  amountAfter  Float
+  createdAt    DateTime @default(now())
+
+  @@index([couponId, createdAt])
+  @@index([email])
 }

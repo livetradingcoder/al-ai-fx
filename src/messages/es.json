@@ -379,7 +379,8 @@
     "searchClose": "cerrar",
     "guidedSetup": "Configuración",
     "affiliate": "Afiliados",
-    "manageAffiliates": "Programa de afiliados"
+    "manageAffiliates": "Programa de afiliados",
+    "manageCoupons": "Cupones"
   },
   "Nav": {}
 }

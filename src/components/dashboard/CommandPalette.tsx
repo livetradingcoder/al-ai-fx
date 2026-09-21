@@ -41,6 +41,7 @@ export default function CommandPalette() {
         { group: t("administration"), label: t("manageUsers"), href: "/dashboard/admin/users" },
         { group: t("administration"), label: t("manageRobots"), href: "/dashboard/admin/robots" },
         { group: t("administration"), label: t("manageAffiliates"), href: "/dashboard/admin/affiliates" },
+        { group: t("administration"), label: t("manageCoupons"), href: "/dashboard/admin/coupons" },
       );
     }
     return base;

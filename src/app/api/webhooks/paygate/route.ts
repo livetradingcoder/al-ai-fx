@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { provisionSubscription } from "@/lib/subscriptions";
+import { redeemCoupon, validateCoupon } from "@/lib/coupons";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { verifyPaygateSignature } from "@/lib/webhook-signature";
@@ -114,6 +115,26 @@ export async function GET(req: Request) {
         currency,
         url.searchParams.get("ref"),
       );
+
+      // A discounted (not free) coupon is consumed here, once the payment has
+      // actually landed — never at checkout, or an abandoned cart would burn a
+      // seat on a limited code.
+      const couponCode = url.searchParams.get("coupon");
+      if (couponCode && !result.duplicated) {
+        const check = await validateCoupon({ code: couponCode, robotSlug, tier, email });
+        if (check.ok) {
+          await redeemCoupon({
+            couponId: check.couponId,
+            email,
+            robotSlug,
+            tier,
+            amountBefore: check.priceBefore,
+            amountAfter: amount,
+            userId: result.userId,
+            orderId: result.orderId ?? null,
+          });
+        }
+      }
     } catch (err) {
       if (
         err instanceof UnknownTierError ||

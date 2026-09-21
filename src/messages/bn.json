@@ -379,7 +379,8 @@
     "searchClose": "বন্ধ",
     "guidedSetup": "সেটআপ",
     "affiliate": "অ্যাফিলিয়েট",
-    "manageAffiliates": "অ্যাফিলিয়েট প্রোগ্রাম"
+    "manageAffiliates": "অ্যাফিলিয়েট প্রোগ্রাম",
+    "manageCoupons": "কুপন"
   },
   "Nav": {}
 }

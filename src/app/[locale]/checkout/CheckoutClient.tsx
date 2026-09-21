@@ -53,6 +53,18 @@ function CheckoutContent() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Coupon state. The preview here is cosmetic — create-session re-validates
+  // and re-prices, so nothing typed in this box can change what is charged.
+  const [couponCode, setCouponCode] = useState("");
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [coupon, setCoupon] = useState<{
+    code: string;
+    label: string;
+    priceAfter: number;
+    free: boolean;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   // Robot + plan selection live in checkout so buyers can switch here.
   // Display prices come from the DB (per robot); the charge amount stays
   // server-authoritative in create-session (fail-closed resolveRobotPrice).
@@ -148,6 +160,48 @@ function CheckoutContent() {
     window.location.assign(buildCheckoutThankYouPath(locale, input.orderRef));
   }
 
+  // Re-checking on every robot/plan change would fight the user's typing, so
+  // a scope change just clears the applied code and they re-apply.
+  useEffect(() => {
+    setCoupon(null);
+    setCouponError(null);
+  }, [selectedSlug, tier]);
+
+  async function applyCoupon() {
+    const code = couponCode.trim();
+    if (!code) return;
+    setCouponChecking(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          robotSlug: selectedSlug,
+          tier,
+          email: email.trim().toLowerCase() || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setCoupon(null);
+        setCouponError(data.reason || data.error || "That code is not valid.");
+        return;
+      }
+      setCoupon({
+        code: data.code,
+        label: data.label,
+        priceAfter: data.priceAfter,
+        free: data.free,
+      });
+    } catch {
+      setCouponError("Could not check that code. Try again.");
+    } finally {
+      setCouponChecking(false);
+    }
+  }
+
   async function handlePaygateRedirect() {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
@@ -186,6 +240,7 @@ function CheckoutContent() {
           email: email.trim().toLowerCase(),
           currency: "USD",
           robotSlug: selectedSlug,
+          couponCode: coupon?.code ?? couponCode.trim() ?? "",
         }),
       });
 
@@ -195,7 +250,16 @@ function CheckoutContent() {
         currency?: string;
         error?: string;
         orderRef?: string;
+        freeCheckout?: boolean;
       };
+
+      // A code that covers the whole price provisions immediately — there is no
+      // payment page to send anyone to.
+      if (response.ok && data.freeCheckout) {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+        return;
+      }
 
       if (!response.ok || !data.checkoutUrl) {
         throw new Error(data.error || "Unable to initialize Paygate checkout.");
@@ -401,6 +465,57 @@ function CheckoutContent() {
                   }}
                 />
               </div>
+
+              {!isFreeTrial && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+                    Coupon code <span style={{ color: "var(--text-muted)" }}>(optional)</span>
+                  </label>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <input
+                      type="text"
+                      placeholder="e.g. TESTER2026"
+                      value={couponCode}
+                      onChange={(event) => {
+                        setCouponCode(event.target.value.toUpperCase());
+                        setCoupon(null);
+                        setCouponError(null);
+                      }}
+                      style={{
+                        flex: "1 1 180px",
+                        minWidth: 0,
+                        padding: "1rem",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--border-color)",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        fontFamily: "inherit",
+                        letterSpacing: "0.08em",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => void applyCoupon()}
+                      disabled={couponChecking || !couponCode.trim()}
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      {couponChecking ? "Checking…" : "Apply"}
+                    </button>
+                  </div>
+                  {coupon && (
+                    <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--accent-accent)" }}>
+                      {coupon.code} applied — {coupon.label}.{" "}
+                      {coupon.free
+                        ? "No payment needed; your licence is created straight away."
+                        : `You pay ${formatUsd(coupon.priceAfter)}.`}
+                    </p>
+                  )}
+                  {couponError && (
+                    <p style={{ margin: 0, fontSize: "0.88rem", color: "#fca5a5" }}>{couponError}</p>
+                  )}
+                </div>
+              )}
 
               <div className="checkout-inline-note">
                 <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", margin: 0 }}>
