@@ -39,12 +39,23 @@ export async function savePayoutDetails(method: string, address: string): Promis
   return { ok: true, message: "Payout details saved." };
 }
 
+/** Rolls back a payout whose commissions another request claimed first. */
+class CommissionsAlreadyClaimed extends Error {
+  constructor() {
+    super("Commissions were claimed by a concurrent payout request");
+    this.name = "CommissionsAlreadyClaimed";
+  }
+}
+
 /**
  * Turn approved commissions into a payout request.
  *
  * Only APPROVED rows count — anything still inside the refund hold is not
- * money yet. The commissions are stamped with the payout id in the same
- * transaction, so a double-click cannot request the same balance twice.
+ * money yet. Two requests can run at once (two tabs, a replayed POST) and
+ * both read the same rows, so the UPDATE that claims them only matches
+ * commissions that are still APPROVED and unclaimed. Postgres re-checks that
+ * WHERE after waiting for the other request to commit, so the loser claims
+ * fewer rows than it read, rolls back its payout and gets "Nothing to pay out".
  */
 export async function requestPayout(): Promise<ActionResult> {
   const userId = await signedInUserId();
@@ -78,11 +89,15 @@ export async function requestPayout(): Promise<ActionResult> {
         address: affiliate.payoutAddress,
       },
     });
-    await tx.commission.updateMany({
-      where: { id: { in: payable.map((c) => c.id) } },
+    const claimed = await tx.commission.updateMany({
+      where: { id: { in: payable.map((c) => c.id) }, status: "APPROVED", payoutId: null },
       data: { payoutId: created.id },
     });
+    if (claimed.count !== payable.length) throw new CommissionsAlreadyClaimed();
     return created;
+  }).catch((err: unknown) => {
+    if (err instanceof CommissionsAlreadyClaimed) return null;
+    throw err;
   });
   if (!payout) return { ok: false, error: "Nothing to pay out" };
 
