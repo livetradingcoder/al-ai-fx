@@ -1,19 +1,21 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { ActionResult } from "@/lib/action-result";
 import { joinProgram, requestPayout, savePayoutDetails } from "./actions";
 
 function useAction() {
   const [pending, start] = useTransition();
   const [notice, setNotice] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
-  const run = (fn: () => Promise<string | void>) =>
+  const run = (fn: () => Promise<ActionResult>) =>
     start(async () => {
       setNotice(null);
       try {
-        const text = await fn();
-        if (text) setNotice({ kind: "ok", text });
-      } catch (err) {
-        setNotice({ kind: "error", text: err instanceof Error ? err.message : "Something went wrong" });
+        const res = await fn();
+        if (!res.ok) setNotice({ kind: "error", text: res.error });
+        else if (res.message) setNotice({ kind: "ok", text: res.message });
+      } catch {
+        setNotice({ kind: "error", text: "Something went wrong" });
       }
     });
   return { pending, notice, run };
@@ -39,7 +41,7 @@ export function JoinCard({ rate }: { rate: number }) {
         type="button"
         className="btn-primary"
         disabled={pending}
-        onClick={() => run(async () => void (await joinProgram()))}
+        onClick={() => run(() => joinProgram())}
       >
         {pending ? "Setting up…" : "Get my link"}
       </button>
@@ -165,10 +167,7 @@ export function PayoutPanel({
             type="button"
             className="btn-mini"
             disabled={pending}
-            onClick={() => run(async () => {
-              await savePayoutDetails(form.method, form.address);
-              return "Payout details saved.";
-            })}
+            onClick={() => run(() => savePayoutDetails(form.method, form.address))}
           >
             Save details
           </button>
@@ -180,10 +179,7 @@ export function PayoutPanel({
           type="button"
           className="btn-primary btn-sm"
           disabled={pending || !canRequest}
-          onClick={() => run(async () => {
-            const res = await requestPayout();
-            return `Payout of $${res.amount.toFixed(2)} requested.`;
-          })}
+          onClick={() => run(() => requestPayout())}
         >
           {pending ? "Working…" : "Request payout"}
         </button>

@@ -5,25 +5,28 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { affiliateBalance, ensureAffiliate, getSettings } from "@/lib/affiliate";
+import type { ActionResult } from "@/lib/action-result";
 
-async function requireUser() {
+async function signedInUserId() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) throw new Error("Not signed in");
-  return session.user.id;
+  return session?.user?.id ?? null;
 }
 
 /** Joining is instant — there is nothing to review before someone shares a link. */
-export async function joinProgram() {
-  const userId = await requireUser();
-  const affiliate = await ensureAffiliate(userId);
+export async function joinProgram(): Promise<ActionResult> {
+  const userId = await signedInUserId();
+  if (!userId) return { ok: false, error: "Not signed in" };
+  await ensureAffiliate(userId);
   revalidatePath("/dashboard/affiliate");
-  return { code: affiliate.code };
+  // No message: the page swaps the join card for the dashboard.
+  return { ok: true, message: "" };
 }
 
-export async function savePayoutDetails(method: string, address: string) {
-  const userId = await requireUser();
+export async function savePayoutDetails(method: string, address: string): Promise<ActionResult> {
+  const userId = await signedInUserId();
+  if (!userId) return { ok: false, error: "Not signed in" };
   const affiliate = await prisma.affiliate.findUnique({ where: { userId } });
-  if (!affiliate) throw new Error("You are not in the program yet");
+  if (!affiliate) return { ok: false, error: "You are not in the program yet" };
 
   await prisma.affiliate.update({
     where: { id: affiliate.id },
@@ -33,6 +36,7 @@ export async function savePayoutDetails(method: string, address: string) {
     },
   });
   revalidatePath("/dashboard/affiliate");
+  return { ok: true, message: "Payout details saved." };
 }
 
 /**
@@ -42,17 +46,20 @@ export async function savePayoutDetails(method: string, address: string) {
  * money yet. The commissions are stamped with the payout id in the same
  * transaction, so a double-click cannot request the same balance twice.
  */
-export async function requestPayout() {
-  const userId = await requireUser();
+export async function requestPayout(): Promise<ActionResult> {
+  const userId = await signedInUserId();
+  if (!userId) return { ok: false, error: "Not signed in" };
   const affiliate = await prisma.affiliate.findUnique({ where: { userId } });
-  if (!affiliate) throw new Error("You are not in the program yet");
-  if (affiliate.status !== "ACTIVE") throw new Error("Your affiliate account is suspended");
-  if (!affiliate.payoutAddress) throw new Error("Add your payout details first");
+  if (!affiliate) return { ok: false, error: "You are not in the program yet" };
+  if (affiliate.status !== "ACTIVE") {
+    return { ok: false, error: "Your affiliate account is suspended" };
+  }
+  if (!affiliate.payoutAddress) return { ok: false, error: "Add your payout details first" };
 
   const settings = await getSettings();
   const balance = await affiliateBalance(affiliate.id);
   if (balance.approved < settings.minPayout) {
-    throw new Error(`You need at least $${settings.minPayout} approved to request a payout`);
+    return { ok: false, error: `You need at least $${settings.minPayout} approved to request a payout` };
   }
 
   const payout = await prisma.$transaction(async (tx) => {
@@ -60,7 +67,7 @@ export async function requestPayout() {
       where: { affiliateId: affiliate.id, status: "APPROVED", payoutId: null },
       select: { id: true, amount: true },
     });
-    if (payable.length === 0) throw new Error("Nothing to pay out");
+    if (payable.length === 0) return null;
 
     const amount = Math.round(payable.reduce((sum, c) => sum + c.amount, 0) * 100) / 100;
     const created = await tx.affiliatePayout.create({
@@ -77,7 +84,8 @@ export async function requestPayout() {
     });
     return created;
   });
+  if (!payout) return { ok: false, error: "Nothing to pay out" };
 
   revalidatePath("/dashboard/affiliate");
-  return { amount: payout.amount };
+  return { ok: true, message: `Payout of $${payout.amount.toFixed(2)} requested.` };
 }

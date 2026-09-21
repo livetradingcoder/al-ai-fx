@@ -11,45 +11,50 @@ import type { ActionResult } from "@/lib/action-result";
 
 type Role = "USER" | "ADMIN";
 
-export async function toggleBlockUser(userId: string, currentBlockStatus: boolean) {
+export async function toggleBlockUser(userId: string, currentBlockStatus: boolean): Promise<ActionResult> {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
+    return { ok: false, error: "Unauthorized" };
   }
 
   // Prevent blocking self
   if (userId === session.user.id) {
-    throw new Error("You cannot block your own account");
+    return { ok: false, error: "You cannot block your own account" };
   }
 
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: { isBlocked: !currentBlockStatus },
+    select: { email: true },
   });
 
   revalidatePath("/dashboard/admin/users");
-  return { success: true };
+  return {
+    ok: true,
+    message: currentBlockStatus ? `${user.email} can sign in again.` : `${user.email} is blocked.`,
+  };
 }
 
-export async function deleteUser(userId: string) {
+export async function deleteUser(userId: string): Promise<ActionResult> {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
+    return { ok: false, error: "Unauthorized" };
   }
 
   // Prevent deleting self
   if (userId === session.user.id) {
-    throw new Error("You cannot delete your own account");
+    return { ok: false, error: "You cannot delete your own account" };
   }
 
   // Perform a soft delete by marking the user as deleted in the database.
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: { isDeleted: true },
+    select: { email: true },
   });
 
   revalidatePath("/dashboard/admin/users");
-  return { success: true };
+  return { ok: true, message: `${user.email} deleted.` };
 }
 
 /**

@@ -78,11 +78,8 @@ export default function UsersTable({
     setLoadingId(user.id);
     setNotice(null);
     try {
-      await toggleBlockUser(user.id, user.isBlocked);
-      setNotice({
-        kind: "ok",
-        text: user.isBlocked ? `${user.email} can sign in again.` : `${user.email} is blocked.`,
-      });
+      const res = await toggleBlockUser(user.id, user.isBlocked);
+      setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
     } catch (error) {
       fail(error, "Failed to update block status");
     } finally {
@@ -102,8 +99,8 @@ export default function UsersTable({
     setLoadingId(user.id);
     setNotice(null);
     try {
-      await deleteUser(user.id);
-      setNotice({ kind: "ok", text: `${user.email} deleted.` });
+      const res = await deleteUser(user.id);
+      setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
     } catch (error) {
       fail(error, "Failed to delete user");
     } finally {
