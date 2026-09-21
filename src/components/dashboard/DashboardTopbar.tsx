@@ -20,9 +20,7 @@ export default function DashboardTopbar() {
     ? t("administration")
     : /\/(profile|settings|billing)$/.test(pathname)
       ? t("accountGroup")
-      : pathname.includes("/support")
-        ? t("helpGroup")
-        : t("menu");
+      : t("menu");
 
   const title = pathname.includes("/admin/users")
     ? t("manageUsers")

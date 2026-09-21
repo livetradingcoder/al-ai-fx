@@ -20,6 +20,16 @@ declare global {
   }
 }
 
+/**
+ * Opens the chat — support lives there, not on a page. If the widget never
+ * loaded (an extension can block it), falls back to email so the click still
+ * reaches someone.
+ */
+export function openSupportChat() {
+  if (window.ChatWidget) window.ChatWidget("open");
+  else window.location.href = "mailto:support@al-ai-fx.xyz";
+}
+
 export default function NdeskWidget() {
   const { data: session, status } = useSession();
 

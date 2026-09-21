@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { openSupportChat } from "@/components/NdeskWidget";
 import {
   CLIENT_POLL_INITIAL_MS,
   CLIENT_POLL_MAX_MS,
@@ -225,12 +226,13 @@ export default function LicenseManager({
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
             Your build did not complete after several automatic retries. Our team has been notified — you have not been charged for a failed build. If you need anything in the meantime, reach out to us directly.
           </p>
-          <Link
-            href="/support"
-            style={{ display: 'inline-block', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-sm)', background: '#ff4444', color: '#fff', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
+          <button
+            type="button"
+            onClick={openSupportChat}
+            style={{ display: 'inline-block', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-sm)', background: '#ff4444', color: '#fff', fontSize: '0.85rem', fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           >
             Contact support
-          </Link>
+          </button>
         </div>
       )}
 

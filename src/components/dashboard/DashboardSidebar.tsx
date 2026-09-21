@@ -4,6 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
+import { openSupportChat } from "@/components/NdeskWidget";
 import { Link } from "@/i18n/routing";
 
 /* Six small glyphs for the rail — inline, so the dashboard gains no icon
@@ -129,7 +130,10 @@ export default function DashboardSidebar() {
 
       <nav className="rail-group" aria-label={t("helpGroup")}>
         <p className="rail-group-label">{t("helpGroup")}</p>
-        {railLink("/dashboard/support", Icon.support, t("support"))}
+        <button type="button" className="rail-link rail-button" onClick={openSupportChat}>
+          {Icon.support}
+          {t("support")}
+        </button>
       </nav>
 
       {isAdmin ? (
@@ -146,7 +150,7 @@ export default function DashboardSidebar() {
       <div className="rail-group">
         <button
           type="button"
-          className="rail-link rail-signout"
+          className="rail-link rail-button"
           onClick={() => void signOut({ callbackUrl: `${localePrefix}/login` })}
         >
           {Icon.logout}

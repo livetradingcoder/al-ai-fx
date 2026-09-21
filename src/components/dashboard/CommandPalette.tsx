@@ -32,7 +32,6 @@ export default function CommandPalette() {
       { group: t("accountGroup"), label: t("billing"), href: "/dashboard/billing" },
       { group: t("accountGroup"), label: t("profile"), href: "/dashboard/profile" },
       { group: t("accountGroup"), label: t("settings"), href: "/dashboard/settings" },
-      { group: t("helpGroup"), label: t("support"), href: "/dashboard/support" },
       { group: t("helpGroup"), label: t("openTutorial"), href: "/tutorials/1" },
     ];
     if (isAdmin) {
@@ -99,8 +98,6 @@ export default function CommandPalette() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  useEffect(() => setCursor(0), [query]);
-
   let lastGroup = "";
 
   return (
@@ -134,7 +131,10 @@ export default function CommandPalette() {
               <input
                 ref={inputRef}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setCursor(0);
+                }}
                 placeholder={t("searchPlaceholder")}
               />
               <kbd>esc</kbd>
