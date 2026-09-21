@@ -128,7 +128,7 @@ export default function CouponsAdmin({
             <input
               className="enroll-input"
               style={{ marginTop: "8px", letterSpacing: "0.08em" }}
-              placeholder="TESTER2026"
+              placeholder="LAUNCH-2026"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
             />

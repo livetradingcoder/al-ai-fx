@@ -500,7 +500,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <input
                       type="text"
-                      placeholder="e.g. TESTER2026"
+                      placeholder="Enter code"
                       value={couponCode}
                       onChange={(event) => {
                         setCouponCode(event.target.value.toUpperCase());

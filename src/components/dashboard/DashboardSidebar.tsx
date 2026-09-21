@@ -138,6 +138,8 @@ export default function DashboardSidebar() {
           {railLink("/dashboard/admin", Icon.admin, t("adminOverview"))}
           {railLink("/dashboard/admin/users", Icon.users, t("manageUsers"))}
           {railLink("/dashboard/admin/robots", Icon.robots, t("manageRobots"))}
+          {railLink("/dashboard/admin/affiliates", Icon.affiliate, t("manageAffiliates"))}
+          {railLink("/dashboard/admin/coupons", Icon.coupons, t("manageCoupons"))}
         </nav>
       ) : null}
 
