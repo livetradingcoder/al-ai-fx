@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Mt5Mock from "./Mt5Mock";
+import { getCompiledFilename } from "@/lib/compiler-filename";
 
 type Props = {
   subscriptionId: string | null;
   tier: string | null;
+  robotName: string | null;
+  robotSlug: string | null;
   mt5Account: string | null;
   jobId: string | null;
   jobStatus: string | null;
@@ -33,6 +36,8 @@ const Check = (
 export default function Onboarding({
   subscriptionId,
   tier,
+  robotName,
+  robotSlug,
   mt5Account,
   jobId,
   jobStatus,
@@ -40,6 +45,12 @@ export default function Onboarding({
   const router = useRouter();
   const hasAccount = Boolean(mt5Account);
   const hasBuild = jobStatus === "COMPLETED" && Boolean(jobId);
+
+  // Name the customer's own robot everywhere, and show the exact filename the
+  // download will produce.
+  const slug = robotSlug ?? "goldbot";
+  const eaName = hasBuild && jobId ? getCompiledFilename(jobId, { robotSlug: slug }) : `AL-ai-FX_${slug}.ex5`;
+  const navigatorName = `AL-ai-FX_${slug}…`;
 
   const firstIncomplete = !hasAccount ? 1 : !hasBuild ? 2 : 3;
   const [step, setStep] = useState(firstIncomplete);
@@ -194,7 +205,7 @@ export default function Onboarding({
 
             {hasBuild ? (
               <>
-                <p className="plate plate-sm">GoldBot_v2.0_{tier}.ex5</p>
+                <p className="plate plate-sm">{eaName}</p>
                 <p style={{ marginTop: "20px" }}>
                   <a
                     href={`/api/compiler/download?jobId=${jobId}`}
@@ -232,7 +243,7 @@ export default function Onboarding({
             <p className="card-label">Step 4 — Install</p>
             <h2 className="onboarding-title">Put the file where MetaTrader looks.</h2>
 
-            <Mt5Mock focus="navigator" />
+            <Mt5Mock focus="navigator" eaName={navigatorName} />
 
             <ol className="next-steps" style={{ marginTop: "22px" }}>
               <li>In MetaTrader: <strong>File → Open Data Folder</strong>.</li>
@@ -258,7 +269,7 @@ export default function Onboarding({
             <p className="card-label">Step 5 — Run it</p>
             <h2 className="onboarding-title">Drag it onto a gold chart.</h2>
 
-            <Mt5Mock focus="run" />
+            <Mt5Mock focus="run" eaName={navigatorName} />
 
             <ol className="next-steps" style={{ marginTop: "22px" }}>
               <li>Open an <strong>XAUUSD</strong> chart (M5 is a good default).</li>

@@ -254,7 +254,7 @@
     "step1Title": "Paso 1: descarga tu compilación única",
     "step1Desc": "Navegue hasta su Panel GoldBot y localice su licencia activa. Haga clic en el botón Compilar y descargar para activar el servicio de Windows para compilar un .ex5 nuevo bloqueado en su número de cuenta.",
     "step2Title": "Paso 2: abra la carpeta de datos MT5",
-    "step2Desc": "Inicie MetaTrader 5. Haga clic en Archivo en la navegación superior y seleccione Abrir carpeta de datos. Navegue hasta MQL5/Expertos y pegue el GoldBot_v2.ex5 descargado en esta carpeta.",
+    "step2Desc": "Inicie MetaTrader 5. Haga clic en Archivo en la navegación superior y seleccione Abrir carpeta de datos. Navegue hasta MQL5/Expertos y pegue el .ex5 descargado en esta carpeta.",
     "step3Title": "Paso 3: Actualizar la lista de Expertos",
     "tut2Title": "Configuración de los parámetros de cobertura inteligente",
     "tut2Duration": "10 minutos de lectura",

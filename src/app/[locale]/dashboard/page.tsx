@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getCompiledFilename } from "@/lib/compiler-filename";
 
 const LockIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -27,6 +28,7 @@ export default async function DashboardOverview() {
         where: { status: "ACTIVE" },
         include: {
           compilations: { orderBy: { createdAt: "desc" }, take: 1 },
+          robot: { select: { name: true, slug: true } },
         },
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -39,6 +41,16 @@ export default async function DashboardOverview() {
   const hasPlan = Boolean(activeSub);
   const hasAccount = Boolean(activeSub?.mt5AccountNumber);
   const hasBuild = build?.status === "COMPLETED" && Boolean(build.id);
+
+  // The same name the download serves, so what a customer reads here matches
+  // the file that lands in their Downloads folder — and names THEIR robot,
+  // not whichever one we happened to launch first.
+  const buildFilename =
+    hasBuild && build && activeSub
+      ? getCompiledFilename(build.id, { robotSlug: activeSub.robot.slug })
+      : activeSub
+        ? `AL-ai-FX_${activeSub.robot.slug}.ex5`
+        : "";
 
   // The checklist is the page's spine: it reflects real rows, so a customer
   // always sees exactly which of the four things is still outstanding.
@@ -143,9 +155,8 @@ export default async function DashboardOverview() {
           <div className="card licence-head" style={{ marginBottom: 0 }}>
             <div style={{ minWidth: 0 }}>
               <p className="card-label">{t("lockedBuild")}</p>
-              <p className="plate plate-sm">
-                GoldBot_v2.0_{activeSub?.tier}.ex5
-              </p>
+              <p style={{ fontWeight: 600, margin: "4px 0 8px" }}>{activeSub?.robot.name}</p>
+              <p className="plate plate-sm">{buildFilename}</p>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.86rem", marginTop: "10px" }}>
                 {hasAccount
                   ? t("lockedToAccount", { account: activeSub?.mt5AccountNumber ?? "" })

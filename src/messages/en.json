@@ -254,7 +254,7 @@
     "step1Title": "Step 1: Download your unique Build",
     "step1Desc": "Navigate to your GoldBot Dashboard and locate your active license. Click the Compile & Download button to trigger the windows service to compile a fresh .ex5 locked to your account number.",
     "step2Title": "Step 2: Open MT5 Data Folder",
-    "step2Desc": "Launch MetaTrader 5. Click File in the top navigation, and select Open Data Folder. Navigate to MQL5 / Experts and paste the downloaded GoldBot_v2.ex5 into this folder.",
+    "step2Desc": "Launch MetaTrader 5. Click File in the top navigation, and select Open Data Folder. Navigate to MQL5 / Experts and paste the downloaded .ex5 into this folder.",
     "step3Title": "Step 3: Refresh the Experts list",
     "tut2Title": "Configuring the Smart Hedging Parameters",
     "tut2Duration": "10 mins read",

@@ -17,6 +17,8 @@ interface LicenseManagerProps {
     mt5AccountNumber: string | null;
     status: string;
   };
+  robotName: string;
+  robotSlug: string;
   latestCompilation: {
     id: string;
     status: string;
@@ -25,7 +27,12 @@ interface LicenseManagerProps {
   } | null;
 }
 
-export default function LicenseManager({ subscription, latestCompilation: initialCompilation }: LicenseManagerProps) {
+export default function LicenseManager({
+  subscription,
+  robotName,
+  robotSlug,
+  latestCompilation: initialCompilation,
+}: LicenseManagerProps) {
   const [mt5Account, setMt5Account] = useState(subscription.mt5AccountNumber || "");
   const [isEditing, setIsEditing] = useState(!subscription.mt5AccountNumber);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -114,7 +121,8 @@ export default function LicenseManager({ subscription, latestCompilation: initia
     <div className="glass-panel" style={{ marginBottom: "2rem" }}>
       <div className="licence-head">
         <div>
-          <h3 className="licence-title">GoldBot_v2.0_{subscription.tier}</h3>
+          <h3 className="licence-title">{robotName}</h3>
+          <p className="robot-slug">AL-ai-FX_{robotSlug}.ex5</p>
           <p style={{ color: "var(--accent-primary)", fontSize: "0.9rem", fontWeight: 600 }}>{subscription.tier.replace("_", " ")} {t("access")}</p>
         </div>
         <div>

@@ -254,7 +254,7 @@
     "step1Title": "Schritt 1: Laden Sie Ihren einzigartigen Build herunter",
     "step1Desc": "Navigieren Sie zu Ihrem GoldBot-Dashboard und suchen Sie Ihre aktive Lizenz. Klicken Sie auf die Schaltfläche „Kompilieren und herunterladen“, um den Windows-Dienst zum Kompilieren einer neuen .ex5-Datei zu veranlassen, die an Ihre Kontonummer gebunden ist.",
     "step2Title": "Schritt 2: Öffnen Sie den MT5-Datenordner",
-    "step2Desc": "Starten Sie MetaTrader 5. Klicken Sie in der oberen Navigation auf Datei und wählen Sie Datenordner öffnen. Navigieren Sie zu MQL5 / Experts und fügen Sie die heruntergeladene GoldBot_v2.ex5 in diesen Ordner ein.",
+    "step2Desc": "Starten Sie MetaTrader 5. Klicken Sie in der oberen Navigation auf Datei und wählen Sie Datenordner öffnen. Navigieren Sie zu MQL5 / Experts und fügen Sie die heruntergeladene .ex5 in diesen Ordner ein.",
     "step3Title": "Schritt 3: Experten-Liste aktualisieren",
     "tut2Title": "Konfigurieren der Smart Hedging-Parameter",
     "tut2Duration": "10 Minuten gelesen",

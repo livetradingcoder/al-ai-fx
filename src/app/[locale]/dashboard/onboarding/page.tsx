@@ -12,7 +12,10 @@ export default async function OnboardingPage() {
 
   const sub = await prisma.subscription.findFirst({
     where: { userId: session.user.id, status: "ACTIVE" },
-    include: { compilations: { orderBy: { createdAt: "desc" }, take: 1 } },
+    include: {
+      compilations: { orderBy: { createdAt: "desc" }, take: 1 },
+      robot: { select: { name: true, slug: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -30,6 +33,8 @@ export default async function OnboardingPage() {
       <Onboarding
         subscriptionId={sub?.id ?? null}
         tier={sub?.tier ?? null}
+        robotName={sub?.robot.name ?? null}
+        robotSlug={sub?.robot.slug ?? null}
         mt5Account={sub?.mt5AccountNumber ?? null}
         jobId={job?.id ?? null}
         jobStatus={job?.status ?? null}

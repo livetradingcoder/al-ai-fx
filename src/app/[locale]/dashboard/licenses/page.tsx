@@ -23,7 +23,8 @@ export default async function LicensesPage() {
           compilations: {
             orderBy: { createdAt: "desc" },
             take: 1
-          }
+          },
+          robot: { select: { name: true, slug: true } }
         }
       }
     }
@@ -40,10 +41,12 @@ export default async function LicensesPage() {
 
       {activeSubs.length > 0 ? (
         activeSubs.map((sub) => (
-          <LicenseManager 
-            key={sub.id} 
-            subscription={sub} 
-            latestCompilation={sub.compilations[0] || null} 
+          <LicenseManager
+            key={sub.id}
+            subscription={sub}
+            robotName={sub.robot.name}
+            robotSlug={sub.robot.slug}
+            latestCompilation={sub.compilations[0] || null}
           />
         ))
       ) : (
