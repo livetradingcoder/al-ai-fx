@@ -3184,16 +3184,10 @@ html:lang(ar) .landing-hero-title {
   letter-spacing: -0.02em;
 }
 
+/* Spacing only. This used to be a disabled span, so it carried a dimmed,
+   not-allowed look and a suppressed hover; it is a working button now. */
 .pricing-tier-preview-cta {
   margin-top: 16px;
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.pricing-tier-preview-cta:hover {
-  transform: none;
-  background: transparent;
-  border-color: var(--border-color);
 }
 
 .private-access-section {
