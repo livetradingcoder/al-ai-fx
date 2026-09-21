@@ -1,11 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
+import type { UserRole } from "@prisma/client";
 import type { NextAuthOptions, Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { verifyMagicLinkToken } from "@/lib/magic-links";
+
+const ACCOUNT_STATE = { role: true, isBlocked: true, isDeleted: true } as const;
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -146,35 +149,52 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // Reject tokens whose session was revoked. Fail OPEN on database
-      // trouble — a DB blip must not sign every customer out.
-      if (typeof token.sid === "string") {
-        try {
+      // Re-check the account on every request, so a revoked session, a block,
+      // a delete or a role change applies on the next page load — not when a
+      // 30-day token happens to expire. Fail OPEN on database trouble — a DB
+      // blip must not sign every customer out.
+      try {
+        let account: { role: UserRole; isBlocked: boolean; isDeleted: boolean } | null;
+
+        if (typeof token.sid === "string") {
           const row = await prisma.userSession.findUnique({
             where: { jti: token.sid },
-            select: { revokedAt: true, lastSeenAt: true },
+            select: { revokedAt: true, lastSeenAt: true, user: { select: ACCOUNT_STATE } },
           });
-          // Returning null here breaks NextAuth's session callback, so strip
-          // the identity instead: no id/role means our pages treat it as
-          // signed out and redirect to /login.
-          if (!row || row.revokedAt) {
-            delete token.id;
-            delete token.role;
-            delete token.sid;
-            return token;
-          }
+          account = row && !row.revokedAt ? row.user : null;
 
           // Throttle the write: once every 10 minutes is enough to show
           // "last used" without a database write per request.
-          if (Date.now() - row.lastSeenAt.getTime() > 10 * 60_000) {
+          if (account && row && Date.now() - row.lastSeenAt.getTime() > 10 * 60_000) {
             await prisma.userSession.update({
               where: { jti: token.sid },
               data: { lastSeenAt: new Date() },
             });
           }
-        } catch (err) {
-          console.error("[Auth] Session check failed (allowing):", err);
+        } else if (typeof token.id === "string") {
+          // Tokens issued before sessions were recorded carry no sid. They
+          // can't be revoked, but they must not outlive a block or a role change.
+          account = await prisma.user.findUnique({
+            where: { id: token.id },
+            select: ACCOUNT_STATE,
+          });
+        } else {
+          return token;
         }
+
+        // Returning null here breaks NextAuth's session callback, so strip
+        // the identity instead: no id/role means our pages treat it as
+        // signed out and redirect to /login.
+        if (!account || account.isBlocked || account.isDeleted) {
+          delete token.id;
+          delete token.role;
+          delete token.sid;
+          return token;
+        }
+
+        token.role = account.role;
+      } catch (err) {
+        console.error("[Auth] Session check failed (allowing):", err);
       }
       return token;
     },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toggleBlockUser, deleteUser } from "./actions";
+import { toggleBlockUser, deleteUser, setUserRole } from "./actions";
 import {
   TablePager,
   TableToolbar,
@@ -94,11 +94,9 @@ export default function UsersTable({
     if (user.id === currentUserId) {
       return setNotice({ kind: "error", text: "You cannot delete yourself." });
     }
-    if (
-      !confirm(
-        `Permanently delete ${user.email}? Their orders and subscriptions are removed too.`,
-      )
-    ) {
+    // Soft delete: the account can no longer sign in, but its orders and
+    // licences stay on record.
+    if (!confirm(`Delete ${user.email}? They won't be able to sign in. Orders and licences stay on record.`)) {
       return;
     }
     setLoadingId(user.id);
@@ -108,6 +106,25 @@ export default function UsersTable({
       setNotice({ kind: "ok", text: `${user.email} deleted.` });
     } catch (error) {
       fail(error, "Failed to delete user");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function handleRole(user: UserData) {
+    const makeAdmin = user.role !== "ADMIN";
+    const question = makeAdmin
+      ? `Make ${user.email} an admin? They will see every customer, order and licence, and can create free coupons.`
+      : `Remove admin access from ${user.email}? They keep their account and licences.`;
+    if (!confirm(question)) return;
+
+    setLoadingId(user.id);
+    setNotice(null);
+    try {
+      const res = await setUserRole(user.id, makeAdmin ? "ADMIN" : "USER");
+      setNotice(res.ok ? { kind: "ok", text: res.message } : { kind: "error", text: res.error });
+    } catch (error) {
+      fail(error, "Failed to change role");
     } finally {
       setLoadingId(null);
     }
@@ -169,7 +186,7 @@ export default function UsersTable({
                     </span>
                   </td>
 
-                  <td data-label="Role">{user.role}</td>
+                  <td data-label="Role">{user.role === "ADMIN" ? "Admin" : "Customer"}</td>
 
                   <td data-label="Active licences">{activeCount(user)}</td>
 
@@ -192,6 +209,14 @@ export default function UsersTable({
                         </span>
                       ) : (
                         <>
+                          <button
+                            type="button"
+                            className="btn-mini"
+                            onClick={() => handleRole(user)}
+                            disabled={isLoading}
+                          >
+                            {user.role === "ADMIN" ? "Remove admin" : "Make admin"}
+                          </button>
                           <button
                             type="button"
                             className={`btn-mini ${user.isBlocked ? "is-go" : ""}`}

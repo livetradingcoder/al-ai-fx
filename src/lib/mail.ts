@@ -305,6 +305,109 @@ export async function sendResetPasswordEmail(email: string, magicLinkUrl: string
   console.log(`[Mail] Password reset email sent to ${email}`);
 }
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+
+/**
+ * Sent when an admin adds someone from the Users page. The link is the
+ * standard 30-minute magic link — deliberately not a longer-lived one, since
+ * for an admin it is a bearer credential sitting in an inbox. Returns false
+ * when mail is not configured, so the admin can be told to pass it on.
+ */
+export async function sendAccountInviteEmail(input: {
+  email: string;
+  magicLinkUrl: string;
+  role: "USER" | "ADMIN";
+}) {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping account invite.");
+    return false;
+  }
+
+  const isAdmin = input.role === "ADMIN";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Open the dashboard",
+    buttonUrl: input.magicLinkUrl,
+    eyebrow: isAdmin ? "Admin access" : "Your account",
+    title: isAdmin ? "You're an AL-ai-FX admin" : "Your AL-ai-FX account is ready",
+    intro: isAdmin
+      ? "You now have admin access to the AL-ai-FX dashboard — customers, orders, licences, robots and coupons."
+      : "An AL-ai-FX account has been set up for you. The button below signs you straight in.",
+    detailLines: [
+      `Email: ${escapeHtml(input.email)}`,
+      `This link works for 30 minutes. After that, get a fresh one at ${baseUrl}/forgot-password with this email address.`,
+      "Once you're in, you can set a password under Profile.",
+    ],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email: input.email }],
+    subject: isAdmin ? "You've been given admin access to AL-ai-FX" : "Your AL-ai-FX account is ready",
+    html,
+    text,
+    category: "Authentication",
+  });
+  console.log(`[Mail] Account invite (${input.role}) sent to ${input.email}`);
+  return true;
+}
+
+/**
+ * Every grant or removal of admin access goes to the alert inbox. If an admin
+ * session were ever hijacked and used to mint a second admin, this email is
+ * how anyone would find out. Best-effort: never throws.
+ */
+export async function sendAdminRoleAlertEmail(input: {
+  email: string;
+  granted: boolean;
+  by: string;
+}) {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping admin role alert.");
+    return;
+  }
+  const to = (process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || "").toLowerCase();
+  if (!to) {
+    console.warn("[Mail] No ADMIN_ALERT_EMAIL or SMTP_FROM_EMAIL configured. Skipping admin role alert.");
+    return;
+  }
+
+  const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
+  const who = escapeHtml(input.email);
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Review users",
+    buttonUrl: `${baseUrl}/dashboard/admin/users`,
+    eyebrow: "Security alert",
+    title: input.granted ? "Admin access granted" : "Admin access removed",
+    intro: input.granted
+      ? `${who} can now use the admin dashboard.`
+      : `${who} no longer has admin access.`,
+    detailLines: [
+      `Changed by: ${escapeHtml(input.by)}`,
+      `When: ${new Date().toUTCString()}`,
+      "Didn't expect this? Undo it on the Users page, then use “Sign out of every device” under Settings.",
+    ],
+  });
+
+  try {
+    await client.send({
+      from: sender,
+      to: [{ email: to }],
+      subject: input.granted
+        ? `[AL-ai-FX] ${input.email} is now an admin`
+        : `[AL-ai-FX] Admin access removed from ${input.email}`,
+      html,
+      text,
+      category: "AdminAlert",
+    });
+    console.log(`[Mail] Admin role alert sent to ${to}`);
+  } catch (err) {
+    console.error("[Mail] Admin role alert send failed:", err);
+  }
+}
+
 type AdminAlertKind =
   | { kind: "stale-heartbeat"; lastSeenAgoSeconds: number | null }
   | { kind: "job-failed"; jobId: string; attempts: number; errorMessage?: string };
