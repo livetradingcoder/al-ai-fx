@@ -40,7 +40,7 @@ function formatUsd(amount: number): string {
     : `$${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
-function CheckoutContent() {
+function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
   const t = useTranslations("Checkout");
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -134,6 +134,17 @@ function CheckoutContent() {
   };
   const robotName = robot?.name ?? robotNameParam;
   const isFreeTrial = tier === "free-trial";
+
+  // Mirrors the server rule in create-session: a coupon and the referral
+  // discount never stack — whichever is cheaper for the buyer wins.
+  const referralPrice =
+    referralDiscount > 0 && !isFreeTrial
+      ? Math.round(displayAmount * (100 - referralDiscount)) / 100
+      : null;
+  const payable = coupon
+    ? Math.min(coupon.priceAfter, referralPrice ?? displayAmount)
+    : referralPrice ?? displayAmount;
+  const discounted = payable < displayAmount;
 
   async function openThankYouFlow(input: {
     amount: number;
@@ -625,8 +636,29 @@ function CheckoutContent() {
               }}
             >
               <span>{t("total")}</span>
-              <span style={{ color: "var(--accent-primary)" }}>{selectedPlan.price}</span>
+              <span style={{ color: "var(--accent-primary)" }}>
+                {discounted && (
+                  <span
+                    style={{
+                      color: "var(--text-muted)",
+                      textDecoration: "line-through",
+                      fontSize: "1rem",
+                      marginRight: "0.5rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {selectedPlan.price}
+                  </span>
+                )}
+                {formatUsd(payable)}
+              </span>
             </div>
+
+            {referralPrice !== null && !coupon && (
+              <p style={{ fontSize: "0.85rem", color: "var(--accent-accent)", marginTop: "0.5rem" }}>
+                Referral discount applied — {referralDiscount}% off your first licence.
+              </p>
+            )}
 
             <p
               style={{
@@ -645,7 +677,7 @@ function CheckoutContent() {
   );
 }
 
-export default function CheckoutClient() {
+export default function CheckoutClient({ referralDiscount = 0 }: { referralDiscount?: number }) {
   const t = useTranslations("Checkout");
 
   return (
@@ -663,7 +695,7 @@ export default function CheckoutClient() {
         </div>
       }
     >
-      <CheckoutContent />
+      <CheckoutContent referralDiscount={referralDiscount} />
     </Suspense>
   );
 }

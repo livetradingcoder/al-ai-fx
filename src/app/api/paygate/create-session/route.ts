@@ -5,7 +5,7 @@ import { validateEmail } from "@/lib/validation";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { cookies } from "next/headers";
-import { REF_COOKIE, referredDiscountFor } from "@/lib/affiliate";
+import { REF_COOKIE, referredDiscountForCheckout } from "@/lib/affiliate";
 import { redeemCoupon, validateCoupon } from "@/lib/coupons";
 import { provisionSubscription } from "@/lib/subscriptions";
 
@@ -94,7 +94,8 @@ export async function POST(req: Request) {
     // discount on top of a coupon is how a sale ends up costing money.
     const round2 = (n: number) => Math.round(n * 100) / 100;
 
-    const discountPercent = await referredDiscountFor(email);
+    const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
+    const discountPercent = await referredDiscountForCheckout({ email, code: refCode });
     const referralPrice =
       discountPercent > 0 ? round2((resolved.amount * (100 - discountPercent)) / 100) : resolved.amount;
 
@@ -115,8 +116,6 @@ export async function POST(req: Request) {
 
     const amount = chargeable.toFixed(2);
     const orderRef = crypto.randomUUID();
-
-    const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
 
     // A code that zeroes the price skips Paygate — there is nothing to charge —
     // but goes through the SAME provisioning call a paid order does, so the

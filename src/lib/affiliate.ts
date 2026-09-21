@@ -235,6 +235,52 @@ export async function referredDiscountFor(email: string) {
   }
 }
 
+/**
+ * The discount to apply at CHECKOUT, which is not the same question as
+ * `referredDiscountFor`.
+ *
+ * At checkout the buyer usually has no user row yet — the Referral is created
+ * during provisioning, after payment — so a first-time visitor who clicks a
+ * link and buys straight away would otherwise be charged full price for the
+ * offer we advertise on /refer. The cookie they arrived with is the evidence,
+ * so it counts here, subject to the same self-referral and first-order rules.
+ */
+export async function referredDiscountForCheckout(opts: {
+  email: string;
+  code?: string | null;
+}) {
+  const byExistingReferral = await referredDiscountFor(opts.email);
+  if (byExistingReferral > 0) return byExistingReferral;
+
+  const code = opts.code?.trim().toUpperCase();
+  if (!code) return 0;
+
+  try {
+    const settings = await getSettings();
+    if (settings.referredDiscount <= 0) return 0;
+
+    const affiliate = await prisma.affiliate.findUnique({ where: { code } });
+    if (!affiliate || affiliate.status !== "ACTIVE") return 0;
+
+    const user = await prisma.user.findUnique({
+      where: { email: opts.email },
+      select: { id: true },
+    });
+    if (user) {
+      if (settings.blockSelfReferral && affiliate.userId === user.id) return 0;
+      const paidBefore = await prisma.order.count({
+        where: { userId: user.id, status: "SUCCESS" },
+      });
+      if (paidBefore > 0) return 0;
+    }
+
+    return settings.referredDiscount;
+  } catch (err) {
+    console.error("[affiliate] checkout discount failed:", err instanceof Error ? err.message : err);
+    return 0;
+  }
+}
+
 /** Money view for one affiliate: what is owed, what is still on hold. */
 export async function affiliateBalance(affiliateId: string) {
   const rows = await prisma.commission.groupBy({
