@@ -3355,7 +3355,9 @@ html:lang(ar) .landing-hero-title {
 
 .roadmap-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* auto-fit: a group with only two cards spans the row instead of leaving
+     an empty third column. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 18px;
 }
 
