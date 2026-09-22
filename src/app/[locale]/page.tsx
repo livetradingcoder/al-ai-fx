@@ -22,6 +22,11 @@ import { GoldGlyph } from "@/components/GoldGlyph";
 import { getProofMetrics } from "@/lib/landing-data";
 
 const TESTIMONIALS = [
+  "photo_2026-09-11-history-profit-73.jpeg",
+  "photo_2026-09-11-history-profit-54.jpeg",
+  "photo_2026-09-10-desktop-history.jpeg",
+  "photo_2026-09-09-history-profit-730.jpeg",
+  "photo_2026-09-09-history-profit-99.jpeg",
   "photo_2026-07-20-200k-account.jpeg",
   "photo_2026-04-15 9.21.38 p.m..jpeg",
   "photo_2026-04-15 9.21.40 p.m. (1).jpeg",
