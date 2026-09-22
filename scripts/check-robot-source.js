@@ -39,6 +39,13 @@ for (const m of commentBases) {
   }
 }
 
+// Not part of the daemon contract, so a warning rather than a failure: without
+// a runtime check the expiry is only enforced when the EA is attached, and a
+// terminal left running keeps trading after the licence ends.
+if (!/IsLicenceExpired\s*\(/.test(src)) {
+  console.log("WARN  no runtime licence check (IsLicenceExpired) — see robots/_shared/protection-block.mq5");
+}
+
 if (failed) {
   console.error(`\n${failed} contract violation(s) — daemon injection would silently miss. NOT safe to release.`);
   process.exit(1);

@@ -66,6 +66,17 @@ node scripts/check-robot-source.js robots/<slug>/MASTER.mq5
 Do not skip this. Without the contract the daemon's injection silently misses
 and you ship an EA that runs on ANY account.
 
+A `WARN no runtime licence check` line means the EA only checks its expiry
+when it is attached: a terminal left running keeps trading after the licence
+ends. Add `IsLicenceExpired()` from `robots/_shared/protection-block.mq5`
+before the code that opens new trades (every robot released since
+2026-09-22 has it).
+
+Then prove it compiles before any price goes live: stage the robot hidden,
+queue a probe compile, activate only after it completes — the pattern in
+`scripts/onboard-robots-2026-09.js` (use `--only=<slug>` so re-running it
+never resets prices edited in the admin).
+
 ### 2. Upload the encrypted source
 
 ```bash
