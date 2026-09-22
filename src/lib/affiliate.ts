@@ -281,20 +281,32 @@ export async function referredDiscountForCheckout(opts: {
   }
 }
 
-/** Money view for one affiliate: what is owed, what is still on hold. */
+/**
+ * Money view for one affiliate: what they can withdraw, what they have already
+ * requested, what is still on hold.
+ *
+ * A commission stays APPROVED until the payout it sits in is marked paid, so
+ * APPROVED alone would offer requested money for withdrawal again. `available`
+ * is what `requestPayout` can claim: APPROVED and in no payout yet.
+ */
 export async function affiliateBalance(affiliateId: string) {
   const rows = await prisma.commission.groupBy({
-    by: ["status"],
+    by: ["status", "payoutId"],
     where: { affiliateId },
     _sum: { amount: true },
-    _count: { _all: true },
   });
-  const sum = (status: string) => rows.find((r) => r.status === status)?._sum.amount ?? 0;
+  const sum = (match: (row: (typeof rows)[number]) => boolean) =>
+    rows.filter(match).reduce((total, row) => total + (row._sum.amount ?? 0), 0);
+  const pending = sum((r) => r.status === "PENDING");
+  const available = sum((r) => r.status === "APPROVED" && r.payoutId === null);
+  const requested = sum((r) => r.status === "APPROVED" && r.payoutId !== null);
+  const paid = sum((r) => r.status === "PAID");
   return {
-    pending: sum("PENDING"),
-    approved: sum("APPROVED"),
-    paid: sum("PAID"),
-    reversed: sum("REVERSED"),
-    lifetime: sum("PENDING") + sum("APPROVED") + sum("PAID"),
+    pending,
+    available,
+    requested,
+    paid,
+    reversed: sum((r) => r.status === "REVERSED"),
+    lifetime: pending + available + requested + paid,
   };
 }

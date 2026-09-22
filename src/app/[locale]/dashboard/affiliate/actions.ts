@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { affiliateBalance, ensureAffiliate, getSettings } from "@/lib/affiliate";
+import { ensureAffiliate, getSettings } from "@/lib/affiliate";
 import type { ActionResult } from "@/lib/action-result";
 
 async function signedInUserId() {
@@ -47,6 +47,9 @@ class CommissionsAlreadyClaimed extends Error {
   }
 }
 
+// Both an empty balance and a request that lost the race for its commissions.
+const NOTHING_TO_PAY = "Nothing to pay out";
+
 /**
  * Turn approved commissions into a payout request.
  *
@@ -56,6 +59,10 @@ class CommissionsAlreadyClaimed extends Error {
  * commissions that are still APPROVED and unclaimed. Postgres re-checks that
  * WHERE after waiting for the other request to commit, so the loser claims
  * fewer rows than it read, rolls back its payout and gets "Nothing to pay out".
+ *
+ * The minimum applies to what this request claims, not to the APPROVED
+ * balance: commissions in a REQUESTED payout stay APPROVED until it is marked
+ * paid, so that balance still counts money that has already been requested.
  */
 export async function requestPayout(): Promise<ActionResult> {
   const userId = await signedInUserId();
@@ -68,19 +75,19 @@ export async function requestPayout(): Promise<ActionResult> {
   if (!affiliate.payoutAddress) return { ok: false, error: "Add your payout details first" };
 
   const settings = await getSettings();
-  const balance = await affiliateBalance(affiliate.id);
-  if (balance.approved < settings.minPayout) {
-    return { ok: false, error: `You need at least $${settings.minPayout} approved to request a payout` };
-  }
 
-  const payout = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx): Promise<ActionResult> => {
     const payable = await tx.commission.findMany({
       where: { affiliateId: affiliate.id, status: "APPROVED", payoutId: null },
       select: { id: true, amount: true },
     });
-    if (payable.length === 0) return null;
+    if (payable.length === 0) return { ok: false, error: NOTHING_TO_PAY };
 
     const amount = Math.round(payable.reduce((sum, c) => sum + c.amount, 0) * 100) / 100;
+    if (amount < settings.minPayout) {
+      return { ok: false, error: `You need at least $${settings.minPayout} approved to request a payout` };
+    }
+
     const created = await tx.affiliatePayout.create({
       data: {
         affiliateId: affiliate.id,
@@ -94,13 +101,12 @@ export async function requestPayout(): Promise<ActionResult> {
       data: { payoutId: created.id },
     });
     if (claimed.count !== payable.length) throw new CommissionsAlreadyClaimed();
-    return created;
-  }).catch((err: unknown) => {
-    if (err instanceof CommissionsAlreadyClaimed) return null;
+    return { ok: true, message: `Payout of $${created.amount.toFixed(2)} requested.` };
+  }).catch((err: unknown): ActionResult => {
+    if (err instanceof CommissionsAlreadyClaimed) return { ok: false, error: NOTHING_TO_PAY };
     throw err;
   });
-  if (!payout) return { ok: false, error: "Nothing to pay out" };
 
-  revalidatePath("/dashboard/affiliate");
-  return { ok: true, message: `Payout of $${payout.amount.toFixed(2)} requested.` };
+  if (result.ok) revalidatePath("/dashboard/affiliate");
+  return result;
 }

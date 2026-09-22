@@ -124,17 +124,17 @@ export function ShareBox({ code, origin }: { code: string; origin: string }) {
 export function PayoutPanel({
   method,
   address,
-  approved,
+  available,
   minPayout,
 }: {
   method: string | null;
   address: string | null;
-  approved: number;
+  available: number; // approved and not already in a payout request
   minPayout: number;
 }) {
   const [form, setForm] = useState({ method: method ?? "", address: address ?? "" });
   const { pending, notice, run } = useAction();
-  const canRequest = approved >= minPayout && Boolean(form.address);
+  const canRequest = available >= minPayout && Boolean(form.address);
 
   return (
     <section className="card">
@@ -184,9 +184,9 @@ export function PayoutPanel({
           {pending ? "Working…" : "Request payout"}
         </button>
         <span style={{ color: "var(--text-muted)", fontSize: "0.84rem" }}>
-          {approved >= minPayout
-            ? `$${approved.toFixed(2)} ready to withdraw.`
-            : `$${approved.toFixed(2)} approved — minimum payout is $${minPayout}.`}
+          {available >= minPayout
+            ? `$${available.toFixed(2)} ready to withdraw.`
+            : `$${available.toFixed(2)} approved — minimum payout is $${minPayout}.`}
         </span>
       </div>
 

@@ -107,9 +107,12 @@ export default async function AffiliatePage() {
         <div className="card">
           <p className="card-label">Ready to withdraw</p>
           <p className="card-value num" style={{ color: "var(--accent-primary)" }}>
-            ${balance.approved.toFixed(2)}
+            ${balance.available.toFixed(2)}
           </p>
-          <p className="cell-note">${balance.pending.toFixed(2)} still clearing</p>
+          <p className="cell-note">
+            {balance.requested > 0 ? `$${balance.requested.toFixed(2)} requested · ` : ""}
+            ${balance.pending.toFixed(2)} still clearing
+          </p>
         </div>
         <div className="card">
           <p className="card-label">Earned all time</p>
@@ -178,7 +181,7 @@ export default async function AffiliatePage() {
       <PayoutPanel
         method={affiliate.payoutMethod}
         address={affiliate.payoutAddress}
-        approved={balance.approved}
+        available={balance.available}
         minPayout={settings.minPayout}
       />
 
