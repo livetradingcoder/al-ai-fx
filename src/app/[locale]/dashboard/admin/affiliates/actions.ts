@@ -82,16 +82,84 @@ export async function approveCommission(commissionId: string): Promise<ActionRes
   return { ok: true, message: "Approved." };
 }
 
-/** Used when an order is refunded or looks fraudulent. */
+/** Rolls back a reversal whose commission changed after it was read. */
+class CommissionChanged extends Error {
+  constructor() {
+    super("Commission changed while it was being reversed");
+    this.name = "CommissionChanged";
+  }
+}
+
+const COMMISSION_CHANGED = "This commission changed while it was being reversed. Check it and try again.";
+
+/**
+ * Used when an order is refunded or looks fraudulent.
+ *
+ * A commission stays APPROVED inside a REQUESTED payout until the payout is
+ * marked paid, and markPayoutPaid pays whatever the payout still holds at its
+ * stored amount. So reversing one also takes it out of its payout and resets
+ * the amount to what is left, which the admin sees before sending the money;
+ * a payout left with nothing is rejected.
+ *
+ * The payout row is locked before the commission is written. markPayoutPaid
+ * and rejectPayout also write the payout first, so a reversal that races
+ * either one waits for it and then finds the payout closed. Only PENDING and
+ * APPROVED commissions can be reversed, so a stale page cannot reverse a paid one.
+ */
 export async function reverseCommission(commissionId: string, reason: string): Promise<ActionResult> {
   const denied = await requireAdmin();
   if (denied) return denied;
-  await prisma.commission.update({
-    where: { id: commissionId },
-    data: { status: "REVERSED", reversedReason: reason.slice(0, 200) || "Reversed by admin" },
+
+  const result = await prisma.$transaction(async (tx): Promise<ActionResult> => {
+    const commission = await tx.commission.findUnique({
+      where: { id: commissionId },
+      select: { status: true, payoutId: true },
+    });
+    if (!commission) return { ok: false, error: "Commission not found" };
+    if (commission.status !== "PENDING" && commission.status !== "APPROVED") {
+      return { ok: false, error: `This commission is already ${commission.status.toLowerCase()}` };
+    }
+    const { payoutId } = commission;
+
+    if (payoutId) {
+      const open = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM "AffiliatePayout"
+        WHERE id = ${payoutId} AND status = 'REQUESTED'
+        FOR UPDATE
+      `;
+      if (open.length === 0) return { ok: false, error: COMMISSION_CHANGED };
+    }
+
+    const reversed = await tx.commission.updateMany({
+      where: { id: commissionId, status: { in: ["PENDING", "APPROVED"] }, payoutId },
+      data: {
+        status: "REVERSED",
+        reversedReason: reason.slice(0, 200) || "Reversed by admin",
+        payoutId: null,
+      },
+    });
+    if (reversed.count !== 1) throw new CommissionChanged();
+    if (!payoutId) return { ok: true, message: "Reversed." };
+
+    const left = await tx.commission.findMany({ where: { payoutId }, select: { amount: true } });
+    const amount = Math.round(left.reduce((sum, c) => sum + c.amount, 0) * 100) / 100;
+    if (left.length > 0) {
+      await tx.affiliatePayout.update({ where: { id: payoutId }, data: { amount } });
+      return { ok: true, message: `Reversed. Its payout request is now $${amount.toFixed(2)}.` };
+    }
+    await tx.affiliatePayout.update({
+      where: { id: payoutId },
+      data: { amount, status: "REJECTED", adminNote: "Every commission in it was reversed" },
+    });
+    return { ok: true, message: "Reversed. Its payout request had nothing else in it and is now rejected." };
+  }).catch((err: unknown): ActionResult => {
+    if (err instanceof CommissionChanged) return { ok: false, error: COMMISSION_CHANGED };
+    throw err;
   });
+
+  // A refusal from the transaction means the page was out of date, so refresh either way.
   refresh();
-  return { ok: true, message: "Reversed." };
+  return result;
 }
 
 /** Money left the building: stamp the payout and everything it covered. */
