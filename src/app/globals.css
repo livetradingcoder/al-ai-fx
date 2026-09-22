@@ -2470,6 +2470,7 @@ html:lang(ar) .landing-hero-title {
 .feature-panel,
 .pricing-group-shell,
 .pricing-tier,
+.roadmap-card,
 .process-shell,
 .process-card,
 .ops-master-panel,
@@ -3321,223 +3322,130 @@ html:lang(ar) .landing-hero-title {
   flex-shrink: 0;
 }
 
-.coming-soon-section {
-  padding-top: 30px;
+/* Roadmap (/roadmap) — same gold glass as the pricing cards. */
+.roadmap-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
 }
 
-.coming-soon-shell {
-  position: relative;
-  border-radius: 40px;
-  padding: 34px;
-  overflow: hidden;
-}
-
-.coming-soon-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(244, 220, 162, 0.14), transparent 26%),
-    linear-gradient(180deg, rgba(255, 248, 229, 0.03), rgba(255, 248, 229, 0));
-  pointer-events: none;
-}
-
-.coming-soon-header {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
-  gap: 18px;
-  align-items: end;
-}
-
-.coming-soon-summary {
-  border-radius: 28px;
-  padding: 22px 24px;
-  border: 1px solid rgba(84, 101, 142, 0.4);
-  background:
-    linear-gradient(180deg, rgba(17, 24, 39, 0.88), rgba(12, 18, 31, 0.92)),
-    rgba(9, 13, 23, 0.9);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.coming-soon-summary-label {
+.roadmap-stats span {
   display: inline-flex;
-  padding: 7px 11px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
   border-radius: 999px;
-  background: rgba(59, 130, 246, 0.14);
-  color: #8bb7ff;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 249, 235, 0.03);
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+
+.roadmap-stats strong {
+  color: var(--accent-primary-light);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.05rem;
+}
+
+.roadmap-group {
+  margin-top: 56px;
+}
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.roadmap-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px 22px;
+  border-radius: 28px;
+}
+
+.roadmap-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.roadmap-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.roadmap-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 249, 235, 0.04);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.roadmap-pill-status {
+  border-color: rgba(244, 220, 162, 0.22);
+  background: rgba(244, 220, 162, 0.12);
+  color: var(--accent-primary-light);
+}
+
+.roadmap-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.roadmap-card-glyph {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  color: var(--accent-primary-light);
+}
+
+.roadmap-card-eyebrow {
+  display: block;
+  color: var(--text-muted);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.coming-soon-summary strong {
-  display: block;
-  margin-top: 16px;
-  font-size: 1.28rem;
+.roadmap-card h3 {
+  margin: 6px 0 0;
+  font-size: 1.3rem;
   letter-spacing: -0.04em;
 }
 
-.coming-soon-summary p {
-  margin-top: 10px;
+.roadmap-card-copy {
+  margin-top: 16px;
   color: var(--text-secondary);
+  font-size: 0.95rem;
   line-height: 1.65;
 }
 
-.coming-soon-board-head {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 26px;
-  padding: 14px 18px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+.roadmap-card-list {
+  margin-bottom: 0;
 }
 
-.coming-soon-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.coming-soon-card {
-  position: relative;
-  min-height: 100%;
-  padding: 22px;
-  border-radius: 28px;
-  border: 1px solid rgba(77, 93, 132, 0.46);
-  background:
-    linear-gradient(180deg, rgba(19, 26, 41, 0.94), rgba(11, 16, 28, 0.96)),
-    rgba(10, 14, 24, 0.96);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 24px 50px rgba(2, 6, 23, 0.28);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.coming-soon-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(141, 168, 255, 0.42);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 28px 56px rgba(2, 6, 23, 0.34);
-}
-
-.coming-soon-card-gold {
-  border-color: rgba(175, 142, 78, 0.4);
-}
-
-.coming-soon-card-signal {
-  border-color: rgba(74, 132, 220, 0.38);
-}
-
-.coming-soon-card-platform {
-  border-color: rgba(97, 115, 165, 0.4);
-}
-
-.coming-soon-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.coming-soon-surface,
-.coming-soon-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.coming-soon-surface {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(224, 231, 255, 0.78);
-}
-
-.coming-soon-status {
-  background: rgba(244, 220, 162, 0.12);
-  color: var(--accent-primary-light);
-}
-
-.coming-soon-card-head {
-  display: flex;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.coming-soon-card-glyph {
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  color: rgba(244, 220, 162, 0.92);
-}
-
-.coming-soon-card-eyebrow {
-  display: block;
-  color: var(--text-muted);
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.coming-soon-card h3 {
-  margin-top: 8px;
-  font-size: 1.46rem;
-  letter-spacing: -0.05em;
-}
-
-.coming-soon-card-copy {
-  margin-top: 18px;
-  color: rgba(226, 232, 240, 0.82);
-  line-height: 1.68;
-}
-
-.coming-soon-card-list {
-  margin-top: 20px;
-  display: grid;
-  gap: 11px;
-}
-
-.coming-soon-card-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.coming-soon-card-list li::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  margin-top: 0.38rem;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #76a7ff, #2e63df);
-  box-shadow: 0 0 0 6px rgba(46, 99, 223, 0.08);
-  flex-shrink: 0;
+.roadmap-actions {
+  justify-content: center;
+  margin-top: 56px;
 }
 
 .process-shell {
@@ -3914,16 +3822,15 @@ html:lang(ar) .landing-hero-title {
   }
 
   .private-access-header,
-  .coming-soon-header,
   .landing-metric-grid,
   .pricing-showcase-grid-four,
   .pricing-showcase-grid-three,
-  .pricing-showcase-grid-two {
+  .pricing-showcase-grid-two,
+  .roadmap-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .private-access-grid,
-  .coming-soon-grid,
   .process-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -3954,20 +3861,15 @@ html:lang(ar) .landing-hero-title {
   }
 
   .private-access-header,
-  .coming-soon-header,
   .landing-metric-grid,
   .pricing-showcase-grid-four,
   .pricing-showcase-grid-three,
   .pricing-showcase-grid-two,
   .private-access-grid,
-  .coming-soon-grid,
+  .roadmap-grid,
   .feature-mosaic,
   .process-grid {
     grid-template-columns: 1fr;
-  }
-
-  .coming-soon-board-head {
-    display: none;
   }
 
   .feature-panel-large,
@@ -4003,7 +3905,6 @@ html:lang(ar) .landing-hero-title {
     letter-spacing: 0.12em;
   }
 
-  .coming-soon-shell,
   .private-access-shell,
   .final-cta-panel,
   .pricing-group-shell,
@@ -4012,12 +3913,12 @@ html:lang(ar) .landing-hero-title {
   }
 
   .private-access-card,
-  .coming-soon-card {
+  .roadmap-card {
     padding: 20px;
   }
 
   .private-access-actions,
-  .coming-soon-card-top {
+  .roadmap-card-top {
     flex-wrap: wrap;
   }
 

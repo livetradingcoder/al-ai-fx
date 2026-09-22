@@ -119,7 +119,7 @@ const ROBOTS = [
     ranges: 11,
     sortOrder: 7,
     comingSoon: true,
-    shortDescription: 'Eleven gold session ranges a day — the full MultiRange engine. Coming soon.',
+    shortDescription: 'Eleven gold session ranges a day — the full MultiRange engine.',
     longDescription: [
       'The complete MultiRange engine: eleven independent session ranges on XAUUSD a day, each with its own breakout, stops and hedge.',
     ],
