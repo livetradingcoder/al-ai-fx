@@ -366,7 +366,7 @@ export default function Home() {
               <span>Recurring subscriptions</span>
               <p>
                 Prices shown are for {FLAGSHIP_ROBOT.name}, our four-range
-                flagship. Single-range and six-range robots are in the{" "}
+                flagship. Robots trading from one to seven ranges are in the{" "}
                 <Link href="/catalog">catalog</Link>.
               </p>
             </div>

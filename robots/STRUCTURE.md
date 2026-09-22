@@ -68,6 +68,7 @@ Price ladder follows the number of ranges a robot trades — see
 | gold-breakout-aggressive | 1 | ✅ | v1 | selling |
 | gold-multirange-4 | 4 | ✅ | v1 | selling, homepage flagship |
 | gold-multirange-6-aggressive | 6 | ✅ | v1 | selling |
+| gold-multirange-7 | 7 | ✅ | v1 | selling (includes both GoldBot Double Range ranges) |
 | gold-multirange-11 | 11 | – | **no source** (only a compiled .ex5 exists) | coming soon |
 | goldbot | 2 | ✅ | v1 | delisted 2026-09-22 (existing licences keep working) |
 | goldshield | – | ✅ candidates | – | coming soon |

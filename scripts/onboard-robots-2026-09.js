@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-// Onboard the 2026-09 lineup: two single-range Breakouts and two MultiRange
+// Onboard the 2026-09 lineup: two single-range Breakouts, three MultiRange
 // robots, a coming-soon MultiRange 11, and GoldBot Double Range delisted.
 //
 //   node scripts/onboard-robots-2026-09.js                  # stage: rows exist, hidden, prices off
 //   node scripts/onboard-robots-2026-09.js --activate       # go live after compile probes pass
 //   node scripts/onboard-robots-2026-09.js --delist-goldbot # once the homepage points at the flagship
+//   add --only=<slug>[,<slug>] to touch just those robots — re-running
+//   without it resets every listed robot's prices to the ladder below,
+//   overwriting any price edited in the admin since.
 //
 // Staging first means nothing is buyable until a real compile of every new
 // source has succeeded on the Windows worker. Delisting GoldBot is separate
@@ -17,6 +20,7 @@
 //   1          9       39     179       399    3,999     39,999
 //   4         29       99     449       999    9,999     99,999
 //   6         39      139     629     1,399   13,999    139,999
+//   7         49      159     719     1,599   15,999    159,999
 //   11        59      199     899     1,999   19,999    199,999
 // LIFETIME / LIFETIME_SOURCE are contact-only (never shown as checkout chips).
 const { PrismaClient } = require('@prisma/client');
@@ -24,11 +28,16 @@ const prisma = new PrismaClient();
 
 const ACTIVATE = process.argv.includes('--activate');
 const DELIST_GOLDBOT = process.argv.includes('--delist-goldbot');
+const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '')
+  .slice('--only='.length)
+  .split(',')
+  .filter(Boolean);
 
 const LADDER = {
   1: [9, 39, 179, 399, 3999, 39999],
   4: [29, 99, 449, 999, 9999, 99999],
   6: [39, 139, 629, 1399, 13999, 139999],
+  7: [49, 159, 719, 1599, 15999, 159999],
   11: [59, 199, 899, 1999, 19999, 199999],
 };
 const TIERS = ['TEN_DAYS', 'ONE_MONTH', 'SIX_MONTHS', 'ONE_YEAR', 'LIFETIME', 'LIFETIME_SOURCE'];
@@ -89,13 +98,26 @@ const ROBOTS = [
     ],
   },
   {
+    slug: 'gold-multirange-7',
+    name: 'Gold MultiRange 7',
+    ranges: 7,
+    sortOrder: 6,
+    shortDescription:
+      "Seven gold session ranges a day — every range in the MultiRange engine, including both of GoldBot Double Range's.",
+    longDescription: [
+      "Gold MultiRange 7 runs every range slot the MultiRange engine has: seven separate session ranges on XAUUSD a day, each traded on its own terms with its own stops, targets and hedge. It covers both ranges of the retired GoldBot Double Range, plus five more.",
+      'All seven ranges share one lot size and several can hold a position at the same time, so size it for your account. Choose fixed-lot or risk-percent sizing and switch any range off from the inputs; timing and trade values are fixed in the build. It sits out major US, UK and EU bank holidays.',
+      DELIVERY,
+    ],
+  },
+  {
     // No source yet — only a compiled .ex5 exists, which cannot be
     // account-locked. Listed as coming soon; prices stay off until the .mq5
     // is released through the pipeline.
     slug: 'gold-multirange-11',
     name: 'Gold MultiRange 11',
     ranges: 11,
-    sortOrder: 6,
+    sortOrder: 7,
     comingSoon: true,
     shortDescription: 'Eleven gold session ranges a day — the full MultiRange engine. Coming soon.',
     longDescription: [
@@ -114,6 +136,7 @@ async function main() {
   }
 
   for (const r of ROBOTS) {
+    if (ONLY.length && !ONLY.includes(r.slug)) continue;
     const live = ACTIVATE;
     const data = {
       name: r.name,
@@ -150,9 +173,11 @@ async function main() {
       data: { sourceVersion: 2, sortOrder: 1 },
     });
 
-    await prisma.robot.updateMany({ where: { slug: 'goldshield' }, data: { sortOrder: 7 } });
-    await prisma.robot.updateMany({ where: { slug: 'precision-range' }, data: { sortOrder: 8 } });
-    await prisma.robot.updateMany({ where: { slug: 'sniper-lite' }, data: { sortOrder: 9 } });
+    // Order only — never prices, so this is safe with --only too.
+    const order = { 'gold-multirange-11': 7, goldshield: 8, 'precision-range': 9, 'sniper-lite': 10 };
+    for (const [slug, sortOrder] of Object.entries(order)) {
+      await prisma.robot.updateMany({ where: { slug }, data: { sortOrder } });
+    }
 
     const rows = await prisma.robot.findMany({
       where: { active: true },
