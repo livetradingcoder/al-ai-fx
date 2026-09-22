@@ -55,6 +55,24 @@ int lotdigit = 3;
 bool StartTrade = false;
 
 //+------------------------------------------------------------------+
+//| Licence check while running                                      |
+//+------------------------------------------------------------------+
+// OnInit only runs when the EA is attached or the terminal restarts, so a
+// terminal left running would otherwise keep trading past the expiry - for
+// the free trial, indefinitely. Once expired: no new trades, but hedge
+// management and stray-order cleanup keep running.
+bool IsLicenceExpired() {
+  if (!ExpiredON || TimeCurrent() <= ExpiredTime) return false;
+  static bool announced = false;
+  if (!announced) {
+    announced = true;
+    Print("PrecisionTrader: Licence expired - no new trades. Open positions keep their stops.");
+    Comment("AL-ai-FX PrecisionTrader: licence expired - renew at al-ai-fx.xyz");
+  }
+  return true;
+}
+
+//+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit() {
@@ -110,7 +128,7 @@ int OnInit() {
 //+------------------------------------------------------------------+
 //| Expert deinitialization function                                 |
 //+------------------------------------------------------------------+
-void OnDeinit(const int reason) {}
+void OnDeinit(const int reason) { Comment(""); }
 
 //+------------------------------------------------------------------+
 //| Manage active hedge positions (Breakeven & Early Cut)            |
@@ -209,6 +227,10 @@ void OnTick() {
     DeleteHedgeOrder(ORDER_TYPE_SELL_STOP);
   if (OriginSell <= 0 && HedgeOrderBuy > 0)
     DeleteHedgeOrder(ORDER_TYPE_BUY_STOP);
+
+  // Past the licence end: keep cleaning up, open nothing new.
+  if (IsLicenceExpired())
+    return;
 
   // Check if it's time to start monitoring range breakout
   if (!StartTrade) {

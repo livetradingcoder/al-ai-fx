@@ -12,7 +12,7 @@ import {
   trackViewContent,
 } from "@/lib/marketing-client";
 import { buildCheckoutThankYouPath } from "@/lib/marketing";
-import { TierId, PRICING_TIERS } from "@/config/pricing";
+import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
 
 type RobotInfo = {
   slug: string;
@@ -89,7 +89,8 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
         );
         setRobots(purchasable);
         if (!purchasable.some((r) => r.slug === urlRobot)) {
-          setSelectedSlug(purchasable[0]?.slug ?? "");
+          const successor = purchasable.find((r) => r.slug === RETIRED_ROBOTS[urlRobot]);
+          setSelectedSlug(successor?.slug ?? purchasable[0]?.slug ?? "");
         }
       })
       .catch(() => {

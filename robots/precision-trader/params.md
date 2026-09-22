@@ -61,3 +61,10 @@ replaced with the inert `{0}` the daemon overwrites per job.
 Both hedge features ship **off**. They are opt-in experiments in the predefined
 build; turning either on for customers means a new release version, not a
 config change — customers have no input for them.
+
+## Releases
+
+| Version | Date | Change |
+|---|---|---|
+| v1 | 2026-07-27 | Initial release. |
+| v2 | 2026-09-22 | `IsLicenceExpired()`: stops NEW trades once the licence ends, even if the terminal is never restarted. Before this the expiry was only checked in OnInit, so a free trial left running on a VPS kept trading indefinitely. Hedge management and stray-order cleanup keep running. Strategy values unchanged. |

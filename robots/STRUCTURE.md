@@ -56,14 +56,28 @@ The check mirrors the daemon's regexes — if you change one, change both.
 5. Commit the frozen release dir. git history + sha256 = full audit trail of
    exactly what every customer's build came from.
 
-## Robot status (2026-07-25)
+## Robot status (2026-09-22)
 
-| slug | master | contract | released |
-|---|---|---|---|
-| goldbot | GoldBot DoubleRange Hidden Broker1 | ✅ | v1 live (frozen copy imported) |
-| goldshield | **undecided** — 2 candidates in `candidates/` (visionfx-newversion2, goldea-vision-51513-hedgi) | ✅ both | – |
-| precision-range | Precision Range Trader v6 | ❌ **no protection block** | – |
-| sniper-lite | Sniper Lite EA v5_5 | ❌ **no protection block** | – |
+Price ladder follows the number of ranges a robot trades — see
+`scripts/onboard-robots-2026-09.js`.
+
+| slug | ranges | contract | released | catalog |
+|---|---|---|---|---|
+| precision-trader | 1 | ✅ | v2 (runtime licence check) | selling, free trial |
+| gold-breakout-conservative | 1 | ✅ | v1 | selling |
+| gold-breakout-aggressive | 1 | ✅ | v1 | selling |
+| gold-multirange-4 | 4 | ✅ | v1 | selling, homepage flagship |
+| gold-multirange-6-aggressive | 6 | ✅ | v1 | selling |
+| gold-multirange-11 | 11 | – | **no source** (only a compiled .ex5 exists) | coming soon |
+| goldbot | 2 | ✅ | v1 | delisted 2026-09-22 (existing licences keep working) |
+| goldshield | – | ✅ candidates | – | coming soon |
+| precision-range | – | ❌ **no protection block** | – | coming soon |
+| sniper-lite | – | ❌ **no protection block** | – | coming soon |
+
+Every release from 2026-09-22 carries `IsLicenceExpired()`: OnInit alone
+only checks expiry when the EA is attached, so a terminal left running kept
+trading after the licence ended. goldbot v1 and precision-trader v1 builds
+already in customers' hands do not have it.
 
 For the two ❌: paste + adapt `_shared/protection-block.mq5` (top-of-file
 block + OnInit gates), pick an underscore-free print tag, re-run the checker.

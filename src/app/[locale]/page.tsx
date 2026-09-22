@@ -17,6 +17,7 @@ import {
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
+import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import { GoldGlyph } from "@/components/GoldGlyph";
 import { getProofMetrics } from "@/lib/landing-data";
 
@@ -364,8 +365,9 @@ export default function Home() {
             <div className="pricing-group-head">
               <span>Recurring subscriptions</span>
               <p>
-                Continuous access, priority support, and the full GoldBot
-                execution stack.
+                Prices shown are for {FLAGSHIP_ROBOT.name}, our four-range
+                flagship. Single-range and six-range robots are in the{" "}
+                <Link href="/catalog">catalog</Link>.
               </p>
             </div>
 
@@ -388,8 +390,11 @@ export default function Home() {
                       <li key={feature}>{feature}</li>
                     ))}
                   </ul>
-                  <Link href={`/checkout?tier=${plan.id}&robot=goldbot&name=GoldBot`} className="btn-primary fill">
-                    Get GoldBot
+                  <Link
+                    href={`/checkout?tier=${plan.id}&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
+                    className="btn-primary fill"
+                  >
+                    Get MultiRange 4
                   </Link>
                 </article>
               ))}
@@ -522,7 +527,10 @@ export default function Home() {
             </p>
 
             <div className="landing-hero-actions final-cta-actions">
-              <Link href="/checkout?tier=1-month&robot=goldbot&name=GoldBot" className="btn-primary large">
+              <Link
+                href={`/checkout?tier=1-month&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
+                className="btn-primary large"
+              >
                 Start Monthly Plan
                 <ArrowRight size={18} />
               </Link>

@@ -1,19 +1,20 @@
 //+------------------------------------------------------------------+
-//|                                       AL-ai-FX PrecisionTrader.mq5|
-//|                                                        AL-ai-FX |
-//|                                             https://al-ai-fx.xyz|
+//|                          AL-ai-FX Gold Breakout Conservative.mq5 |
+//|                                                         AL-ai-FX |
+//|                                             https://al-ai-fx.xyz |
 //+------------------------------------------------------------------+
 #property copyright "AL-ai-FX"
 #property link "https://al-ai-fx.xyz"
 #property version "1.00"
-#property description "PrecisionTrader - single-range breakout with hedge management"
+#property description "Gold Breakout Conservative - one session-range breakout a day on XAUUSD with tight targets and a light hedge"
 
 /////////////////////////////////////////////////////////////////////////
 // LICENSING & PROTECTION
-// Set ExpiredON to false to disable expiry
+// The compile daemon rewrites these four lines for every buyer: account
+// lock on, allowed_accounts = the buyer's MT5 login, ExpiredTime = the
+// subscription end. Keep each on one line in exactly this form.
 bool ExpiredON = true;
 datetime ExpiredTime = D'2050.2.5 23:59:59';
-// Set AccountProtectON to false to allow on any account
 bool AccountProtectON = false;
 const long allowed_accounts[] = {0};
 /////////////////////////////////////////////////////////////////////////
@@ -22,34 +23,25 @@ const long allowed_accounts[] = {0};
 CTrade trade;
 
 //--- User Inputs
-input string BS = "---------AL-ai-FX PrecisionTrader---------";
+input string BS = "---------AL-ai-FX Gold Breakout Conservative---------";
 input double LotSize = 0.03;  // Lot Size
-const double x = 15.0;         // Multiplier (x)
-const ENUM_TIMEFRAMES RangeTimeframe = PERIOD_H1; // Range Build Timeframe
-
-const string TS = "---------Time Settings---------";
-const int StartHour = 7;       // Start Hour (0-23)
-const int StartMinute = 0;     // Start Minute (0-59)
-const int StopHour = 10;       // Stop Hour (0-23)
-const int StopMinute = 2;      // Stop Minute (0-59)
-
-const string HS = "---------Hedge Management---------";
-const bool UseHedgeBreakeven = false;      // Enable Hedge Breakeven
-const double HedgeBreakevenTrigger = 0.5;  // Breakeven Trigger (points)
-const double HedgeBreakevenOffset = 0.1;   // Breakeven Offset (points)
-const bool UseEarlyCut = false;            // Enable Early Cut on Re-Entry
-const double EarlyCutThreshold = 2.0;      // Re-entry Distance Inside Range to Close (points)
+input double x = 5.0;          // Multiplier (x)
+input string TS = "---------Time Settings---------";
+input int StartHour = 7;       // Start Hour (0-23)
+input int StartMinute = 0;     // Start Minute (0-59)
+input int StopHour = 10;       // Stop Hour (0-23)
+input int StopMinute = 0;      // Stop Minute (0-59)
 
 //--- Hardcoded Settings
 
-const int MagicNumber = 20260502;
-const string comm = "PrecisionTrader";
-const double StopLossFB = 15.0;     // Primary Buy Stop Loss (points)
-const double TakeProfitFB = 5.0;    // Primary Buy Take Profit (points)
-const double Buffer = 0.16;         // Range Entry Buffer
-const double StopLossFS = 15.0;     // Primary Sell Stop Loss (points)
-const double TakeProfitFS = 5.0;    // Primary Sell Take Profit (points)
-const double TakeProfitST = 1.3;    // Hedge Take Profit (points)
+const int MagicNumber = 20260512;
+const string comm = "AL-ai-FX BreakoutC";   // MUST NOT contain "_"
+const double StopLossFB = 13.3;
+const double TakeProfitFB = 2.0;
+const double Buffer = 0.16;
+const double StopLossFS = 13.3;
+const double TakeProfitFS = 2.0;
+const double TakeProfitST = 2.0;
 
 int lotdigit = 3;
 bool StartTrade = false;
@@ -58,16 +50,15 @@ bool StartTrade = false;
 //| Licence check while running                                      |
 //+------------------------------------------------------------------+
 // OnInit only runs when the EA is attached or the terminal restarts, so a
-// terminal left running would otherwise keep trading past the expiry - for
-// the free trial, indefinitely. Once expired: no new trades, but hedge
-// management and stray-order cleanup keep running.
+// terminal left running would otherwise keep trading past the expiry. Once
+// expired: no new trades, but stray hedge orders are still cleaned up.
 bool IsLicenceExpired() {
   if (!ExpiredON || TimeCurrent() <= ExpiredTime) return false;
   static bool announced = false;
   if (!announced) {
     announced = true;
-    Print("PrecisionTrader: Licence expired - no new trades. Open positions keep their stops.");
-    Comment("AL-ai-FX PrecisionTrader: licence expired - renew at al-ai-fx.xyz");
+    Print("BreakoutC: Licence expired - no new trades. Open positions keep their stops.");
+    Comment("AL-ai-FX Gold Breakout Conservative: licence expired - renew at al-ai-fx.xyz");
   }
   return true;
 }
@@ -86,7 +77,7 @@ int OnInit() {
     for (int i = 0; i < ArraySize(allowed_accounts); i++) {
       if (account == allowed_accounts[i]) {
         IsAccount = true;
-        Print("PrecisionTrader: Account verified.");
+        Print("BreakoutC: Account verified.");
         break;
       }
     }
@@ -101,17 +92,17 @@ int OnInit() {
     IsExpired = true;
 
   if (ExpiredON && IsExpired) {
-    Print("PrecisionTrader: EA has expired.");
+    Print("BreakoutC: EA has expired.");
     return (INIT_FAILED);
   }
 
   if (AccountProtectON && !IsAccount) {
-    Print("PrecisionTrader: Unauthorized account.");
+    Print("BreakoutC: Unauthorized account.");
     return (INIT_FAILED);
   }
 
   trade.SetExpertMagicNumber(MagicNumber);
-  Print("PrecisionTrader: Initialized successfully.");
+  Print("BreakoutC: Initialized successfully.");
 
   // Determine Lot Digits
   double min_volume = SymbolInfoDouble(NULL, SYMBOL_VOLUME_MIN);
@@ -131,94 +122,9 @@ int OnInit() {
 void OnDeinit(const int reason) { Comment(""); }
 
 //+------------------------------------------------------------------+
-//| Manage active hedge positions (Breakeven & Early Cut)            |
-//+------------------------------------------------------------------+
-void ManageHedge() {
-  if (!UseHedgeBreakeven && !UseEarlyCut) return;
-
-  for (int i = PositionsTotal() - 1; i >= 0; i--) {
-    ulong ticket = PositionGetTicket(i);
-    if (ticket <= 0) continue;
-
-    if (PositionSelectByTicket(ticket)) {
-      if (PositionGetInteger(POSITION_MAGIC) == MagicNumber &&
-          PositionGetString(POSITION_SYMBOL) == _Symbol) {
-
-        string CmAnaly[];
-        int k = StringSplit(PositionGetString(POSITION_COMMENT),
-                            StringGetCharacter("_", 0), CmAnaly);
-        if (k >= 2 && (int)CmAnaly[1] == 2) {
-          // This is the active hedge position!
-          double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-          double curSL = PositionGetDouble(POSITION_SL);
-          double curTP = PositionGetDouble(POSITION_TP);
-          ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-          // 1. Handle Hedge Breakeven
-          if (UseHedgeBreakeven) {
-            if (posType == POSITION_TYPE_BUY) {
-              double bid = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_BID), _Digits);
-              double priceMove = bid - openPrice;
-              if (priceMove >= HedgeBreakevenTrigger) {
-                double targetSL = openPrice + HedgeBreakevenOffset;
-                targetSL = NormalizeDouble(targetSL, _Digits);
-                if (curSL < targetSL) {
-                  if (trade.PositionModify(ticket, targetSL, curTP)) {
-                    Print("PrecisionTrader: Hedge Buy SL moved to Breakeven at ", targetSL);
-                  }
-                  // Refresh position state
-                  if (!PositionSelectByTicket(ticket)) continue;
-                  curSL = PositionGetDouble(POSITION_SL);
-                }
-              }
-            } else if (posType == POSITION_TYPE_SELL) {
-              double ask = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK), _Digits);
-              double priceMove = openPrice - ask;
-              if (priceMove >= HedgeBreakevenTrigger) {
-                double targetSL = openPrice - HedgeBreakevenOffset;
-                targetSL = NormalizeDouble(targetSL, _Digits);
-                if (curSL == 0 || curSL > targetSL) {
-                  if (trade.PositionModify(ticket, targetSL, curTP)) {
-                    Print("PrecisionTrader: Hedge Sell SL moved to Breakeven at ", targetSL);
-                  }
-                  // Refresh position state
-                  if (!PositionSelectByTicket(ticket)) continue;
-                  curSL = PositionGetDouble(POSITION_SL);
-                }
-              }
-            }
-          }
-
-          // 2. Handle Early Cut on Re-Entry (relative to hedge entry price)
-          if (UseEarlyCut) {
-            if (posType == POSITION_TYPE_BUY) {
-              double bid = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_BID), _Digits);
-              if (bid <= openPrice - EarlyCutThreshold) {
-                if (trade.PositionClose(ticket)) {
-                  Print("PrecisionTrader: Early Cut triggered for Hedge Buy position. Closed at ", bid, " (Threshold: ", openPrice - EarlyCutThreshold, ")");
-                }
-              }
-            } else if (posType == POSITION_TYPE_SELL) {
-              double ask = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK), _Digits);
-              if (ask >= openPrice + EarlyCutThreshold) {
-                if (trade.PositionClose(ticket)) {
-                  Print("PrecisionTrader: Early Cut triggered for Hedge Sell position. Closed at ", ask, " (Threshold: ", openPrice + EarlyCutThreshold, ")");
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-//+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick() {
-  ManageHedge();
-
   int OriginBuy, OriginSell, HedgeOrderBuy, HedgeOrderSell;
   GetTradeInfo(OriginBuy, OriginSell, HedgeOrderBuy, HedgeOrderSell);
 
@@ -360,26 +266,22 @@ void GetTradeInfo(int &originBuy, int &originSell, int &hedgeOrderBuy,
 }
 
 //+------------------------------------------------------------------+
-//| Calculate the High/Low range for specified hours                 |
+//| Calculate the High/Low range for specified hours and minutes     |
 //+------------------------------------------------------------------+
 void GetRange(double &aboverange, double &belowrange) {
   aboverange = 0;
   belowrange = 0;
-  int secs = PeriodSeconds(RangeTimeframe);
-  if (secs <= 0) secs = 3600;            // safety fallback
-  int max_bars = (int)(302400 / secs) + 10; // ~3.5 days of bars + margin
-  int avail = Bars(_Symbol, RangeTimeframe);
-  if (avail > 0 && max_bars > avail) max_bars = avail; // never scan past history
+  int max_bars = 5000; // Look back up to 5000 minutes (~3.5 days) to find the range
   for (int i = 1; i < max_bars; i++) {
-    long timei = iTime(_Symbol, RangeTimeframe, i);
+    long timei = iTime(_Symbol, PERIOD_M1, i);
     if (timei <= 0) continue;
     if (IsTimeRange(timei)) {
       for (int k = i; k < max_bars; k++) {
-        long timek = iTime(_Symbol, RangeTimeframe, k);
+        long timek = iTime(_Symbol, PERIOD_M1, k);
         if (timek <= 0) continue;
         if (IsTimeRange(timek)) {
-          double highk = iHigh(_Symbol, RangeTimeframe, k);
-          double lowk = iLow(_Symbol, RangeTimeframe, k);
+          double highk = iHigh(_Symbol, PERIOD_M1, k);
+          double lowk = iLow(_Symbol, PERIOD_M1, k);
           if (highk > aboverange || aboverange <= 0)
             aboverange = highk;
           if (lowk < belowrange || belowrange <= 0)
@@ -393,7 +295,7 @@ void GetRange(double &aboverange, double &belowrange) {
 }
 
 //+------------------------------------------------------------------+
-//| Check if a timestamp falls within the Range hours               |
+//| Check if a timestamp falls within the Range hours and minutes    |
 //+------------------------------------------------------------------+
 bool IsTimeRange(long time) {
   int startSecs = 3600 * StartHour + 60 * StartMinute;

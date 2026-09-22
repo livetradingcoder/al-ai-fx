@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { RETIRED_ROBOTS } from "@/config/pricing";
 import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG, formatUsd } from "@/lib/catalog-tiers";
 import type { PricingTier } from "@prisma/client";
@@ -40,7 +41,11 @@ export default async function RobotDetailPage(props: {
 }) {
   const { slug } = await props.params;
   const robot = await getRobot(slug);
-  if (!robot) notFound();
+  if (!robot) {
+    // Temporary on purpose: a delisted robot can be listed again.
+    if (RETIRED_ROBOTS[slug]) redirect(`/robots/${RETIRED_ROBOTS[slug]}`);
+    notFound();
+  }
 
   // Public tiers only, in canonical display order.
   const prices = CATALOG_PUBLIC_TIERS.map((tier: PricingTier) =>
