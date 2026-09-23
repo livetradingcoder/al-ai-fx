@@ -102,6 +102,8 @@ export default async function CatalogPage() {
                   >
                     {robot.name}
                   </h2>
+
+                  {robot.badge && <span className="robot-badge">{robot.badge}</span>}
                   <p
                     style={{
                       color: "var(--text-secondary)",

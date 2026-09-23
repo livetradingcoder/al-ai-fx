@@ -88,6 +88,7 @@ model Robot {
   longDescription  String   @db.Text // detail-page copy — Postgres text, avoids varchar cap
   active           Boolean  @default(true) // catalog visibility flag
   artworkUrl       String? // nullable until artwork asset exists
+  badge            String? // short label on the catalog card + robot page, e.g. "Prop firm compatible"
   sortOrder        Int      @default(0) // catalog ordering
   sourceVersion    Int      @default(1) // which sources/<slug>/v<N>.mq5.enc is current
   createdAt        DateTime @default(now())

@@ -36,6 +36,7 @@ export async function updateRobot(
     shortDescription: string;
     longDescription: string;
     artworkUrl: string;
+    badge: string;
     sortOrder: number;
   }
 ): Promise<ActionResult> {
@@ -60,6 +61,8 @@ export async function updateRobot(
       longDescription: data.longDescription ?? "",
       // artworkUrl is nullable — store null when blank, never "" masquerading as a URL
       artworkUrl: data.artworkUrl?.trim() ? data.artworkUrl.trim() : null,
+      // Same for the badge: blank clears it rather than printing an empty pill.
+      badge: data.badge?.trim() ? data.badge.trim() : null,
       sortOrder: Number.isFinite(data.sortOrder) ? Math.trunc(data.sortOrder) : 0,
     },
   });
@@ -79,6 +82,7 @@ export async function createRobot(formData: FormData): Promise<ActionResult> {
   const shortDescription = String(formData.get("shortDescription") || "").trim();
   const longDescription = String(formData.get("longDescription") || "").trim();
   const artworkUrlRaw = String(formData.get("artworkUrl") || "").trim();
+  const badgeRaw = String(formData.get("badge") || "").trim();
   const sortOrder = Math.trunc(Number(formData.get("sortOrder") || 0));
 
   if (!slug || !name || !shortDescription) {
@@ -98,6 +102,7 @@ export async function createRobot(formData: FormData): Promise<ActionResult> {
         shortDescription,
         longDescription: longDescription || shortDescription,
         artworkUrl: artworkUrlRaw || null,
+        badge: badgeRaw || null,
         sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
         active: false, // new robots start inactive until a source is uploaded + reviewed
       },

@@ -39,6 +39,7 @@ export default function RobotForm({
   const [shortDescription, setShortDescription] = useState(robot?.shortDescription ?? "");
   const [longDescription, setLongDescription] = useState(robot?.longDescription ?? "");
   const [artworkUrl, setArtworkUrl] = useState(robot?.artworkUrl ?? "");
+  const [badge, setBadge] = useState(robot?.badge ?? "");
   const [sortOrder, setSortOrder] = useState(String(robot?.sortOrder ?? 0));
   const [source, setSource] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -92,6 +93,7 @@ export default function RobotForm({
           fd.set("shortDescription", shortDescription);
           fd.set("longDescription", longDescription);
           fd.set("artworkUrl", artworkUrl);
+          fd.set("badge", badge);
           fd.set("sortOrder", sortOrder);
           if (source) fd.set("source", source);
           res = await createRobot(fd);
@@ -101,6 +103,7 @@ export default function RobotForm({
             shortDescription,
             longDescription,
             artworkUrl,
+            badge,
             sortOrder: Number(sortOrder),
           });
         }
@@ -173,6 +176,18 @@ export default function RobotForm({
           <div>
             <label style={labelStyle} htmlFor="robot-artwork">Artwork URL</label>
             <input id="robot-artwork" type="text" value={artworkUrl} onChange={(e) => setArtworkUrl(e.target.value)} style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle} htmlFor="robot-badge">Badge</label>
+            <input
+              id="robot-badge"
+              type="text"
+              value={badge}
+              onChange={(e) => setBadge(e.target.value)}
+              placeholder="e.g. Prop firm compatible — blank for none"
+              style={inputStyle}
+            />
           </div>
 
           <div>

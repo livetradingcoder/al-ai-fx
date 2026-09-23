@@ -34,6 +34,7 @@ export async function GET(
       name: robot.name,
       shortDescription: robot.shortDescription,
       artworkUrl: robot.artworkUrl,
+      badge: robot.badge,
       prices,
     },
     {

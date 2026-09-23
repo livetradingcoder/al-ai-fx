@@ -81,6 +81,7 @@ const ROBOTS = [
     longDescription: [
       "Gold MultiRange 4 watches four separate session ranges on XAUUSD every day and trades each breakout on its own terms — its own stops, targets and hedge — so one range's result never blocks another.",
       "Choose fixed-lot or risk-percent sizing and switch any of the four ranges off from the inputs. Every range's timing and trade values are fixed in the build. It sits out major US, UK and EU bank holidays.",
+      'On a prop firm account: every trade carries a fixed stop loss and the hedge is capped at 5x the first lot — no grid, no martingale stacking. Check your firm's rules on expert advisors before you start.',
       DELIVERY,
     ],
   },
@@ -107,6 +108,7 @@ const ROBOTS = [
     longDescription: [
       "Gold MultiRange 7 runs every range slot the MultiRange engine has: seven separate session ranges on XAUUSD a day, each traded on its own terms with its own stops, targets and hedge. It covers both ranges of the retired GoldBot Double Range, plus five more.",
       'All seven ranges share one lot size and several can hold a position at the same time, so size it for your account. Choose fixed-lot or risk-percent sizing and switch any range off from the inputs; timing and trade values are fixed in the build. It sits out major US, UK and EU bank holidays.',
+      'On a prop firm account: every trade carries a fixed stop loss and the hedge is capped at 5x the first lot — no grid, no martingale stacking. Check your firm's rules on expert advisors before you start.',
       DELIVERY,
     ],
   },

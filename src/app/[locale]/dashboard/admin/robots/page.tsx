@@ -38,6 +38,7 @@ export default async function AdminRobotsPage() {
       longDescription: robot.longDescription,
       active: robot.active,
       artworkUrl: robot.artworkUrl,
+      badge: robot.badge,
       sortOrder: robot.sortOrder,
       sourceVersion: robot.sourceVersion,
       paidTiers: paid.length,

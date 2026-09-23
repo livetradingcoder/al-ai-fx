@@ -98,6 +98,7 @@ export default async function RobotDetailPage(props: {
               <h1 className="section-title section-title-left" style={{ marginBottom: "1rem" }}>
                 {robot.name}
               </h1>
+              {robot.badge && <span className="robot-badge">{robot.badge}</span>}
               <p className="section-copy section-copy-left">{robot.shortDescription}</p>
             </div>
           </div>

@@ -19,6 +19,7 @@ export interface RobotRow {
   longDescription: string;
   active: boolean;
   artworkUrl: string | null;
+  badge: string | null;
   sortOrder: number;
   sourceVersion: number;
   paidTiers: number;
