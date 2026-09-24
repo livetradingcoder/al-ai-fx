@@ -378,7 +378,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                 }}
               >
                 <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                  <strong>{t("nextStep")}</strong> Check your inbox and spam folder, then use the magic link in the email to open your dashboard securely.
+                  <strong>{t("nextStep")}</strong> Check your inbox and spam folder, then use the magic link in the email to open your dashboard securely. The robot itself is not emailed: inside the dashboard you enter your MT5 account number, and your build is compiled to that account within minutes.
                 </p>
               </div>
 

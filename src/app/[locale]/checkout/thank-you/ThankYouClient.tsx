@@ -238,9 +238,11 @@ export default function ThankYouClient() {
               <strong>Robot:</strong> {pendingCheckout.robotName}
             </p>
           ) : null}
-          <p style={{ margin: "0.5rem 0 0", color: "var(--text-secondary)" }}>
-            <strong>Plan:</strong> {planName}
-          </p>
+          {pendingCheckout?.tier ? (
+            <p style={{ margin: "0.5rem 0 0", color: "var(--text-secondary)" }}>
+              <strong>Plan:</strong> {planName}
+            </p>
+          ) : null}
           {pendingCheckout?.amount ? (
             <p style={{ margin: "0.5rem 0 0", color: "var(--text-secondary)" }}>
               <strong>Amount:</strong> {pendingCheckout.currency} {pendingCheckout.amount}
