@@ -15,6 +15,9 @@ export type PendingCheckout = {
   checkoutUrl: string;
   currency: string;
   orderRef: string;
+  // Optional: entries stored before these existed are still readable.
+  robotName?: string;
+  robotSlug?: string;
   tier: string;
 };
 
