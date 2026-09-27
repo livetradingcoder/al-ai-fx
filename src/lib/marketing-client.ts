@@ -1,6 +1,10 @@
 "use client";
 
-import { getMarketingConfig } from "@/lib/marketing";
+import {
+  buildEcommerceDataLayerEvent,
+  getMarketingConfig,
+  type EcommerceEventInput,
+} from "@/lib/marketing";
 
 declare global {
   interface Window {
@@ -33,12 +37,27 @@ function getStorage() {
   return window.sessionStorage;
 }
 
+// Google Ads only. GA4 runs inside GTM and reads the dataLayer events below;
+// every gtag() event here names the Ads ID in send_to so GTM's Google tag
+// can't count it a second time.
 function runGtag(...args: unknown[]) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+  if (!marketingConfig.googleAdsId || typeof window === "undefined" || typeof window.gtag !== "function") {
     return;
   }
 
   window.gtag(...args);
+}
+
+// GTM reads events off window.dataLayer. Clearing `ecommerce` first stops
+// GTM's merged data model from carrying one event's items into the next.
+function pushEcommerceEvent(event: "begin_checkout" | "purchase", input: EcommerceEventInput) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ ecommerce: null });
+  window.dataLayer.push(buildEcommerceDataLayerEvent(event, input));
 }
 
 function runFbq(...args: unknown[]) {
@@ -72,13 +91,11 @@ export function trackViewContent(payload: {
   });
 }
 
-export function trackBeginCheckout(payload: {
-  amount: number;
-  currency: string;
-  orderRef: string;
-  tier: string;
-}) {
+export function trackBeginCheckout(payload: EcommerceEventInput) {
+  pushEcommerceEvent("begin_checkout", payload);
+
   runGtag("event", "begin_checkout", {
+    send_to: marketingConfig.googleAdsId ?? undefined,
     currency: payload.currency,
     value: payload.amount,
     transaction_id: payload.orderRef,
@@ -101,12 +118,7 @@ export function trackBeginCheckout(payload: {
   });
 }
 
-export function trackPurchase(payload: {
-  amount: number;
-  currency: string;
-  orderRef: string;
-  tier: string;
-}) {
+export function trackPurchase(payload: EcommerceEventInput) {
   const storage = getStorage();
   const trackingKey = `${TRACKED_PURCHASE_PREFIX}${payload.orderRef}`;
 
@@ -114,7 +126,10 @@ export function trackPurchase(payload: {
     return;
   }
 
+  pushEcommerceEvent("purchase", payload);
+
   runGtag("event", "purchase", {
+    send_to: marketingConfig.googleAdsId ?? undefined,
     currency: payload.currency,
     value: payload.amount,
     transaction_id: payload.orderRef,

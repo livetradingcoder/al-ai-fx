@@ -183,6 +183,8 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
       amount: input.amount,
       currency: input.currency,
       orderRef: input.orderRef,
+      robotName: robot?.name ?? robotNameParam ?? undefined,
+      robotSlug: selectedSlug,
       tier: input.tier,
     });
 

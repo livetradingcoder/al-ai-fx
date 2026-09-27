@@ -111,6 +111,8 @@ export default function ThankYouClient() {
             amount: data.amount ?? pendingCheckout?.amount ?? 0,
             currency: data.currency ?? pendingCheckout?.currency ?? "USD",
             orderRef,
+            robotName: pendingCheckout?.robotName,
+            robotSlug: pendingCheckout?.robotSlug,
             tier: formatTier(data.pricingTier ?? pendingCheckout?.tier),
           };
 

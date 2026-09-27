@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildCheckoutThankYouPath,
+  buildEcommerceDataLayerEvent,
   buildGoogleAdsSendTo,
   getMarketingConfig,
 } from "./marketing";
@@ -42,4 +43,56 @@ test("getMarketingConfig trims and normalizes environment values", () => {
   assert.equal(config.beginCheckoutSendTo, "AW-123456/begin123");
   assert.equal(config.purchaseSendTo, "AW-123456/purchase456");
   assert.equal(config.metaPixelId, "987654321");
+});
+
+test("getMarketingConfig ignores a GA4 ID in the Google Ads slot", () => {
+  const config = getMarketingConfig({
+    NEXT_PUBLIC_GOOGLE_ADS_ID: "G-T5HPB8PH7V",
+    NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_PURCHASE: "purchase456",
+  });
+
+  assert.equal(config.googleAdsId, null);
+  assert.equal(config.purchaseSendTo, null);
+});
+
+test("buildEcommerceDataLayerEvent uses GA4's ecommerce shape", () => {
+  assert.deepEqual(
+    buildEcommerceDataLayerEvent("purchase", {
+      amount: 49,
+      currency: "USD",
+      orderRef: "order-123",
+      tier: "Monthly Plan",
+      robotName: "GoldBot",
+      robotSlug: "goldbot",
+    }),
+    {
+      event: "purchase",
+      ecommerce: {
+        transaction_id: "order-123",
+        currency: "USD",
+        value: 49,
+        items: [
+          {
+            item_id: "goldbot",
+            item_name: "GoldBot — Monthly Plan",
+            item_variant: "Monthly Plan",
+            price: 49,
+            quantity: 1,
+          },
+        ],
+      },
+    },
+  );
+});
+
+test("buildEcommerceDataLayerEvent falls back to the tier without a robot", () => {
+  const { ecommerce } = buildEcommerceDataLayerEvent("begin_checkout", {
+    amount: 10,
+    currency: "USD",
+    orderRef: "o1",
+    tier: "6-months",
+  });
+
+  assert.equal(ecommerce.items[0].item_id, "6-months");
+  assert.equal(ecommerce.items[0].item_name, "6-months");
 });

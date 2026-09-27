@@ -382,5 +382,13 @@
     "manageAffiliates": "Partnerprogramm",
     "manageCoupons": "Gutscheine"
   },
-  "Nav": {}
+  "Nav": {},
+  "Consent": {
+    "title": "Cookies",
+    "body": "Wir verwenden Cookies, um Besucherzahlen zu messen und unsere Werbung zu verbessern. Akzeptieren Sie, um sie zu erlauben, oder lehnen Sie ab, um nur die für den Betrieb der Website nötigen zu behalten.",
+    "learnMore": "Datenschutzerklärung",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "settings": "Cookie-Einstellungen"
+  }
 }

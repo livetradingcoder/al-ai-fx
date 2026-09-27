@@ -10,6 +10,7 @@ import {notFound} from 'next/navigation';
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
+import ConsentBanner, { CookieSettingsButton } from "@/components/marketing/ConsentBanner";
 import GtmHeadScript from "@/components/marketing/GtmHeadScript";
 import GtmNoScript from "@/components/marketing/GtmNoScript";
 import NdeskWidget from "@/components/NdeskWidget";
@@ -88,6 +89,7 @@ export default async function RootLayout({
                   <Link href="/terms-conditions">Terms & Conditions</Link>
                   <Link href="/refund-policy">Refund Policy</Link>
                   <Link href="/disclaimer">Disclaimer</Link>
+                  <CookieSettingsButton />
                 </div>
               </div>
             </div>
@@ -97,6 +99,7 @@ export default async function RootLayout({
               does not guarantee future results.
             </p>
           </footer>
+          <ConsentBanner />
           </NextIntlClientProvider>
         </AuthSessionProvider>
       </body>

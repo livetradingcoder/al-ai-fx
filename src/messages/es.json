@@ -382,5 +382,13 @@
     "manageAffiliates": "Programa de afiliados",
     "manageCoupons": "Cupones"
   },
-  "Nav": {}
+  "Nav": {},
+  "Consent": {
+    "title": "Cookies",
+    "body": "Usamos cookies para medir el tráfico y mejorar nuestros anuncios. Acepta para permitirlas o recházalas para mantener solo las necesarias para que el sitio funcione.",
+    "learnMore": "Política de privacidad",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "settings": "Configuración de cookies"
+  }
 }

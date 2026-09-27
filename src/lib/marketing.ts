@@ -40,8 +40,17 @@ export function buildGoogleAdsSendTo(id?: string | null, label?: string | null) 
   return `${cleanId}/${cleanLabel}`;
 }
 
+// Only a Google Ads ID (AW-…) belongs in NEXT_PUBLIC_GOOGLE_ADS_ID. Production
+// once carried the GA4 ID there, which loaded GA4 straight from the app; GA4
+// now runs inside the GTM container, so a G- ID here is ignored rather than
+// loaded a second time.
+function cleanGoogleAdsId(value?: string) {
+  const id = cleanEnvValue(value);
+  return id?.startsWith("AW-") ? id : null;
+}
+
 export function getMarketingConfig(env: MarketingEnv = process.env as unknown as MarketingEnv): MarketingConfig {
-  const googleAdsId = cleanEnvValue(env.NEXT_PUBLIC_GOOGLE_ADS_ID);
+  const googleAdsId = cleanGoogleAdsId(env.NEXT_PUBLIC_GOOGLE_ADS_ID);
   const beginCheckoutLabel = cleanEnvValue(
     env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_BEGIN_CHECKOUT,
   );
@@ -59,4 +68,42 @@ export function getMarketingConfig(env: MarketingEnv = process.env as unknown as
 export function buildCheckoutThankYouPath(locale: string, orderRef: string) {
   const pathname = buildLocalizedPath(locale, "/checkout/thank-you");
   return `${pathname}?orderRef=${encodeURIComponent(orderRef)}`;
+}
+
+export type EcommerceEventInput = {
+  amount: number;
+  currency: string;
+  orderRef: string;
+  tier: string;
+  robotName?: string;
+  robotSlug?: string;
+};
+
+/**
+ * The dataLayer message GTM's GA4 event tags read, in GA4's recommended
+ * ecommerce shape: https://developers.google.com/analytics/devguides/collection/ga4/ecommerce
+ */
+export function buildEcommerceDataLayerEvent(
+  event: "begin_checkout" | "purchase",
+  input: EcommerceEventInput,
+) {
+  const itemName = input.robotName ? `${input.robotName} — ${input.tier}` : input.tier;
+
+  return {
+    event,
+    ecommerce: {
+      transaction_id: input.orderRef,
+      currency: input.currency,
+      value: input.amount,
+      items: [
+        {
+          item_id: input.robotSlug ?? input.tier,
+          item_name: itemName,
+          item_variant: input.tier,
+          price: input.amount,
+          quantity: 1,
+        },
+      ],
+    },
+  };
 }

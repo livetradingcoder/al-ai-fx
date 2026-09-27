@@ -1,5 +1,6 @@
 import Script from "next/script";
 
+import { CONSENT_STORAGE_KEY } from "@/lib/consent";
 import { getMarketingConfig } from "@/lib/marketing";
 
 export default function MarketingScripts() {
@@ -36,6 +37,11 @@ export default function MarketingScripts() {
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
+            // Meta has no regional consent defaults, so the pixel waits for
+            // an explicit accept everywhere; ConsentBanner grants it later.
+            var consent = null;
+            try { consent = localStorage.getItem('${CONSENT_STORAGE_KEY}'); } catch (e) {}
+            fbq('consent', consent === 'granted' ? 'grant' : 'revoke');
             fbq('init', '${config.metaPixelId}');
           `}
         </Script>

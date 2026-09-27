@@ -382,5 +382,13 @@
     "manageAffiliates": "Affiliate programme",
     "manageCoupons": "Coupons"
   },
-  "Nav": {}
+  "Nav": {},
+  "Consent": {
+    "title": "Cookies",
+    "body": "We use cookies to measure traffic and improve our ads. Accept to allow them, or reject to keep only what the site needs to work.",
+    "learnMore": "Privacy Policy",
+    "accept": "Accept",
+    "reject": "Reject",
+    "settings": "Cookie settings"
+  }
 }
