@@ -1,7 +1,13 @@
 import { buildLocalizedPath } from "@/lib/seo";
 
+// The GTM container for al-ai-fx.xyz. A container ID is public (it ships in
+// the page source), so it lives here rather than in an env var nobody sets.
+// NEXT_PUBLIC_GTM_ID overrides it, e.g. to silence tags on a staging host.
+export const DEFAULT_GTM_ID = "GTM-PN7C6WJP";
+
 type MarketingEnv = Partial<
   Record<
+    | "NEXT_PUBLIC_GTM_ID"
     | "NEXT_PUBLIC_GOOGLE_ADS_ID"
     | "NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_BEGIN_CHECKOUT"
     | "NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_PURCHASE"
@@ -11,6 +17,7 @@ type MarketingEnv = Partial<
 >;
 
 export type MarketingConfig = {
+  gtmId: string | null;
   googleAdsId: string | null;
   beginCheckoutSendTo: string | null;
   purchaseSendTo: string | null;
@@ -41,6 +48,7 @@ export function getMarketingConfig(env: MarketingEnv = process.env as unknown as
   const purchaseLabel = cleanEnvValue(env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL_PURCHASE);
 
   return {
+    gtmId: cleanEnvValue(env.NEXT_PUBLIC_GTM_ID) ?? DEFAULT_GTM_ID,
     googleAdsId,
     beginCheckoutSendTo: buildGoogleAdsSendTo(googleAdsId, beginCheckoutLabel),
     purchaseSendTo: buildGoogleAdsSendTo(googleAdsId, purchaseLabel),
