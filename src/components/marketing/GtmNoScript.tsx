@@ -3,7 +3,7 @@ import { getMarketingConfig } from "@/lib/marketing";
 /**
  * The Tag Manager <noscript> fallback, rendered immediately after <body> as
  * Google asks. It only matters for visitors with JavaScript disabled — the
- * loader in MarketingScripts covers everyone else.
+ * loader in GtmHeadScript covers everyone else.
  */
 export default function GtmNoScript() {
   const { gtmId } = getMarketingConfig();

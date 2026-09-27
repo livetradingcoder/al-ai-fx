@@ -10,6 +10,7 @@ import {notFound} from 'next/navigation';
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
+import GtmHeadScript from "@/components/marketing/GtmHeadScript";
 import GtmNoScript from "@/components/marketing/GtmNoScript";
 import NdeskWidget from "@/components/NdeskWidget";
 import { authOptions } from "@/lib/auth";
@@ -49,6 +50,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={dir}>
+      <head>
+        <GtmHeadScript />
+      </head>
       <body>
         <GtmNoScript />
         <AuthSessionProvider session={session}>
