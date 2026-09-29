@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ContentArticle from "@/components/content/ContentArticle";
-import { GUIDES, getContentPage } from "@/lib/content-pages";
+import { getContentPage } from "@/lib/content-pages";
 import { buildMetadata } from "@/lib/seo";
 
-export function generateStaticParams() {
-  return GUIDES.map((guide) => ({ slug: guide.slug }));
-}
+// Rendered per request like every other page: the root layout reads the
+// session and request headers, so pre-rendering these at build time fails at
+// runtime with DYNAMIC_SERVER_USAGE. Unknown slugs still 404 via notFound().
 
 function findGuide(slug: string) {
   const page = getContentPage(slug);
