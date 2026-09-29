@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
+import { Cookie } from "lucide-react";
 
 import { Link } from "@/i18n/routing";
 import {
@@ -11,6 +12,7 @@ import {
   parseConsentChoice,
   type ConsentChoice,
 } from "@/lib/consent";
+import "./consent-banner.css";
 
 // gtag's consent commands must reach the dataLayer as an `arguments` object;
 // a plain array is ignored by Google tags.
@@ -75,21 +77,28 @@ export default function ConsentBanner() {
     return null;
   }
 
+  // Non-modal: the page stays usable, and focus is left where it is.
   return (
-    <div className="consent-banner" role="dialog" aria-live="polite" aria-label={t("title")}>
-      <p className="consent-banner-text">
-        <strong>{t("title")}</strong> {t("body")}{" "}
-        <Link href="/privacy-policy">{t("learnMore")}</Link>
+    <section className="cb" role="region" aria-label={t("title")} aria-live="polite">
+      <div className="cb-head">
+        <span className="cb-icon" aria-hidden="true">
+          <Cookie size={18} />
+        </span>
+        <strong className="cb-title">{t("title")}</strong>
+      </div>
+      <p className="cb-text">
+        {t("body")} <Link href="/privacy-policy">{t("learnMore")}</Link>
       </p>
-      <div className="consent-banner-actions">
-        <button type="button" className="btn-secondary" onClick={() => choose("denied")}>
+      {/* Equal-weight buttons: rejecting must be as easy as accepting. */}
+      <div className="cb-actions">
+        <button type="button" className="cb-btn" onClick={() => choose("denied")}>
           {t("reject")}
         </button>
-        <button type="button" className="btn-primary" onClick={() => choose("granted")}>
+        <button type="button" className="cb-btn is-primary" onClick={() => choose("granted")}>
           {t("accept")}
         </button>
       </div>
-    </div>
+    </section>
   );
 }
 

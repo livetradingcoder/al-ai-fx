@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, ChartCandlestick, Layers, MonitorSmartphone, Radio, Shield, type LucideIcon } from "lucide-react";
 
 import { buildComingSoonProducts, type ComingSoonProduct } from "@/lib/pricing-showcase";
-import { GoldGlyph } from "@/components/GoldGlyph";
+import "@/components/site/site-pages.css";
 
 export type RoadmapRobot = { slug: string; name: string; shortDescription: string };
 
@@ -19,6 +19,14 @@ type Card = {
   title: string;
   description: string;
   bullets?: string[];
+};
+
+const GLYPH_ICON: Record<string, LucideIcon> = {
+  shield: Shield,
+  signal: Radio,
+  halo: ChartCandlestick,
+  launch: Layers,
+  platform: MonitorSmartphone,
 };
 
 const ROBOT_GLYPH: Record<string, string> = {
@@ -41,33 +49,32 @@ function fromProduct(product: ComingSoonProduct): Card {
 }
 
 function RoadmapCard({ card, index }: { card: Card; index: number }) {
+  const Icon = GLYPH_ICON[card.glyph] ?? Layers;
   return (
     <motion.article
-      className="roadmap-card"
-      initial={{ opacity: 0, y: 24 }}
+      className="sp-card is-hover"
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.55, delay: index * 0.06 }}
+      transition={{ duration: 0.5, delay: index * 0.06 }}
     >
-      <div className="roadmap-card-top">
-        <span className="roadmap-pill">{card.surface}</span>
-        <span className="roadmap-pill roadmap-pill-status">{card.status}</span>
+      <div className="sp-pills">
+        <span className="sp-pill">{card.surface}</span>
+        <span className="sp-pill is-status is-live">{card.status}</span>
       </div>
-
-      <div className="roadmap-card-head">
-        <GoldGlyph kind={card.glyph} className="roadmap-card-glyph" />
-        <div>
-          <span className="roadmap-card-eyebrow">{card.eyebrow}</span>
-          <h3>{card.title}</h3>
-        </div>
-      </div>
-
-      <p className="roadmap-card-copy">{card.description}</p>
-
+      <span className="sp-card-icon" style={{ marginTop: 18 }}>
+        <Icon size={20} aria-hidden="true" />
+      </span>
+      <span className="sp-card-eyebrow">{card.eyebrow}</span>
+      <h3>{card.title}</h3>
+      <p>{card.description}</p>
       {card.bullets && card.bullets.length > 0 && (
-        <ul className="pricing-tier-list roadmap-card-list">
+        <ul className="sp-card-list">
           {card.bullets.map((bullet) => (
-            <li key={bullet}>{bullet}</li>
+            <li key={bullet}>
+              <Check size={14} aria-hidden="true" />
+              {bullet}
+            </li>
           ))}
         </ul>
       )}
@@ -102,66 +109,92 @@ export default function RoadmapBoard({
   const platformCards = products.filter((product) => product.accent !== "gold").map(fromProduct);
 
   return (
-    <main className="main-content landing-shell">
-      <section className="landing-section">
-        <div className="landing-container">
-          <motion.div
-            className="section-heading"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <span className="landing-eyebrow">Roadmap</span>
-            <h1 className="section-title">What we&apos;re building next.</h1>
-            <p className="section-copy">
-              {onSale} robots are on sale today. These come next: more gold robots for
-              MT5, and the same strategies on TradingView and cTrader.
-            </p>
-            <div className="roadmap-stats">
-              <span>
-                <strong>{robotCards.length}</strong> robots in development
-              </span>
-              <span>
-                <strong>{platformCards.length}</strong> new platforms
-              </span>
+    <main className="main-content sp-shell">
+      <header className="sp-hero">
+        <motion.div
+          className="sp-container"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="sp-eyebrow">Roadmap</span>
+          <h1>
+            What we&apos;re <span>building next.</span>
+          </h1>
+          <p className="sp-lead">
+            {onSale} robots are on sale today. These come next: more gold robots for MT5, and the
+            same strategies on TradingView and cTrader.
+          </p>
+          <div className="sp-stats">
+            <div>
+              <strong>{onSale}</strong>
+              <span>robots on sale now</span>
             </div>
-          </motion.div>
+            <div>
+              <strong>{robotCards.length}</strong>
+              <span>robots in development</span>
+            </div>
+            <div>
+              <strong>{platformCards.length}</strong>
+              <span>new platforms</span>
+            </div>
+          </div>
+        </motion.div>
+      </header>
 
-          <div className="roadmap-group">
-            <div className="pricing-group-head">
-              <span>Robots in development</span>
-              <p>
-                Each ships like the robots on sale today: a compiled build locked to your
-                MT5 account, ready minutes after checkout.
-              </p>
+      <section className="sp-section">
+        <div className="sp-container">
+          <div className="sp-heading">
+            <span className="sp-eyebrow">Robots in development</span>
+            <h2>
+              New gold robots <span>for MT5.</span>
+            </h2>
+            <p>
+              Each ships like the robots on sale today: a compiled build locked to your MT5 account,
+              ready minutes after checkout.
+            </p>
+          </div>
+          <div className="sp-grid">
+            {robotCards.map((card, index) => (
+              <RoadmapCard key={card.key} card={card} index={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {platformCards.length > 0 && (
+        <section className="sp-section" style={{ paddingTop: 0 }}>
+          <div className="sp-container">
+            <div className="sp-heading">
+              <span className="sp-eyebrow">New platforms</span>
+              <h2>
+                Beyond <span>MetaTrader 5.</span>
+              </h2>
+              <p>The same gold strategies, on the platforms more traders use.</p>
             </div>
-            <div className="roadmap-grid">
-              {robotCards.map((card, index) => (
-                <RoadmapCard key={card.key} card={card} index={index} />
+            <div className="sp-grid">
+              {platformCards.map((card, index) => (
+                <RoadmapCard key={card.key} card={{ ...card, glyph: "platform" }} index={index} />
               ))}
             </div>
           </div>
+        </section>
+      )}
 
-          {platformCards.length > 0 && (
-            <div className="roadmap-group">
-              <div className="pricing-group-head">
-                <span>New platforms</span>
-                <p>The same gold strategies, beyond MetaTrader 5.</p>
-              </div>
-              <div className="roadmap-grid">
-                {platformCards.map((card, index) => (
-                  <RoadmapCard key={card.key} card={card} index={index} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="landing-hero-actions roadmap-actions">
-            <Link href="/catalog" className="btn-primary large">
+      <section className="sp-section" style={{ paddingTop: 0, paddingBottom: 96 }}>
+        <div className="sp-container sp-cta">
+          <div>
+            <h2>
+              Don&apos;t want to wait<span>?</span>
+            </h2>
+            <p>{onSale} robots are ready today, each delivered as an account-locked MT5 build.</p>
+          </div>
+          <div className="sp-cta-actions">
+            <Link href="/catalog" className="sp-btn is-primary">
               Browse robots on sale
-              <ArrowRight size={18} />
+              <ArrowRight size={16} aria-hidden="true" />
             </Link>
-            <Link href="/#pricing" className="btn-secondary large">
+            <Link href="/#pricing" className="sp-btn">
               See pricing
             </Link>
           </div>

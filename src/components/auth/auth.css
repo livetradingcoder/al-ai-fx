@@ -1,0 +1,558 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap");
+
+/* Auth screens: same flat palette as the redesigned marketing pages. */
+.au-shell,
+.au-compact {
+  --au-canvas: #0b0e11;
+  --au-card: #1e2329;
+  --au-elevated: #2b3139;
+  --au-hairline: #2b3139;
+  --au-hover: #474d57;
+  --au-body: #eaecef;
+  --au-muted: #707a8a;
+  --au-muted-strong: #929aa5;
+  --au-primary: #fcd535;
+  --au-on-primary: #181a20;
+  --au-up: #0ecb81;
+  --au-down: #f6465d;
+
+  color: var(--au-body);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.au-shell {
+  min-height: 100vh;
+  background: var(--au-canvas);
+}
+
+.main-content.au-shell {
+  padding-top: 64px;
+}
+
+.au-shell h1,
+.au-shell h2,
+.au-compact h1 {
+  margin: 0;
+  font-family: inherit;
+  text-align: left;
+  letter-spacing: -0.02em;
+}
+
+.au-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: calc(100vh - 64px);
+}
+
+/* ---------- Brand panel ---------- */
+.au-brand {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-right: 1px solid var(--au-hairline);
+}
+
+.au-brand-img {
+  object-fit: cover;
+  object-position: 78% center;
+}
+
+.au-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(11, 14, 17, 0.2) 0%, rgba(11, 14, 17, 0.35) 45%, rgba(11, 14, 17, 0.96) 100%);
+}
+
+.au-brand-copy {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 56px;
+}
+
+.au-brand-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(11, 14, 17, 0.75);
+  color: var(--au-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.au-shell .au-brand h2 {
+  margin-top: 18px;
+  color: #fff;
+  font-size: clamp(2rem, 3vw, 2.8rem) !important;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.au-brand h2 span {
+  display: block;
+  color: var(--au-primary);
+}
+
+.au-brand ul {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.au-brand li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--au-body);
+  font-size: 0.95rem;
+}
+
+.au-brand li svg {
+  flex: none;
+  color: var(--au-primary);
+}
+
+/* ---------- Form side ---------- */
+.au-form-side {
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(252, 213, 53, 0.06), transparent 50%),
+    var(--au-canvas);
+}
+
+.au-compact {
+  display: grid;
+  place-items: center;
+  padding: 48px 0;
+}
+
+.au-card {
+  width: min(440px, 100%);
+  padding: 36px;
+  border: 1px solid var(--au-hairline);
+  border-radius: 14px;
+  background: var(--au-card);
+}
+
+.au-card-head {
+  margin-bottom: 28px;
+}
+
+.au-card-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  background: rgba(252, 213, 53, 0.1);
+  color: var(--au-primary);
+}
+
+.au-eyebrow {
+  color: var(--au-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.au-shell .au-card-head h1,
+.au-compact .au-card-head h1 {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 1.75rem !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.au-card-head p {
+  margin-top: 8px;
+  color: var(--au-muted-strong);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.au-form {
+  display: grid;
+  gap: 18px;
+}
+
+/* ---------- Fields ---------- */
+.au-field {
+  display: grid;
+  gap: 8px;
+}
+
+.au-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--au-muted-strong);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.au-label a {
+  color: var(--au-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.au-label a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.au-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--au-hairline);
+  border-radius: 8px;
+  background: var(--au-canvas);
+  color: var(--au-muted);
+  transition: border-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
+}
+
+.au-input:focus-within {
+  border-color: var(--au-primary);
+  box-shadow: 0 0 0 3px rgba(252, 213, 53, 0.15);
+  color: var(--au-primary);
+}
+
+.au-input input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--au-body);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.au-input input::placeholder {
+  color: var(--au-muted);
+}
+
+/* Keep browser autofill on the dark field instead of a pale yellow box. */
+.au-input input:-webkit-autofill {
+  -webkit-text-fill-color: var(--au-body);
+  -webkit-box-shadow: 0 0 0 40px var(--au-canvas) inset;
+  caret-color: var(--au-body);
+}
+
+.au-reveal {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--au-muted-strong);
+  cursor: pointer;
+}
+
+.au-reveal:hover {
+  background: var(--au-elevated);
+  color: #fff;
+}
+
+.au-hint {
+  color: var(--au-muted);
+  font-size: 0.78rem;
+}
+
+/* ---------- Buttons ---------- */
+.au-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 50px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--au-primary);
+  color: var(--au-on-primary);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.au-submit:hover:not(:disabled) {
+  background: #ffe066;
+}
+
+.au-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.au-submit:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.au-submit.is-secondary {
+  background: var(--au-elevated);
+  color: #fff;
+}
+
+.au-submit.is-secondary:hover {
+  background: var(--au-hover);
+}
+
+.au-spin {
+  animation: au-spin 0.9s linear infinite;
+}
+
+@keyframes au-spin {
+  to { transform: rotate(360deg); }
+}
+
+.au-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--au-muted);
+  font-size: 0.78rem;
+}
+
+.au-divider::before,
+.au-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--au-hairline);
+}
+
+/* ---------- Alerts ---------- */
+.au-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.au-alert svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.au-alert.is-error {
+  background: rgba(246, 70, 93, 0.1);
+  color: #ff8a9a;
+}
+
+.au-alert.is-success {
+  background: rgba(14, 203, 129, 0.1);
+  color: var(--au-up);
+}
+
+.au-alert.is-info {
+  background: var(--au-canvas);
+  color: var(--au-muted-strong);
+}
+
+/* ---------- Card footer ---------- */
+.au-card-foot {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--au-hairline);
+  color: var(--au-muted-strong);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.au-card-foot a {
+  color: var(--au-primary);
+  font-weight: 600;
+}
+
+.au-card-foot a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Status screens (sent / signing in) ---------- */
+.au-status {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.au-status-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: rgba(14, 203, 129, 0.12);
+  color: var(--au-up);
+}
+
+.au-status-icon.is-pending {
+  background: rgba(252, 213, 53, 0.1);
+  color: var(--au-primary);
+}
+
+.au-status-icon.is-error {
+  background: rgba(246, 70, 93, 0.12);
+  color: var(--au-down);
+}
+
+.au-status p {
+  color: var(--au-muted-strong);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.au-status strong {
+  color: #fff;
+}
+
+.au-steps {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin: 6px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--au-canvas);
+  list-style: none;
+  text-align: left;
+}
+
+.au-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--au-body);
+  font-size: 0.875rem;
+}
+
+.au-steps li span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--au-primary);
+  border-radius: 999px;
+  color: var(--au-primary);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ---------- Password checklist ---------- */
+.au-strength {
+  display: grid;
+  gap: 8px;
+}
+
+.au-strength-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.au-strength-bar span {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--au-elevated);
+  transition: background-color 200ms ease;
+}
+
+.au-strength-bar.is-1 span:nth-child(-n + 1),
+.au-strength-bar.is-2 span:nth-child(-n + 2) {
+  background: var(--au-down);
+}
+
+.au-strength-bar.is-3 span:nth-child(-n + 3),
+.au-strength-bar.is-4 span:nth-child(-n + 4) {
+  background: var(--au-primary);
+}
+
+.au-strength-bar.is-5 span {
+  background: var(--au-up);
+}
+
+.au-checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.au-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--au-muted);
+  font-size: 0.78rem;
+  transition: color 150ms ease;
+}
+
+.au-checklist li.is-met {
+  color: var(--au-up);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .au-input,
+  .au-submit,
+  .au-strength-bar span,
+  .au-checklist li {
+    transition: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .au-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .au-brand {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .au-form-side {
+    align-items: start;
+    padding: 24px 16px 48px;
+  }
+
+  .au-card {
+    padding: 24px 20px;
+  }
+
+  .au-checklist {
+    grid-template-columns: 1fr;
+  }
+}

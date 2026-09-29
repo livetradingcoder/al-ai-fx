@@ -1,6 +1,5 @@
 import "../globals.css";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getServerSession } from "next-auth";
 import Navbar from "../../components/Navbar";
 import {NextIntlClientProvider} from 'next-intl';
@@ -10,12 +9,13 @@ import {notFound} from 'next/navigation';
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
-import ConsentBanner, { CookieSettingsButton } from "@/components/marketing/ConsentBanner";
+import ConsentBanner from "@/components/marketing/ConsentBanner";
+import SiteFooter from "@/components/SiteFooter";
 import GtmHeadScript from "@/components/marketing/GtmHeadScript";
 import GtmNoScript from "@/components/marketing/GtmNoScript";
 import NdeskWidget from "@/components/NdeskWidget";
 import { authOptions } from "@/lib/auth";
-import { getPageMetadata, SITE_URL } from "@/lib/seo";
+import { getPageMetadata, jsonLdScript, organizationJsonLd, SITE_URL } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -28,8 +28,14 @@ export async function generateMetadata({
   return {
     ...metadata,
     metadataBase: new URL(SITE_URL),
+    applicationName: "GoldBot by AL-ai-FX",
+    authors: [{ name: "AL-ai-FX", url: SITE_URL }],
+    creator: "AL-ai-FX",
+    publisher: "AL-ai-FX",
+    formatDetection: { email: false, address: false, telephone: false },
     icons: {
       icon: "/favicon.png",
+      apple: "/favicon.png",
     },
   };
 }
@@ -55,6 +61,10 @@ export default async function RootLayout({
         <GtmHeadScript />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLdScript(organizationJsonLd())}
+        />
         <GtmNoScript />
         <AuthSessionProvider session={session}>
           <NextIntlClientProvider messages={messages}>
@@ -63,42 +73,7 @@ export default async function RootLayout({
             <NdeskWidget />
             <Navbar />
           {children}
-          <footer className="footer">
-            <div className="footer-grid">
-              <div>
-                <h4>GoldBot by AL-ai-FX</h4>
-                <p>
-                  Algorithmic tooling for MT5 automation workflows and
-                  account-specific deployment.
-                </p>
-              </div>
-              <div>
-                <h4>Product</h4>
-                <div className="footer-links">
-                  <Link href="/features">Features</Link>
-                  <Link href="/#pricing">Pricing</Link>
-                  <Link href="/roadmap">Roadmap</Link>
-                  <Link href="/licensing">Licensing &amp; source</Link>
-                  <Link href="/refer">Refer &amp; earn</Link>
-                </div>
-              </div>
-              <div>
-                <h4>Legal</h4>
-                <div className="footer-links">
-                  <Link href="/privacy-policy">Privacy Policy</Link>
-                  <Link href="/terms-conditions">Terms & Conditions</Link>
-                  <Link href="/refund-policy">Refund Policy</Link>
-                  <Link href="/disclaimer">Disclaimer</Link>
-                  <CookieSettingsButton />
-                </div>
-              </div>
-            </div>
-            <p className="footer-note">
-              &copy; {new Date().getFullYear()} AL-ai-FX Algorithms. GoldBot is a
-              trademark of AL-ai-FX. Trading carries risk and past performance
-              does not guarantee future results.
-            </p>
-          </footer>
+          <SiteFooter />
           <ConsentBanner />
           </NextIntlClientProvider>
         </AuthSessionProvider>

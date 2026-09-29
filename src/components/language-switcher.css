@@ -1,0 +1,151 @@
+/* Language switcher: globe + code button with a native-name menu. Colours
+   inherit from the surrounding navbar so it fits both navbar designs. */
+.ls {
+  position: relative;
+  display: inline-flex;
+}
+
+.ls-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 8px 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.ls-button:hover,
+.ls-button[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.ls-button:focus-visible,
+.ls-option:focus-visible {
+  outline: 2px solid #fcd535;
+  outline-offset: 2px;
+}
+
+.ls-button:disabled {
+  cursor: progress;
+}
+
+.ls-code {
+  letter-spacing: 0.04em;
+}
+
+.ls-chevron {
+  opacity: 0.7;
+  transition: transform 200ms ease;
+}
+
+.ls-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.ls-spin {
+  animation: ls-spin 0.9s linear infinite;
+}
+
+@keyframes ls-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Menu ---------- */
+.ls-menu {
+  position: absolute;
+  right: 0;
+  z-index: 200;
+  display: grid;
+  gap: 2px;
+  min-width: 190px;
+  margin: 0;
+  padding: 6px;
+  border: 1px solid #2b3139;
+  border-radius: 10px;
+  background: #1e2329;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  list-style: none;
+  animation: ls-in 140ms ease-out;
+}
+
+.ls-menu.is-down {
+  top: calc(100% + 6px);
+}
+
+.ls-menu.is-up {
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: auto;
+}
+
+@keyframes ls-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.ls-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #eaecef;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.ls-option:hover,
+.ls-option:focus-visible {
+  background: #2b3139;
+}
+
+.ls-option-code {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 22px;
+  border-radius: 4px;
+  background: #0b0e11;
+  color: #929aa5;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.ls-option-name {
+  flex: 1;
+}
+
+.ls-option.is-selected .ls-option-code {
+  background: #fcd535;
+  color: #181a20;
+}
+
+.ls-check {
+  color: #fcd535;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-menu,
+  .ls-chevron,
+  .ls-spin {
+    animation: none;
+    transition: none;
+  }
+}

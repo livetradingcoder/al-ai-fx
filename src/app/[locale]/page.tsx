@@ -4,22 +4,37 @@ import {
   useEffect,
   useRef,
   useState,
-  type MouseEvent,
-  type SVGProps,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import NotifyMeForm from "@/components/marketing/NotifyMeForm";
+import LandingHero from "@/components/marketing/LandingHero";
+import VerifiedBadge from "@/components/marketing/VerifiedBadge";
+import ProofViewer, { type ProofShot } from "@/components/marketing/ProofViewer";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  KeyRound,
+  Layers,
+  Lock,
+  Maximize2,
+  MonitorSmartphone,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import {
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
-import { GoldGlyph } from "@/components/GoldGlyph";
 import { getProofMetrics } from "@/lib/landing-data";
+import "./landing-theme.css";
 
 const TESTIMONIALS = [
   "photo_2026-09-11-history-profit-73.jpeg",
@@ -38,45 +53,42 @@ const TESTIMONIALS = [
 
 const ALL_IMAGES = [...TESTIMONIALS, ...TESTIMONIALS];
 
-const HERO_PILLS = [
-  "Disciplined MT5-only execution",
-  "Holiday liquidity protection",
-  "Account-locked cloud builds",
+const VERIFIED_POINTS = [
+  { icon: ShieldCheck, title: "Straight from the terminal", detail: "Unedited MT5 history captures" },
+  { icon: Lock, title: "Account-locked builds", detail: "Each result runs on its own licensed EA" },
+  { icon: MonitorSmartphone, title: "Desktop and mobile", detail: "Captured wherever members trade" },
 ];
 
-function HeroConstellation(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 900 620" fill="none" aria-hidden="true" {...props}>
-      <defs>
-        <linearGradient id="hero-constellation" x1="78" y1="90" x2="730" y2="450" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f7dda0" />
-          <stop offset="1" stopColor="#7a5a1e" stopOpacity=".08" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M92 158c88-63 175-94 261-94 96 0 172 31 228 92 54 59 116 89 186 89"
-        stroke="url(#hero-constellation)"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M138 474c92-79 188-118 288-118 92 0 171 27 238 82"
-        stroke="url(#hero-constellation)"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        opacity=".65"
-      />
-      {[["92", "158"], ["278", "93"], ["438", "132"], ["620", "237"], ["767", "245"], ["200", "428"], ["426", "356"], ["664", "425"]].map(
-        ([cx, cy]) => (
-          <g key={`${cx}-${cy}`}>
-            <circle cx={cx} cy={cy} r="9" fill="rgba(250, 222, 165, 0.06)" />
-            <circle cx={cx} cy={cy} r="3.5" fill="#f6d48b" />
-          </g>
-        ),
-      )}
-    </svg>
-  );
+const DEPLOY_STEPS = [
+  { title: "Pick a plan", detail: "Monthly is the easiest place to start" },
+  { title: "Lock your MT5 account", detail: "Your build is bound to one approved account" },
+  { title: "Download and attach", detail: "Your compiled EA is ready in seconds" },
+];
+
+const SHOT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Captions come from the capture filenames, so they never claim more than
+// the file itself records.
+function shotDate(file: string) {
+  const match = file.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return "";
+  const [, year, month, day] = match;
+  return `${SHOT_MONTHS[Number(month) - 1]} ${Number(day)}, ${year}`;
 }
+
+function describeShot(file: string) {
+  if (file.includes("desktop")) return "Desktop history";
+  if (file.includes("account")) return "Account overview";
+  return "Trade history";
+}
+
+// The carousel doubles the list for its seamless loop; the viewer shows each
+// screenshot once.
+const PROOF_SHOTS: ProofShot[] = TESTIMONIALS.map((file) => ({
+  file,
+  label: describeShot(file),
+  date: shotDate(file),
+}));
 
 export default function Home() {
   const t = useTranslations("Landing");
@@ -149,86 +161,11 @@ export default function Home() {
     scrollRef.current?.scrollBy({ left: 420, behavior: "smooth" });
   };
 
-  const nextImage = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setSelectedIndex((current) =>
-      current === null ? 0 : (current + 1) % ALL_IMAGES.length,
-    );
-  };
-
-  const prevImage = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setSelectedIndex((current) =>
-      current === null ? 0 : (current - 1 + ALL_IMAGES.length) % ALL_IMAGES.length,
-    );
-  };
 
   return (
     <main className="main-content landing-shell">
       <section className="landing-intro">
-        {/* Ambient hero backdrop: video on capable screens, still elsewhere.
-            The still is also the poster, so nothing flashes while loading. */}
-        <video
-          className="landing-intro-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/brand/hero-chart-skyline-16x9.jpg"
-          aria-hidden="true"
-        >
-          <source src="/brand/hero-chart-skyline-loop.webm" type="video/webm" />
-          <source src="/brand/hero-chart-skyline-loop.mp4" type="video/mp4" />
-        </video>
-        <div className="landing-intro-photo" aria-hidden="true" />
-        <div className="landing-intro-scrim" aria-hidden="true" />
-        <div className="landing-intro-orb landing-intro-orb-left" aria-hidden="true" />
-        <div className="landing-intro-orb landing-intro-orb-right" aria-hidden="true" />
-        <HeroConstellation className="landing-intro-constellation" />
-
-        <div className="landing-container landing-hero">
-          <motion.div
-            className="landing-hero-copy"
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="landing-eyebrow">
-              <GoldGlyph kind="halo" className="landing-eyebrow-icon" />
-              {t('heroEyebrow')}
-            </span>
-
-            <h1 className="landing-hero-title">
-              {t.rich("heroTitle", {
-                accent: (chunks) => <span>{chunks}</span>,
-              })}
-            </h1>
-
-            <p className="landing-hero-lead">
-              {t("heroSubtitle")}
-            </p>
-
-            <div className="landing-hero-actions">
-              <Link href="/#pricing" className="btn-primary large">
-                {t('getAccess')}
-                <ArrowRight size={18} />
-              </Link>
-              <Link href="/tutorials" className="btn-secondary large">
-                {t('watchTutorials')}
-              </Link>
-            </div>
-
-            {/* <div className="landing-pill-row" aria-label="GoldBot highlights">
-              {HERO_PILLS.map((pill) => (
-                <span key={pill} className="landing-pill">
-                  {pill}
-                </span>
-              ))}
-            </div> */}
-          </motion.div>
-
-        </div>
+        <LandingHero />
 
         <div className="landing-container landing-proof-band">
           <motion.div
@@ -243,7 +180,16 @@ export default function Home() {
             </span>
             <h2 className="landing-proof-title">
               {t('builtExclusivelyFor')}
-              <span>{t('metaTraderSuffix')}</span>
+              <span className="mt5-inline">
+                <Image
+                  src="/brand/metatrader-5.png"
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="mt5-inline-logo"
+                />
+                {t('metaTraderSuffix')}
+              </span>
             </h2>
             <p className="landing-proof-text">
               GoldBot cannot be installed on MT4 or other trading platforms. A valid MT5 account with your preferred broker is required, and Broker Time must be set to GMT+3 for license locking.</p>
@@ -268,16 +214,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section proof-gallery-section">
-        <div className="landing-container proof-gallery-layout">
+      <section className="landing-section vr-section">
+        <div className="landing-container vr-head">
           <motion.div
-            className="section-heading section-heading-left"
+            className="vr-head-copy"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="landing-eyebrow">Verified results</span>
+            <span className="vr-eyebrow">
+              <span className="vr-live-dot" aria-hidden="true" />
+              Verified results
+            </span>
             <h2 className="section-title">
               Real accounts. Real screenshots.
               <span> No stock avatars.</span>
@@ -287,55 +236,84 @@ export default function Home() {
               pulled straight from the terminal, not a rendered mockup. Judge it
               on the trades, not the marketing.
             </p>
-            <div className="proof-chip-row">
-              <span>Verified results</span>
-              <span>Account-locked security</span>
-              <span>MT5 exclusive</span>
-            </div>
           </motion.div>
 
-          <div className="proof-carousel-shell">
-            <button
-              type="button"
-              className="proof-carousel-button proof-carousel-button-left"
-              onClick={scrollLeft}
-              aria-label="Scroll testimonials left"
-            >
-              <ChevronLeft size={22} />
-            </button>
+          <ul className="vr-points">
+            {VERIFIED_POINTS.map(({ icon: Icon, title, detail }, index) => (
+              <motion.li
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+              >
+                <span className="vr-point-icon">
+                  <Icon size={18} />
+                </span>
+                <span>
+                  <strong>{title}</strong>
+                  <small>{detail}</small>
+                </span>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
 
-            <button
-              type="button"
-              className="proof-carousel-button proof-carousel-button-right"
-              onClick={scrollRight}
-              aria-label="Scroll testimonials right"
-            >
-              <ChevronRight size={22} />
-            </button>
-
-            <div className="proof-carousel-track" ref={scrollRef}>
-              <div className="proof-carousel-strip">
-                {ALL_IMAGES.map((image, index) => (
-                  <button
-                    key={`${image}-${index}`}
-                    type="button"
-                    className="proof-shot"
-                    onClick={() => setSelectedIndex(index)}
-                    aria-label={`Open proof image ${index + 1}`}
-                  >
-                    <div className="proof-shot-image">
-                      <Image
-                        src={`/testimonials/${image}`}
-                        alt={`GoldBot member performance screenshot ${index + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 72vw, 300px"
-                        className="proof-shot-photo"
-                      />
-                    </div>
-                  </button>
-                ))}
-              </div>
+        <div className="vr-rail">
+          <div className="vr-track" ref={scrollRef}>
+            <div className="vr-strip">
+              {ALL_IMAGES.map((image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  type="button"
+                  className="vr-card"
+                  onClick={() => setSelectedIndex(index)}
+                  aria-label={`Open proof image ${index + 1}`}
+                >
+                  <span className="vr-card-top">
+                    <span className="vr-card-tag">
+                      <Image src="/brand/metatrader-5.png" alt="" width={14} height={14} />
+                      MT5
+                    </span>
+                    <span className="vr-card-verified">
+                      <VerifiedBadge hoverTarget=".vr-card" />
+                      Verified
+                    </span>
+                  </span>
+                  <span className="vr-card-frame">
+                    <Image
+                      src={`/testimonials/${image}`}
+                      alt={`GoldBot member performance screenshot ${index + 1}`}
+                      fill
+                      sizes="(max-width: 768px) 70vw, 280px"
+                      className="vr-card-photo"
+                    />
+                    <span className="vr-card-zoom" aria-hidden="true">
+                      <Maximize2 size={16} />
+                    </span>
+                  </span>
+                  <span className="vr-card-meta">
+                    <span>{describeShot(image)}</span>
+                    <time>{shotDate(image)}</time>
+                  </span>
+                </button>
+              ))}
             </div>
+          </div>
+        </div>
+
+        <div className="landing-container vr-foot">
+          <p>
+            <span className="vr-count">Proof of results</span> · straight from
+            live MT5 terminals · tap any capture to enlarge
+          </p>
+          <div className="vr-controls">
+            <button type="button" onClick={scrollLeft} aria-label="Scroll testimonials left">
+              <ChevronLeft size={20} />
+            </button>
+            <button type="button" onClick={scrollRight} aria-label="Scroll testimonials right">
+              <ChevronRight size={20} />
+            </button>
           </div>
         </div>
       </section>
@@ -347,10 +325,10 @@ export default function Home() {
         </p>
       </div>
 
-      <section id="pricing" className="landing-section pricing-showcase-section">
+      <section id="pricing" className="landing-section pc-section">
         <div className="landing-container">
           <motion.div
-            className="section-heading"
+            className="section-heading pc-heading"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
@@ -358,237 +336,301 @@ export default function Home() {
           >
             <span className="landing-eyebrow">Pricing</span>
             <h2 className="section-title">
-              Structured access with a cleaner glass-and-gold pricing system.
+              Simple plans.
+              <span> Serious execution.</span>
             </h2>
             <p className="section-copy">
-              Two pricing groups, bigger typography, better spacing, and enough
-              visual hierarchy to make the popular plan obvious without shouting.
+              Every plan delivers a GoldBot build compiled for your MT5 account.
+              Prices shown are for {FLAGSHIP_ROBOT.name}, our four-range
+              flagship — robots trading one to seven ranges are in the{" "}
+              <Link href="/catalog">catalog</Link>.
             </p>
           </motion.div>
 
-          <div className="pricing-group-shell">
-            <div className="pricing-group-head">
-              <span>Recurring subscriptions</span>
-              <p>
-                Prices shown are for {FLAGSHIP_ROBOT.name}, our four-range
-                flagship. Robots trading from one to seven ranges are in the{" "}
-                <Link href="/catalog">catalog</Link>.
-              </p>
-            </div>
+          <div className="pc-grid">
+            {subscriptionPlans.map((plan, index) => (
+              <motion.article
+                key={plan.id}
+                className={`pc-card ${plan.featured ? "is-featured" : ""}`}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="pc-card-head">
+                  <h3>{plan.title}</h3>
+                  {plan.featured && <span className="pc-badge">Most popular</span>}
+                </div>
+                <p className="pc-tagline">{plan.note.replace(/[()]/g, "")}</p>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-four">
-              {subscriptionPlans.map((plan) => (
-                <article
-                  key={plan.id}
-                  className={`pricing-tier ${plan.featured ? "pricing-tier-featured" : ""}`}
+                <div className="pc-price">
+                  <strong>{plan.price}</strong>
+                  <span>{plan.period}</span>
+                </div>
+
+                <Link
+                  href={`/checkout?tier=${plan.id}&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
+                  className={`pc-cta ${plan.featured ? "is-primary" : ""}`}
                 >
-                  {plan.featured && <div className="pricing-tier-badge">Most Popular</div>}
-                  <GoldGlyph kind="halo" className="pricing-tier-glyph" />
-                  <span className="pricing-tier-label">{plan.title}</span>
-                  <div className="pricing-tier-price">
-                    {plan.price}
-                    <span>{plan.period}</span>
-                  </div>
-                  <p className="pricing-tier-note">{plan.note}</p>
-                  <ul className="pricing-tier-list">
-                    {plan.features.map((feature: string) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={`/checkout?tier=${plan.id}&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
-                    className="btn-primary fill"
-                  >
-                    Get MultiRange 4
-                  </Link>
-                </article>
-              ))}
-            </div>
+                  Get MultiRange 4
+                  <ArrowRight size={16} />
+                </Link>
+
+                <div className="pc-divider" />
+
+                <ul className="pc-features">
+                  {plan.features.map((feature: string) => (
+                    <li key={feature}>
+                      <span className="pc-check" aria-hidden="true">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </motion.article>
+            ))}
           </div>
 
-          <div className="pricing-group-shell pricing-group-shell-secondary">
-            <div className="pricing-group-head pricing-group-head-with-art">
-              <div>
-                <span>{t("freeTrialTitle")}</span>
-                <p>
-                  {t("freeTrialActionCopy", {
-                    fallback:
-                      "Take a short hands-on pass through the GoldBot experience before moving into a full recurring plan.",
-                  })}
-                </p>
-              </div>
+          <ul className="pc-assurances">
+            <li>
+              <KeyRound size={16} aria-hidden="true" />
+              Account-locked build
+            </li>
+            <li>
+              <Zap size={16} aria-hidden="true" />
+              Delivered automatically after checkout
+            </li>
+            <li>
+              <Image src="/brand/metatrader-5.png" alt="" width={16} height={16} />
+              Runs on MetaTrader 5
+            </li>
+          </ul>
+
+          <div className="pc-trial">
+            <motion.div
+              className="pc-trial-intro"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="landing-eyebrow">
+                <Clock size={14} aria-hidden="true" />
+                Try it first
+              </span>
+              <h3>Not ready to commit?</h3>
+              <p>
+                {t("freeTrialActionCopy", {
+                  fallback:
+                    "Take a short hands-on pass through the GoldBot experience before moving into a full recurring plan.",
+                })}
+              </p>
               <Image
                 src="/brand/hourglass-chart-16x9.jpg"
                 alt=""
-                width={280}
-                height={158}
-                className="pricing-group-art"
+                width={560}
+                height={315}
+                className="pc-trial-art"
               />
-            </div>
+            </motion.div>
 
-            <div className="pricing-showcase-grid pricing-showcase-grid-two">
-              {passPlans.map((plan) => (
-                <article key={plan.id} className="pricing-tier pricing-tier-secondary">
-                  <GoldGlyph kind="vault" className="pricing-tier-glyph" />
-                  <span className="pricing-tier-label">{plan.title}</span>
-                  <div className="pricing-tier-price">
-                    {plan.price}
-                    <span>{plan.period}</span>
-                  </div>
-                  <p className="pricing-tier-note">{plan.note}</p>
-                  <ul className="pricing-tier-list">
-                    {plan.features.map((feature: string) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
-                  {trial && trial.offered && !trial.available ? (
-                    <>
-                      <span
-                        className="btn-secondary fill"
-                        aria-disabled="true"
-                        style={{ textAlign: "center", opacity: 0.75 }}
-                      >
-                        Currently unavailable
-                      </span>
-                      <p className="pricing-tier-note" style={{ marginTop: "0.6rem" }}>
-                        {trial.message}
-                        {trial.resetsAt
-                          ? ` Try again after ${new Date(trial.resetsAt).toLocaleDateString()}.`
-                          : ""}
-                      </p>
-                    </>
-                  ) : trial && !trial.offered ? (
-                    <span
-                      className="btn-secondary fill"
-                      aria-disabled="true"
-                      style={{ textAlign: "center", opacity: 0.75 }}
-                    >
-                      No trial available right now
-                    </span>
-                  ) : (
-                    <Link
-                      href={`/checkout?tier=${plan.id}&robot=${trial?.robotSlug ?? "precision-trader"}&name=${encodeURIComponent(trial?.robotName ?? "PrecisionTrader")}`}
-                      className="btn-primary fill"
-                    >
-                      Start free trial{trial?.robotName ? ` — ${trial.robotName}` : ""}
-                    </Link>
-                  )}
-                </article>
-              ))}
-
-              <article className="pricing-tier pricing-tier-secondary pricing-tier-preview">
-                <div className="pricing-tier-badge pricing-tier-badge-preview">
-                  Coming Soon
+            {passPlans.map((plan) => (
+              <motion.article
+                key={plan.id}
+                className="pc-card pc-card-trial"
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.08 }}
+              >
+                <div className="pc-card-head">
+                  <h3>{plan.title}</h3>
                 </div>
-                <GoldGlyph kind="halo" className="pricing-tier-glyph" />
-                <span className="pricing-tier-label">
-                  Pay After Trial
-                </span>
-                <p className="pricing-tier-preview-hook">
-                  Zero upfront. Pay only if your first 3 days close in profit.
-                </p>
-                <p className="pricing-tier-note">
-                  We&apos;re building the verification behind this so results are checked fairly before anyone is charged.
-                </p>
-                <ul className="pricing-tier-list">
-                  <li>Same 3-day hands-on trial</li>
-                  <li>No card required to start</li>
-                  <li>Charged only on a profitable trial</li>
+                <p className="pc-tagline">{plan.note}</p>
+                <div className="pc-price">
+                  <strong>{plan.price}</strong>
+                  <span>{plan.period}</span>
+                </div>
+
+                {trial && trial.offered && !trial.available ? (
+                  <>
+                    <span className="pc-cta is-disabled" aria-disabled="true">
+                      Currently unavailable
+                    </span>
+                    <p className="pc-fineprint">
+                      {trial.message}
+                      {trial.resetsAt
+                        ? ` Try again after ${new Date(trial.resetsAt).toLocaleDateString()}.`
+                        : ""}
+                    </p>
+                  </>
+                ) : trial && !trial.offered ? (
+                  <span className="pc-cta is-disabled" aria-disabled="true">
+                    No trial available right now
+                  </span>
+                ) : (
+                  <Link
+                    href={`/checkout?tier=${plan.id}&robot=${trial?.robotSlug ?? "precision-trader"}&name=${encodeURIComponent(trial?.robotName ?? "PrecisionTrader")}`}
+                    className="pc-cta is-primary"
+                  >
+                    Start free trial{trial?.robotName ? ` — ${trial.robotName}` : ""}
+                    <ArrowRight size={16} />
+                  </Link>
+                )}
+
+                <div className="pc-divider" />
+
+                <ul className="pc-features">
+                  {plan.features.map((feature: string) => (
+                    <li key={feature}>
+                      <span className="pc-check" aria-hidden="true">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
                 </ul>
+              </motion.article>
+            ))}
+
+            <motion.article
+              className="pc-card pc-card-soon"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.16 }}
+            >
+              <div className="pc-card-head">
+                <h3>Pay After Trial</h3>
+                <span className="pc-badge is-muted">
+                  <Sparkles size={12} aria-hidden="true" />
+                  Coming soon
+                </span>
+              </div>
+              <p className="pc-soon-hook">
+                Zero upfront. Pay only if your first 3 days close in profit.
+              </p>
+              <p className="pc-tagline">
+                We&apos;re building the verification behind this so results are
+                checked fairly before anyone is charged.
+              </p>
+              <ul className="pc-features">
+                {[
+                  "Same 3-day hands-on trial",
+                  "No card required to start",
+                  "Charged only on a profitable trial",
+                ].map((feature) => (
+                  <li key={feature}>
+                    <span className="pc-check is-muted" aria-hidden="true">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <div className="pc-notify">
                 <NotifyMeForm source="al-ai-fx:pay-after-trial" />
-              </article>
-            </div>
+              </div>
+            </motion.article>
+          </div>
 
-            <p className="pricing-licensing-link">
-              Need lifetime access, source code, or a private deal?{" "}
-              <Link href="/licensing">See licensing options</Link>
-            </p>
-
-            <p className="pricing-licensing-link">
-              GoldBot is one of several strategies we ship.{" "}
-              <Link href="/catalog">Browse all robots</Link>
-            </p>
+          <div className="pc-more">
+            <Link href="/licensing" className="pc-more-link">
+              <KeyRound size={18} aria-hidden="true" />
+              <span>
+                <strong>Lifetime, source code, or a private deal?</strong>
+                <small>See licensing options</small>
+              </span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            <Link href="/catalog" className="pc-more-link">
+              <Layers size={18} aria-hidden="true" />
+              <span>
+                <strong>GoldBot is one of several strategies</strong>
+                <small>Browse all robots</small>
+              </span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="landing-section final-cta-rebuild">
+      <section className="landing-section dp-section">
         <div className="landing-container">
           <motion.div
-            className="final-cta-panel"
-            initial={{ opacity: 0, y: 24 }}
+            className="dp-panel"
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <GoldGlyph kind="halo" className="final-cta-glyph" />
-            <span className="landing-eyebrow">{t("deployGoldBot")}</span>
-            <h2 className="section-title">
-              Ready to move from checkout to chart execution in minutes?
-            </h2>
-            <p className="section-copy">
-              Start with the monthly plan, lock the EA to your MT5 account, and
-              move through the setup flow without the usual friction.
-            </p>
+            <div className="dp-art" aria-hidden="true">
+              <Image
+                src="/brand/hero-robot-gold.png"
+                alt=""
+                fill
+                sizes="(max-width: 900px) 100vw, 50vw"
+                className="dp-art-img"
+              />
+            </div>
 
-            <div className="landing-hero-actions final-cta-actions">
-              <Link
-                href={`/checkout?tier=1-month&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
-                className="btn-primary large"
-              >
-                Start Monthly Plan
-                <ArrowRight size={18} />
-              </Link>
-              <Link href="/tutorials" className="btn-secondary large">
-                See Setup Tutorials
-              </Link>
+            <div className="dp-copy">
+              <span className="landing-eyebrow">{t("deployGoldBot")}</span>
+              <h2 className="section-title">
+                From checkout to chart
+                <span> in minutes.</span>
+              </h2>
+              <p className="section-copy">
+                Start with the monthly plan, lock the EA to your MT5 account, and
+                move through the setup flow without the usual friction.
+              </p>
+
+              <ol className="dp-steps">
+                {DEPLOY_STEPS.map((step, index) => (
+                  <motion.li
+                    key={step.title}
+                    initial={{ opacity: 0, x: -16 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: 0.5, delay: 0.2 + index * 0.12 }}
+                  >
+                    <span className="dp-step-num">{index + 1}</span>
+                    <span>
+                      <strong>{step.title}</strong>
+                      <small>{step.detail}</small>
+                    </span>
+                  </motion.li>
+                ))}
+              </ol>
+
+              <div className="dp-actions">
+                <Link
+                  href={`/checkout?tier=1-month&robot=${FLAGSHIP_ROBOT.slug}&name=${encodeURIComponent(FLAGSHIP_ROBOT.name)}`}
+                  className="btn-primary large"
+                >
+                  Start Monthly Plan
+                  <ArrowRight size={18} />
+                </Link>
+                <Link href="/tutorials" className="btn-secondary large">
+                  See Setup Tutorials
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {selectedIndex !== null && (
-        <div className="gallery-modal" onClick={() => setSelectedIndex(null)}>
-          <div className="gallery-modal-frame" onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              className="gallery-modal-nav gallery-modal-nav-left"
-              onClick={prevImage}
-              aria-label="Previous proof image"
-            >
-              <ChevronLeft size={24} />
-            </button>
-
-            <button
-              type="button"
-              className="gallery-modal-nav gallery-modal-nav-right"
-              onClick={nextImage}
-              aria-label="Next proof image"
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            <button
-              type="button"
-              className="gallery-modal-close"
-              onClick={() => setSelectedIndex(null)}
-              aria-label="Close proof image"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="gallery-modal-image">
-              <Image
-                src={`/testimonials/${ALL_IMAGES[selectedIndex]}`}
-                alt="Expanded GoldBot member performance screenshot"
-                fill
-                sizes="90vw"
-                className="gallery-modal-photo"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {selectedIndex !== null && (
+          <ProofViewer
+            shots={PROOF_SHOTS}
+            index={selectedIndex % PROOF_SHOTS.length}
+            onIndexChange={setSelectedIndex}
+            onClose={() => setSelectedIndex(null)}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }

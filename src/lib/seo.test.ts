@@ -2,9 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  breadcrumbJsonLd,
   buildLocalizedUrl,
+  buildMetadata,
   getPageMetadata,
   getPublicSitemapEntries,
+  jsonLdScript,
+  noIndexMetadata,
+  robotProductJsonLd,
 } from "./seo";
 
 test("buildLocalizedUrl keeps the default locale unprefixed", () => {
@@ -62,4 +67,61 @@ test("public sitemap entries cover every locale and public page", () => {
   assert.equal(homeEntry?.priority, 1);
   assert.equal(germanSupportEntry?.changeFrequency, "monthly");
   assert.equal(checkoutEntry, undefined);
+});
+
+test("buildMetadata gives every page its own canonical, never the home page's", () => {
+  const meta = buildMetadata({ locale: "en", path: "/catalog", title: "t", description: "d" });
+  assert.equal(meta.alternates?.canonical, "https://www.al-ai-fx.xyz/catalog");
+
+  const de = buildMetadata({ locale: "de", path: "/features", title: "t", description: "d" });
+  assert.equal(de.alternates?.canonical, "https://www.al-ai-fx.xyz/de/features");
+  const languages = de.alternates?.languages as Record<string, string>;
+  assert.equal(languages["x-default"], "https://www.al-ai-fx.xyz/features");
+  assert.equal(Object.keys(languages).length, 8);
+});
+
+test("buildMetadata indexes by default and can opt out", () => {
+  const indexed = buildMetadata({ locale: "en", path: "/faq", title: "t", description: "d" });
+  assert.equal((indexed.robots as { index: boolean }).index, true);
+
+  const hidden = buildMetadata({ locale: "en", path: "/faq", title: "t", description: "d", index: false });
+  assert.equal((hidden.robots as { index: boolean }).index, false);
+});
+
+test("noIndexMetadata hides the page and clears the inherited canonical", () => {
+  const meta = noIndexMetadata("Sign in");
+  assert.deepEqual(meta.robots, { index: false, follow: false });
+  assert.equal(meta.alternates?.canonical, null);
+});
+
+test("robotProductJsonLd lists one USD offer per plan with absolute URLs", () => {
+  const product = robotProductJsonLd({
+    locale: "en",
+    slug: "gold-multirange-4",
+    name: "Gold MultiRange 4",
+    description: "Four ranges",
+    image: "/robots/gold-multirange-4.jpg",
+    offers: [{ name: "Monthly", price: 99, checkoutPath: "/checkout?tier=1-month&robot=gold-multirange-4" }],
+  });
+  assert.equal(product["@type"], "Product");
+  assert.equal(product.url, "https://www.al-ai-fx.xyz/robots/gold-multirange-4");
+  assert.equal(product.image, "https://www.al-ai-fx.xyz/robots/gold-multirange-4.jpg");
+  const [offer] = product.offers ?? [];
+  assert.equal(offer.price, "99.00");
+  assert.equal(offer.priceCurrency, "USD");
+  assert.equal(offer.url, "https://www.al-ai-fx.xyz/checkout?tier=1-month&robot=gold-multirange-4");
+});
+
+test("breadcrumbJsonLd numbers items and localises their URLs", () => {
+  const crumbs = breadcrumbJsonLd("es", [
+    { name: "Home", path: "/" },
+    { name: "Catalog", path: "/catalog" },
+  ]);
+  assert.equal(crumbs.itemListElement[1].position, 2);
+  assert.equal(crumbs.itemListElement[1].item, "https://www.al-ai-fx.xyz/es/catalog");
+});
+
+test("jsonLdScript cannot close its own script tag", () => {
+  const { __html } = jsonLdScript({ text: "</script><script>alert(1)</script>" });
+  assert.ok(!__html.includes("</script>"));
 });

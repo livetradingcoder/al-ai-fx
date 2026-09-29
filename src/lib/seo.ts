@@ -8,7 +8,9 @@ const SITE_NAME = "GoldBot by AL-ai-FX";
 // it links to. New filename rather than overwriting the old one, because
 // WhatsApp/Facebook cache previews by image URL and would keep the robot.
 const OG_IMAGE_URL = `${SITE_URL}/og/goldbot-share-1200x630.jpg`;
-const LAST_MODIFIED = new Date("2026-04-19T00:00:00.000Z");
+// Bump when public page content changes materially; search engines use it to
+// decide what to recrawl.
+const LAST_MODIFIED = new Date("2026-09-29T00:00:00.000Z");
 
 export type Locale = (typeof routing.locales)[number];
 export type PublicPageKey =
@@ -396,7 +398,11 @@ export function buildLocalizedUrl(locale: string, pathname: string) {
 }
 
 function getLanguageAlternates(page: PublicPageKey) {
-  const pathname = getPathname(page);
+  return getPathAlternates(getPathname(page));
+}
+
+/** hreflang map for any path: every locale plus x-default (English). */
+export function getPathAlternates(pathname: string) {
   const alternates = Object.fromEntries(
     routing.locales.map((locale) => [locale, buildLocalizedUrl(locale, pathname)]),
   ) as Record<string, string>;
@@ -464,6 +470,215 @@ export function getPublicSitemapEntries(): MetadataRoute.Sitemap {
       lastModified: LAST_MODIFIED,
       changeFrequency: PAGE_CHANGE_FREQUENCY[page],
       priority: PAGE_PRIORITIES[page],
+      alternates: { languages: getPathAlternates(pathname) },
     }));
   });
+}
+
+export { LAST_MODIFIED as SITE_LAST_MODIFIED, SITE_NAME };
+
+export function absoluteUrl(pathOrUrl: string) {
+  return new URL(pathOrUrl, SITE_URL).toString();
+}
+
+/**
+ * Metadata for any route, including ones outside the PublicPageKey registry
+ * (catalog, features, robot pages…). Every page MUST set its own canonical:
+ * the root layout carries the home page's, and Next merges layout metadata
+ * into pages that don't override it — which would tell Google every such page
+ * is a duplicate of the home page.
+ */
+export function buildMetadata({
+  locale,
+  path,
+  title,
+  description,
+  index = true,
+  image,
+  imageAlt,
+  type = "website",
+  englishOnly = false,
+}: {
+  locale: string;
+  path: string;
+  title: string;
+  description: string;
+  index?: boolean;
+  image?: string | null;
+  imageAlt?: string;
+  type?: "website" | "article";
+  /** Content exists only in English: every locale's URL points its canonical
+   *  at the English page, and no hreflang alternates are advertised. */
+  englishOnly?: boolean;
+}): Metadata {
+  const canonical = buildLocalizedUrl(englishOnly ? routing.defaultLocale : locale, path);
+  const imageUrl = image ? absoluteUrl(image) : OG_IMAGE_URL;
+  const images = [
+    image
+      ? { url: imageUrl, alt: imageAlt ?? title }
+      : { url: imageUrl, width: 1200, height: 630, alt: SITE_NAME },
+  ];
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: englishOnly ? { en: canonical, "x-default": canonical } : getPathAlternates(path),
+    },
+    openGraph: { title, description, url: canonical, siteName: SITE_NAME, type, images },
+    twitter: { card: "summary_large_image", title, description, images: [imageUrl] },
+    robots: index
+      ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
+      : { index: false, follow: true },
+  };
+}
+
+/** Metadata for private/utility screens: no index, no canonical to home. */
+export function noIndexMetadata(title: string): Metadata {
+  return {
+    title,
+    robots: { index: false, follow: false },
+    alternates: { canonical: null, languages: {} },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// JSON-LD. Only facts the site states elsewhere — no ratings, reviews or
+// performance figures, which Google treats as spam when unsupported.
+// ---------------------------------------------------------------------------
+const ORG_ID = `${SITE_URL}/#organization`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
+
+export function organizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": ORG_ID,
+        name: "AL-ai-FX",
+        alternateName: "AL-ai-FX Algorithms",
+        url: SITE_URL,
+        logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
+        email: "support@AL-ai-FX.com",
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: "support@AL-ai-FX.com",
+          availableLanguage: ["English", "German", "Spanish", "Arabic", "Hindi", "Bengali", "Urdu"],
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": WEBSITE_ID,
+        url: SITE_URL,
+        name: SITE_NAME,
+        publisher: { "@id": ORG_ID },
+        inLanguage: [...routing.locales],
+      },
+    ],
+  };
+}
+
+export function breadcrumbJsonLd(locale: string, trail: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      item: buildLocalizedUrl(locale, crumb.path),
+    })),
+  };
+}
+
+export type JsonLdOffer = { name: string; price: number; checkoutPath: string };
+
+/** A robot as a Product (it is sold as a licence) with one Offer per plan. */
+export function robotProductJsonLd({
+  locale,
+  slug,
+  name,
+  description,
+  image,
+  offers,
+}: {
+  locale: string;
+  slug: string;
+  name: string;
+  description: string;
+  image?: string | null;
+  offers: JsonLdOffer[];
+}) {
+  const url = buildLocalizedUrl(locale, `/robots/${slug}`);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${url}#product`,
+    name,
+    description,
+    url,
+    image: absoluteUrl(image || "/og/goldbot-share-1200x630.jpg"),
+    brand: { "@type": "Brand", name: "GoldBot" },
+    manufacturer: { "@id": ORG_ID },
+    category: "Trading software > MetaTrader 5 Expert Advisor",
+    ...(offers.length > 0 && {
+      offers: offers.map((offer) => ({
+        "@type": "Offer",
+        name: offer.name,
+        price: offer.price.toFixed(2),
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: absoluteUrl(offer.checkoutPath),
+        seller: { "@id": ORG_ID },
+      })),
+    }),
+  };
+}
+
+/** Serialise JSON-LD for a <script> tag without letting "</script>" through. */
+export function jsonLdScript(data: unknown) {
+  return { __html: JSON.stringify(data).replace(/</g, "\\u003c") };
+}
+
+export function articleJsonLd({
+  path,
+  headline,
+  description,
+  updated,
+}: {
+  path: string;
+  headline: string;
+  description: string;
+  updated: string;
+}) {
+  const url = buildLocalizedUrl(routing.defaultLocale, path);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${url}#article`,
+    headline,
+    description,
+    url,
+    mainEntityOfPage: url,
+    image: OG_IMAGE_URL,
+    inLanguage: "en",
+    dateModified: updated,
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+  };
+}
+
+export function faqPageJsonLd(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
 }

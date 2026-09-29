@@ -1,94 +1,132 @@
 "use client";
+
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { ArrowRight, CircleAlert, LoaderCircle, Lock, LogIn, Mail } from "lucide-react";
 
 import { Link } from "@/i18n/routing";
+import { AuthAlert, AuthField, AuthShell } from "@/components/auth/AuthShell";
 
-export default function LoginPage() {
+// Only same-site paths are honoured, so ?callbackUrl= can't bounce a
+// freshly signed-in user to another host.
+function safeCallback(raw: string | null, fallback: string) {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return fallback;
+  return raw;
+}
+
+// NextAuth reports failures as codes; blocked/deleted accounts throw their
+// own readable message from authorize(), which is passed through as-is.
+function describeError(code: string | null | undefined, fallback: string) {
+  if (!code) return null;
+  if (code === "CredentialsSignin") return "Incorrect email or password.";
+  if (code === "SessionRequired") return "Please sign in to continue.";
+  if (/restricted|deleted/i.test(code)) return code;
+  return fallback;
+}
+
+function LoginForm() {
   const t = useTranslations("Auth");
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const fallback = locale === "en" ? "/dashboard" : `/${locale}/dashboard`;
+  const callbackUrl = safeCallback(searchParams?.get("callbackUrl") ?? null, fallback);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(() =>
+    describeError(searchParams?.get("error"), t("unexpectedError")),
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     try {
-      await signIn("credentials", { 
-        email, 
-        password, 
-        callbackUrl: locale === "en" ? "/dashboard" : `/${locale}/dashboard`,
-        redirect: true 
-      });
+      const res = await signIn("credentials", { email, password, redirect: false });
+      if (!res || res.error) {
+        setError(describeError(res?.error ?? "unknown", t("unexpectedError")));
+        setLoading(false);
+        return;
+      }
+      // Full navigation so the new session is picked up everywhere.
+      window.location.assign(callbackUrl);
     } catch {
       setError(t("unexpectedError"));
+      setLoading(false);
     }
   };
 
   return (
-    <main className="main-content" style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse at top, rgba(245, 158, 11, 0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom, rgba(41, 98, 255, 0.06) 0%, transparent 50%)'
-    }}>
-      <div className="card-glass" style={{ width: '100%', maxWidth: '480px', padding: '48px 40px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.75rem', textAlign: 'center', fontWeight: 800 }}>{t("secureLogin")}</h1>
-        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '2.5rem', fontSize: '1.05rem' }}>{t("accessDashboard")}</p>
-        
+    <AuthShell
+      icon={LogIn}
+      eyebrow={t("secureLogin")}
+      title="Welcome back"
+      subtitle={t("accessDashboard")}
+      footer={
+        <>
+          {t("noAccount")} <Link href="/#pricing">{t("buyGoldBot")}</Link>
+        </>
+      }
+    >
+      <form className="au-form" onSubmit={handleSubmit} noValidate={false}>
         {error && (
-          <div style={{ 
-            background: 'rgba(239, 68, 68, 0.1)', 
-            border: '2px solid rgba(239, 68, 68, 0.3)', 
-            color: '#ef4444', 
-            padding: '1.25rem', 
-            borderRadius: 'var(--radius-md)', 
-            marginBottom: '2rem',
-            textAlign: 'center',
-            fontSize: '0.95rem',
-            fontWeight: 600
-          }}>
+          <AuthAlert tone="error">
+            <CircleAlert size={16} aria-hidden="true" />
             {error}
-          </div>
+          </AuthAlert>
         )}
-        
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>{t("email")}</label>
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
-              placeholder="your@email.com"
-              required 
-            />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>{t("password")}</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
-              placeholder="••••••••"
-              required 
-            />
-          </div>
-          <button type="submit" className="btn-primary fill" style={{ marginTop: '0.5rem' }}>{t("signIn")}</button>
-          <div style={{ textAlign: "center", marginTop: "-0.75rem" }}>
-            <Link href="/forgot-password" style={{ color: "var(--text-secondary)", fontSize: "0.95rem", textDecoration: "none", transition: 'color 0.2s' }}>
-              Email me a magic link
-            </Link>
-          </div>
-        </form>
-        <p style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
-          {t("noAccount")} <Link href="/#pricing" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{t("buyGoldBot")}</Link>
-        </p>
-      </div>
-    </main>
+
+        <AuthField
+          label={t("email")}
+          icon={Mail}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@domain.com"
+          autoComplete="email"
+          required
+          autoFocus
+        />
+
+        <AuthField
+          label={t("password")}
+          icon={Lock}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          required
+          trailing={<Link href="/forgot-password">{t("forgotPassword")}</Link>}
+        />
+
+        <button type="submit" className="au-submit" disabled={loading}>
+          {loading ? (
+            <LoaderCircle size={18} className="au-spin" aria-hidden="true" />
+          ) : (
+            <ArrowRight size={18} aria-hidden="true" />
+          )}
+          {loading ? "Signing in…" : t("signIn")}
+        </button>
+
+        <div className="au-divider">or</div>
+
+        <Link href="/forgot-password" className="au-submit is-secondary">
+          <Mail size={16} aria-hidden="true" />
+          Email me a magic link
+        </Link>
+      </form>
+    </AuthShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

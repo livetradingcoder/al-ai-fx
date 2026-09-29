@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { RETIRED_ROBOTS } from "@/config/pricing";
 import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG, formatUsd } from "@/lib/catalog-tiers";
 import type { PricingTier } from "@prisma/client";
+import { breadcrumbJsonLd, buildMetadata, jsonLdScript, robotProductJsonLd } from "@/lib/seo";
 
 // English-only page (like /catalog): copy comes from DB Robot fields, which are
 // single-language — registering a PublicPageKey would force 7-locale PAGE_COPY
@@ -27,19 +30,27 @@ async function getRobot(slug: string) {
 export async function generateMetadata(props: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await props.params;
+  const { locale, slug } = await props.params;
   const robot = await getRobot(slug);
-  if (!robot) return { title: "Robot not found — AL-ai-FX" };
-  return {
-    title: `${robot.name} — AL-ai-FX`,
+  if (!robot) return { title: "Robot not found — AL-ai-FX", robots: { index: false, follow: true } };
+  return buildMetadata({
+    locale,
+    path: `/robots/${robot.slug}`,
+    title: `${robot.name} — MT5 gold trading robot | GoldBot by AL-ai-FX`,
     description: robot.shortDescription,
-  };
+    image: robot.artworkUrl ?? (existsSync(bundledArtwork(robot.slug)) ? `/robots/${robot.slug}.jpg` : null),
+    imageAlt: robot.name,
+  });
+}
+
+function bundledArtwork(slug: string) {
+  return path.join(process.cwd(), "public", "robots", `${slug}.jpg`);
 }
 
 export default async function RobotDetailPage(props: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await props.params;
+  const { locale, slug } = await props.params;
   const robot = await getRobot(slug);
   if (!robot) {
     // Temporary on purpose: a delisted robot can be listed again.
@@ -61,8 +72,30 @@ export default async function RobotDetailPage(props: {
     .map((p) => p.trim())
     .filter(Boolean);
 
+  // Structured data: the robot as a Product with one Offer per public paid
+  // plan, plus its place in the site (Home > Catalog > Robot).
+  const productLd = robotProductJsonLd({
+    locale,
+    slug: robot.slug,
+    name: robot.name,
+    description: robot.shortDescription,
+    image: robot.artworkUrl ?? (existsSync(bundledArtwork(robot.slug)) ? `/robots/${robot.slug}.jpg` : null),
+    offers: paidPrices.map((p) => ({
+      name: `${robot.name} — ${TIER_DISPLAY[p.tier]?.name ?? p.tier}`,
+      price: p.amount,
+      checkoutPath: `/checkout?tier=${TIER_ENUM_TO_SLUG[p.tier]}&robot=${robot.slug}`,
+    })),
+  });
+  const breadcrumbLd = breadcrumbJsonLd(locale, [
+    { name: "Home", path: "/" },
+    { name: "Catalog", path: "/catalog" },
+    { name: robot.name, path: `/robots/${robot.slug}` },
+  ]);
+
   return (
     <main className="main-content landing-shell">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(productLd)} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(breadcrumbLd)} />
       <section className="landing-section">
         <div className="landing-container">
           <p style={{ marginBottom: "2rem" }}>

@@ -5,6 +5,10 @@ import { redirect } from "next/navigation";
 
 import { authOptions } from "@/lib/auth";
 import { buildLoginRedirectPath } from "@/lib/auth-redirects";
+import { noIndexMetadata } from "@/lib/seo";
+
+// Members-only (redirects to login), so keep it out of search results.
+export const metadata = noIndexMetadata("Tutorials | GoldBot by AL-ai-FX");
 
 export default async function Tutorials({
   params,

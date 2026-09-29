@@ -1,6 +1,20 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CircleAlert,
+  CircleCheck,
+  KeyRound,
+  LoaderCircle,
+  Lock,
+  Mail,
+  ShieldCheck,
+  Tag,
+  Zap,
+} from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
@@ -13,6 +27,7 @@ import {
 } from "@/lib/marketing-client";
 import { buildCheckoutThankYouPath } from "@/lib/marketing";
 import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
+import "./checkout.css";
 
 type RobotInfo = {
   slug: string;
@@ -67,6 +82,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
     free: boolean;
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [showCoupon, setShowCoupon] = useState(false);
 
   // Robot + plan selection live in checkout so buyers can switch here.
   // Display prices come from the DB (per robot); the charge amount stays
@@ -327,370 +343,345 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
     });
   }, [selectedPlan.amount, selectedPlan.name]);
 
+  const monthlyEquivalent: Partial<Record<TierId, number>> = {
+    "6-months": 6,
+    "1-year": 12,
+  };
+  const stepCount = robots && robots.length > 1 ? 3 : 2;
+
   return (
-    <main
-      className="main-content"
-      style={{ maxWidth: "1000px", margin: "0 auto", padding: "6rem 2rem" }}
-    >
-      <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-        <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>{t("secureCheckout")}</h1>
-        <p style={{ color: "var(--text-secondary)" }}>{t("checkoutSubtitle")}</p>
-      </div>
+    <main className="main-content co-shell">
+      <div className="co-container">
+        <header className="co-header">
+          <span className="co-secure-pill">
+            <Lock size={13} aria-hidden="true" />
+            {t("secureCheckout")}
+          </span>
+          <h1>
+            {isSuccess ? "You're all set." : <>Complete your order<span>.</span></>}
+          </h1>
+          <p>{t("checkoutSubtitle")}</p>
+        </header>
 
-      <div className="checkout-grid">
-        <div className="glass-panel">
-          <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>
-            {t("accPaymentDetails")}
-          </h2>
-          {isSuccess ? (
-            <div style={{ textAlign: "center", padding: "2rem 0" }}>
-              <div
-                style={{
-                  fontSize: "4rem",
-                  marginBottom: "1.5rem",
-                  background: "linear-gradient(135deg, #4ade80, #22c55e)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  display: "inline-block",
-                }}
+        <div className="co-grid">
+          <section className="co-panel" aria-label={t("accPaymentDetails")}>
+            {isSuccess ? (
+              <motion.div
+                className="co-success"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
-                ✓
-              </div>
-              <h2 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
-                {t("accountActivated")}
-              </h2>
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  marginBottom: "2rem",
-                  lineHeight: "1.6",
-                }}
-              >
-                Your {robotName} access is active. We sent a secure dashboard sign-in link to{" "}
-                <strong>{email}</strong>.
-              </p>
-
-              <div
-                style={{
-                  background: "var(--bg-secondary)",
-                  padding: "1.5rem",
-                  borderRadius: "1rem",
-                  border: "1px solid var(--border-color)",
-                  marginBottom: "2rem",
-                }}
-              >
-                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                  <strong>{t("nextStep")}</strong> Check your inbox and spam folder, then use the magic link in the email to open your dashboard securely. The robot itself is not emailed: inside the dashboard you enter your MT5 account number, and your build is compiled to that account within minutes.
+                <motion.span
+                  className="co-success-icon"
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 18, delay: 0.1 }}
+                >
+                  <CircleCheck size={40} aria-hidden="true" />
+                </motion.span>
+                <h2>{t("accountActivated")}</h2>
+                <p>
+                  Your {robotName} access is active. We sent a secure dashboard
+                  sign-in link to <strong>{email}</strong>.
                 </p>
-              </div>
 
-              <Link
-                href="/"
-                className="btn-primary fill"
-                style={{ display: "inline-block", textDecoration: "none", width: "100%" }}
+                <ol className="co-next-steps">
+                  <li>
+                    <span>1</span>
+                    Check your inbox and spam folder for the sign-in link.
+                  </li>
+                  <li>
+                    <span>2</span>
+                    Open your dashboard and enter your MT5 account number.
+                  </li>
+                  <li>
+                    <span>3</span>
+                    Your build is compiled to that account within minutes.
+                  </li>
+                </ol>
+
+                <Link href="/" className="co-submit">
+                  Back to home
+                  <ArrowRight size={18} aria-hidden="true" />
+                </Link>
+              </motion.div>
+            ) : (
+              <form
+                className="co-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handlePaygateRedirect();
+                }}
               >
-                Back to home
-              </Link>
-            </div>
-          ) : (
-            <form
-              className="checkout-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void handlePaygateRedirect();
-              }}
-            >
-              {robots && robots.length > 1 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                    Choose your robot
+                {robots && robots.length > 1 && (
+                  <fieldset className="co-step">
+                    <legend>
+                      <span className="co-step-num">1</span>
+                      Choose your robot
+                    </legend>
+                    <div className="co-robot-grid">
+                      {robots.map((r) => {
+                        const active = r.slug === selectedSlug;
+                        return (
+                          <button
+                            key={r.slug}
+                            type="button"
+                            className={`co-option co-robot ${active ? "is-active" : ""}`}
+                            onClick={() => setSelectedSlug(r.slug)}
+                            aria-pressed={active}
+                          >
+                            <span className="co-radio" aria-hidden="true" />
+                            <span className="co-option-body">
+                              <strong>{r.name}</strong>
+                              {r.shortDescription && <small>{r.shortDescription}</small>}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                )}
+
+                {robot && availableTiers.length > 0 && (
+                  <fieldset className="co-step">
+                    <legend>
+                      <span className="co-step-num">{stepCount === 3 ? 2 : 1}</span>
+                      Choose your plan
+                    </legend>
+                    <div className="co-plan-list">
+                      {availableTiers.map((id) => {
+                        const active = id === tier;
+                        const months = monthlyEquivalent[id];
+                        const price = robot.prices[id];
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            className={`co-option co-plan ${active ? "is-active" : ""}`}
+                            onClick={() => setTier(id)}
+                            aria-pressed={active}
+                          >
+                            <span className="co-radio" aria-hidden="true" />
+                            <span className="co-option-body">
+                              <strong>
+                                {planDetails[id]?.name ?? id}
+                                {id === "1-year" && <em className="co-tag">Best value</em>}
+                              </strong>
+                              {months && price > 0 && (
+                                <small>{formatUsd(Math.round(price / months))} / month</small>
+                              )}
+                            </span>
+                            <span className="co-plan-price">{formatUsd(price)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                )}
+
+                <fieldset className="co-step">
+                  <legend>
+                    <span className="co-step-num">
+                      {robot && availableTiers.length > 0 ? stepCount : 1}
+                    </span>
+                    Your details
+                  </legend>
+
+                  <label className="co-field">
+                    <span className="co-label">{t("emailAddress")}</span>
+                    <span className="co-input-wrap">
+                      <Mail size={16} aria-hidden="true" />
+                      <input
+                        type="email"
+                        placeholder="you@domain.com"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                      />
+                    </span>
                   </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {robots.map((r) => {
-                      const active = r.slug === selectedSlug;
-                      return (
+
+                  <p className="co-hint">
+                    <Image src="/brand/metatrader-5.png" alt="" width={16} height={16} />
+                    {t("setMt5Later")}
+                  </p>
+
+                  {!isFreeTrial && (
+                    <div className="co-coupon">
+                      {showCoupon || coupon || couponError ? (
+                        <>
+                          <span className="co-label">
+                            Coupon code <em>(optional)</em>
+                          </span>
+                          <div className="co-coupon-row">
+                            <span className="co-input-wrap">
+                              <Tag size={16} aria-hidden="true" />
+                              <input
+                                type="text"
+                                placeholder="Enter code"
+                                value={couponCode}
+                                onChange={(event) => {
+                                  setCouponCode(event.target.value.toUpperCase());
+                                  setCoupon(null);
+                                  setCouponError(null);
+                                }}
+                                className="co-coupon-input"
+                              />
+                            </span>
+                            <button
+                              type="button"
+                              className="co-apply"
+                              onClick={() => void applyCoupon()}
+                              disabled={couponChecking || !couponCode.trim()}
+                            >
+                              {couponChecking ? "Checking…" : "Apply"}
+                            </button>
+                          </div>
+                          {coupon && (
+                            <p className="co-msg is-success">
+                              <CircleCheck size={15} aria-hidden="true" />
+                              {coupon.code} applied — {coupon.label}.{" "}
+                              {coupon.free
+                                ? "No payment needed; your licence is created straight away."
+                                : `You pay ${formatUsd(coupon.priceAfter)}.`}
+                            </p>
+                          )}
+                          {couponError && (
+                            <p className="co-msg is-error">
+                              <CircleAlert size={15} aria-hidden="true" />
+                              {couponError}
+                            </p>
+                          )}
+                        </>
+                      ) : (
                         <button
-                          key={r.slug}
                           type="button"
-                          onClick={() => setSelectedSlug(r.slug)}
-                          style={{
-                            padding: "0.6rem 1rem",
-                            borderRadius: "999px",
-                            border: active
-                              ? "1px solid var(--accent-primary)"
-                              : "1px solid var(--border-color)",
-                            background: active
-                              ? "var(--accent-primary)"
-                              : "var(--bg-secondary)",
-                            color: active ? "#000" : "var(--text-primary)",
-                            fontWeight: active ? 700 : 500,
-                            fontSize: "0.85rem",
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                          }}
+                          className="co-link-button"
+                          onClick={() => setShowCoupon(true)}
                         >
-                          {r.name}
+                          <Tag size={14} aria-hidden="true" />
+                          Have a coupon code?
                         </button>
-                      );
-                    })}
-                  </div>
-                  {robot?.shortDescription && (
-                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
-                      {robot.shortDescription}
+                      )}
+                    </div>
+                  )}
+                </fieldset>
+
+                <div className="co-pay">
+                  {checkoutError && (
+                    <p className="co-msg is-error co-pay-error" role="alert">
+                      <CircleAlert size={15} aria-hidden="true" />
+                      {checkoutError}
                     </p>
                   )}
-                </div>
-              )}
 
-              {robot && availableTiers.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                    Plan
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {availableTiers.map((id) => {
-                      const active = id === tier;
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => setTier(id)}
-                          style={{
-                            padding: "0.6rem 1rem",
-                            borderRadius: "var(--radius-sm)",
-                            border: active
-                              ? "1px solid var(--accent-primary)"
-                              : "1px solid var(--border-color)",
-                            background: "var(--bg-secondary)",
-                            color: active ? "var(--accent-primary)" : "var(--text-primary)",
-                            fontWeight: active ? 700 : 500,
-                            fontSize: "0.85rem",
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                          }}
-                        >
-                          {planDetails[id]?.name ?? id} · {formatUsd(robot.prices[id])}
-                        </button>
-                      );
-                    })}
+                  <button type="submit" className="co-submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <LoaderCircle size={18} className="co-spin" aria-hidden="true" />
+                    ) : (
+                      <Lock size={16} aria-hidden="true" />
+                    )}
+                    {isFreeTrial
+                      ? t("startFreeTrial")
+                      : isSubmitting
+                        ? t("redirecting")
+                        : `${t("proceedToPaygate")} · ${formatUsd(payable)}`}
+                  </button>
+
+                  <p className="co-pay-note">
+                    {isFreeTrial ? t("freeTrialAction") : t("paygateRedirect")}
+                  </p>
+
+                  <div className="co-pay-meta">
+                    <span>
+                      <ShieldCheck size={14} aria-hidden="true" />
+                      Supported by Paygate
+                    </span>
+                    {!isFreeTrial && (
+                      <span>
+                        USD · {selectedPlan.amount}
+                      </span>
+                    )}
                   </div>
                 </div>
-              )}
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                  {t("emailAddress")}
-                </label>
-                <input
-                  type="email"
-                  placeholder="you@domain.com"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  style={{
-                    padding: "1rem",
-                    borderRadius: "var(--radius-sm)",
-                    border: "1px solid var(--border-color)",
-                    background: "var(--bg-secondary)",
-                    color: "var(--text-primary)",
-                    fontFamily: "inherit",
-                  }}
-                />
-              </div>
-
-              {!isFreeTrial && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-                    Coupon code <span style={{ color: "var(--text-muted)" }}>(optional)</span>
-                  </label>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <input
-                      type="text"
-                      placeholder="Enter code"
-                      value={couponCode}
-                      onChange={(event) => {
-                        setCouponCode(event.target.value.toUpperCase());
-                        setCoupon(null);
-                        setCouponError(null);
-                      }}
-                      style={{
-                        flex: "1 1 180px",
-                        minWidth: 0,
-                        padding: "1rem",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--border-color)",
-                        background: "var(--bg-secondary)",
-                        color: "var(--text-primary)",
-                        fontFamily: "inherit",
-                        letterSpacing: "0.08em",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="btn-secondary"
-                      onClick={() => void applyCoupon()}
-                      disabled={couponChecking || !couponCode.trim()}
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      {couponChecking ? "Checking…" : "Apply"}
-                    </button>
-                  </div>
-                  {coupon && (
-                    <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--accent-accent)" }}>
-                      {coupon.code} applied — {coupon.label}.{" "}
-                      {coupon.free
-                        ? "No payment needed; your licence is created straight away."
-                        : `You pay ${formatUsd(coupon.priceAfter)}.`}
-                    </p>
-                  )}
-                  {couponError && (
-                    <p style={{ margin: 0, fontSize: "0.88rem", color: "#fca5a5" }}>{couponError}</p>
-                  )}
-                </div>
-              )}
-
-              <div className="checkout-inline-note">
-                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", margin: 0 }}>
-                  {t("setMt5Later")}
-                </p>
-              </div>
-
-              <hr
-                style={{
-                  border: "none",
-                  borderTop: "1px solid var(--border-color)",
-                  margin: "1rem 0",
-                }}
-              />
-
-              <div className="checkout-action-panel">
-                <div className="checkout-provider-chip">
-                  <span aria-hidden="true">★</span>
-                  <span>Supported by Paygate</span>
-                </div>
-                <p
-                  style={{
-                    color: "var(--text-secondary)",
-                    fontSize: "0.9rem",
-                    marginBottom: "0.85rem",
-                  }}
-                >
-                  {isFreeTrial ? t("freeTrialAction") : t("paygateRedirect")}
-                </p>
-
-                {!isFreeTrial && (
-                  <p
-                    style={{
-                      color: "var(--text-muted)",
-                      fontSize: "0.8rem",
-                      marginBottom: "0.85rem",
-                    }}
-                  >
-                    Currency: USD | Amount: {selectedPlan.amount}
-                  </p>
-                )}
-
-                {checkoutError && (
-                  <p style={{ color: "#fca5a5", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
-                    {checkoutError}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  className="btn-primary fill"
-                  style={{ border: "none", margin: "0.25rem 0 0", opacity: isSubmitting ? 0.75 : 1 }}
-                  disabled={isSubmitting}
-                >
-                  {isFreeTrial
-                    ? t("startFreeTrial")
-                    : isSubmitting
-                      ? t("redirecting")
-                      : t("proceedToPaygate")}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-
-        <div>
-          <div className="feature-card" style={{ position: "sticky", top: "100px" }}>
-            <h3
-              style={{
-                marginBottom: "1.5rem",
-                borderBottom: "1px solid var(--border-color)",
-                paddingBottom: "1rem",
-              }}
-            >
-              {t("orderSummary")}
-            </h3>
-
-            <div
-              style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
-            >
-              <span style={{ color: "var(--text-secondary)" }}>{t("plan")}</span>
-              <span style={{ fontWeight: "bold" }}>{selectedPlan.name}</span>
-            </div>
-
-            <div
-              style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
-            >
-              <span style={{ color: "var(--text-secondary)" }}>{t("product")}</span>
-              <span>{robotName}</span>
-            </div>
-
-            <hr
-              style={{
-                border: "none",
-                borderTop: "1px solid var(--border-color)",
-                margin: "1.5rem 0",
-              }}
-            />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                fontFamily: "Outfit, sans-serif",
-              }}
-            >
-              <span>{t("total")}</span>
-              <span style={{ color: "var(--accent-primary)" }}>
-                {discounted && (
-                  <span
-                    style={{
-                      color: "var(--text-muted)",
-                      textDecoration: "line-through",
-                      fontSize: "1rem",
-                      marginRight: "0.5rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {selectedPlan.price}
-                  </span>
-                )}
-                {formatUsd(payable)}
-              </span>
-            </div>
-
-            {referralPrice !== null && !coupon && (
-              <p style={{ fontSize: "0.85rem", color: "var(--accent-accent)", marginTop: "0.5rem" }}>
-                Referral discount applied — {referralDiscount}% off your first licence.
-              </p>
+              </form>
             )}
+          </section>
 
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "var(--text-muted)",
-                textAlign: "center",
-                marginTop: "1.5rem",
-              }}
-            >
-              {t("autoRenews")}
-            </p>
-          </div>
+          <aside className="co-summary" aria-label={t("orderSummary")}>
+            <div className="co-summary-card">
+              <div className="co-summary-art">
+                {/* Admin-entered artwork can live on any host, which next/image
+                    would reject without remotePatterns — same as the catalog. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={robot?.artworkUrl || "/brand/hero-robot-gold.png"}
+                  alt=""
+                  className="co-summary-img"
+                />
+                <span className="co-summary-mt5">
+                  <Image src="/brand/metatrader-5.png" alt="" width={14} height={14} />
+                  MT5
+                </span>
+              </div>
+
+              <div className="co-summary-body">
+                <span className="co-summary-eyebrow">{t("orderSummary")}</span>
+                <h2>{robotName}</h2>
+
+                <dl className="co-lines">
+                  <div>
+                    <dt>{t("plan")}</dt>
+                    <dd>{selectedPlan.name}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("product")}</dt>
+                    <dd>{robotName}</dd>
+                  </div>
+                  <div>
+                    <dt>Subtotal</dt>
+                    <dd className="co-num">{selectedPlan.price}</dd>
+                  </div>
+                  {discounted && (
+                    <div className="is-discount">
+                      <dt>Discount</dt>
+                      <dd className="co-num">−{formatUsd(displayAmount - payable)}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                <div className="co-total">
+                  <span>{t("total")}</span>
+                  <strong className="co-num">{formatUsd(payable)}</strong>
+                </div>
+
+                {referralPrice !== null && !coupon && (
+                  <p className="co-msg is-success">
+                    <CircleCheck size={15} aria-hidden="true" />
+                    Referral discount applied — {referralDiscount}% off your first licence.
+                  </p>
+                )}
+
+                <p className="co-renew">{t("autoRenews")}</p>
+
+                <ul className="co-trust">
+                  <li>
+                    <KeyRound size={15} aria-hidden="true" />
+                    Build locked to your MT5 account
+                  </li>
+                  <li>
+                    <Zap size={15} aria-hidden="true" />
+                    Delivered automatically after checkout
+                  </li>
+                  <li>
+                    <ShieldCheck size={15} aria-hidden="true" />
+                    Payment handled securely by Paygate
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </main>
@@ -703,15 +694,9 @@ export default function CheckoutClient({ referralDiscount = 0 }: { referralDisco
   return (
     <Suspense
       fallback={
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "80vh",
-          }}
-        >
-          <p style={{ color: "var(--text-secondary)" }}>{t("loadingCheckout")}</p>
+        <div className="co-loading">
+          <LoaderCircle size={20} className="co-spin" aria-hidden="true" />
+          <p>{t("loadingCheckout")}</p>
         </div>
       }
     >

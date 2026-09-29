@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { KeyRound, LoaderCircle, Send, TriangleAlert } from "lucide-react";
 
 import { Link } from "@/i18n/routing";
+import { AuthShell } from "@/components/auth/AuthShell";
 
-export default function MagicLoginPage() {
+function MagicLogin() {
   const searchParams = useSearchParams();
   const token = searchParams?.get("token") || "";
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
@@ -27,36 +29,47 @@ export default function MagicLoginPage() {
     });
   }, [callbackUrl, missingToken, token]);
 
+  const failed = missingToken || Boolean(error);
+
   return (
-    <main
-      className="main-content"
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-      }}
+    <AuthShell
+      icon={KeyRound}
+      eyebrow="Magic link"
+      title={failed ? "This link didn't work" : "Signing you in"}
     >
-      <div className="card-glass" style={{ width: "100%", maxWidth: "520px", padding: "3rem" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "1rem", fontSize: "2.25rem" }}>
-          Signing you in
-        </h1>
-        <p style={{ textAlign: "center", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-          We are securely opening your GoldBot dashboard now.
-        </p>
-        {missingToken || error ? (
-          <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-            <p style={{ color: "#fca5a5", marginBottom: "1rem" }}>
+      <div className="au-status">
+        {failed ? (
+          <>
+            <span className="au-status-icon is-error" aria-hidden="true">
+              <TriangleAlert size={30} />
+            </span>
+            <p>
               {missingToken
                 ? "This sign-in link is missing a token. Request a fresh link."
                 : error}
             </p>
-            <Link href="/forgot-password" className="btn-primary">
+            <Link href="/forgot-password" className="au-submit">
+              <Send size={16} aria-hidden="true" />
               Request a new sign-in link
             </Link>
-          </div>
-        ) : null}
+          </>
+        ) : (
+          <>
+            <span className="au-status-icon is-pending" aria-hidden="true">
+              <LoaderCircle size={30} className="au-spin" />
+            </span>
+            <p role="status">We are securely opening your GoldBot dashboard now.</p>
+          </>
+        )}
       </div>
-    </main>
+    </AuthShell>
+  );
+}
+
+export default function MagicLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <MagicLogin />
+    </Suspense>
   );
 }

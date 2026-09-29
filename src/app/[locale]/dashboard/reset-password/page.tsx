@@ -3,6 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Check, CircleAlert, LoaderCircle, Lock, ShieldCheck, X } from "lucide-react";
+
+import { AuthAlert, AuthField, AuthShell } from "@/components/auth/AuthShell";
+
+// One list drives both the live checklist and submit validation, so what the
+// user sees ticked is exactly what is enforced.
+const RULES = [
+  { key: "length", test: (p: string) => p.length >= 12, label: "reqLength", error: "errPassLength" },
+  { key: "upper", test: (p: string) => /[A-Z]/.test(p), label: "reqUpper", error: "errPassUpper" },
+  { key: "lower", test: (p: string) => /[a-z]/.test(p), label: "reqLower", error: "errPassLower" },
+  { key: "number", test: (p: string) => /\d/.test(p), label: "reqNumber", error: "errPassNumber" },
+  {
+    key: "special",
+    test: (p: string) => /[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]/.test(p),
+    label: "reqSpecial",
+    error: "errPassSpecial",
+  },
+] as const;
 
 export default function ForceResetPassword() {
   const t = useTranslations("Auth");
@@ -12,33 +30,17 @@ export default function ForceResetPassword() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const met = RULES.map((rule) => rule.test(password));
+  const score = met.filter(Boolean).length;
+  const matches = confirmPassword.length > 0 && confirmPassword === password;
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Client-side validation
-    if (password.length < 12) {
-      setError(t("errPassLength"));
-      return;
-    }
-
-    if (!/[a-z]/.test(password)) {
-      setError(t("errPassLower"));
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      setError(t("errPassUpper"));
-      return;
-    }
-
-    if (!/\d/.test(password)) {
-      setError(t("errPassNumber"));
-      return;
-    }
-
-    if (!/[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-      setError(t("errPassSpecial"));
+    const failed = RULES.find((rule) => !rule.test(password));
+    if (failed) {
+      setError(t(failed.error));
       return;
     }
 
@@ -72,81 +74,76 @@ export default function ForceResetPassword() {
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "4rem auto" }}>
-      <div className="glass-panel" style={{ padding: "3rem" }}>
-        <h1 style={{ fontSize: "2rem", marginBottom: "1rem", textAlign: "center" }}>{t("resetYourPassword")}</h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", textAlign: "center", fontSize: "0.9rem" }}>
-          {t("resetPasswordSubtitle")}
-        </p>
+    <AuthShell
+      compact
+      icon={ShieldCheck}
+      eyebrow="Account security"
+      title={t("resetYourPassword")}
+      subtitle={t("resetPasswordSubtitle")}
+    >
+      <form className="au-form" onSubmit={handleReset}>
+        {error && (
+          <AuthAlert tone="error">
+            <CircleAlert size={16} aria-hidden="true" />
+            {error}
+          </AuthAlert>
+        )}
 
-        <div style={{ 
-          background: "var(--bg-secondary)", 
-          padding: "1rem", 
-          borderRadius: "var(--radius-sm)", 
-          marginBottom: "1.5rem",
-          border: "1px solid var(--border-color)"
-        }}>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem", fontWeight: "600" }}>
-            {t("passRequirements")}:
-          </p>
-          <ul style={{ fontSize: "0.8rem", color: "var(--text-muted)", paddingLeft: "1.5rem", margin: 0 }}>
-            <li>{t("reqLength")}</li>
-            <li>{t("reqUpper")}</li>
-            <li>{t("reqLower")}</li>
-            <li>{t("reqNumber")}</li>
-            <li>{t("reqSpecial")}</li>
+        <AuthField
+          label={t("newPassword")}
+          icon={Lock}
+          type="password"
+          placeholder={t("min8Chars")}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+          autoFocus
+        />
+
+        <div className="au-strength" aria-label={t("passRequirements")}>
+          <div className={`au-strength-bar is-${score}`} aria-hidden="true">
+            {RULES.map((rule) => (
+              <span key={rule.key} />
+            ))}
+          </div>
+          <ul className="au-checklist">
+            {RULES.map((rule, index) => (
+              <li key={rule.key} className={met[index] ? "is-met" : ""}>
+                {met[index] ? <Check size={13} aria-hidden="true" /> : <X size={13} aria-hidden="true" />}
+                {t(rule.label)}
+              </li>
+            ))}
           </ul>
         </div>
 
-        <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{t("newPassword")}</label>
-            <input
-              type="password"
-              placeholder={t("min8Chars")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                padding: "1rem",
-                borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-              }}
-            />
-          </div>
+        <AuthField
+          label={t("confirmNewPassword")}
+          icon={Lock}
+          type="password"
+          placeholder={t("repeatPassword")}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+          hint={
+            confirmPassword.length > 0 ? (
+              <span style={{ color: matches ? "var(--au-up)" : "var(--au-down)" }}>
+                {matches ? "Passwords match" : t("errPassMismatch")}
+              </span>
+            ) : undefined
+          }
+        />
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <label style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{t("confirmNewPassword")}</label>
-            <input
-              type="password"
-              placeholder={t("repeatPassword")}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              style={{
-                padding: "1rem",
-                borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-secondary)",
-                color: "var(--text-primary)",
-              }}
-            />
-          </div>
-
-          {error && <p style={{ color: "#fca5a5", fontSize: "0.85rem", textAlign: "center" }}>{error}</p>}
-
-          <button
-            type="submit"
-            className="btn-primary fill"
-            disabled={loading}
-            style={{ marginTop: "1rem" }}
-          >
-            {loading ? t("updating") : t("updatePasswordContinue")}
-          </button>
-        </form>
-      </div>
-    </div>
+        <button type="submit" className="au-submit" disabled={loading}>
+          {loading ? (
+            <LoaderCircle size={18} className="au-spin" aria-hidden="true" />
+          ) : (
+            <ShieldCheck size={18} aria-hidden="true" />
+          )}
+          {loading ? t("updating") : t("updatePasswordContinue")}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

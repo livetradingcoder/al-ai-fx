@@ -1,0 +1,360 @@
+/* Landing navbar: flat near-black bar, one yellow accent, Inter type.
+   Class prefix .lnav keeps it clear of the shared .navbar rules. */
+.lnav {
+  --lnav-canvas: #0b0e11;
+  --lnav-card: #1e2329;
+  --lnav-elevated: #2b3139;
+  --lnav-body: #eaecef;
+  --lnav-muted: #929aa5;
+  --lnav-primary: #fcd535;
+  --lnav-primary-active: #f0b90b;
+  --lnav-on-primary: #181a20;
+
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 64px;
+  background: rgba(11, 14, 17, 0.6);
+  border-bottom: 1px solid transparent;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background-color 250ms ease, border-color 250ms ease, height 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.lnav.is-scrolled,
+.lnav.is-open {
+  height: 58px;
+  background: rgba(11, 14, 17, 0.94);
+  border-bottom-color: var(--lnav-elevated);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.lnav-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: min(1320px, calc(100vw - 64px));
+  height: 100%;
+  margin: 0 auto;
+}
+
+/* ---------- Brand ---------- */
+.lnav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  color: var(--lnav-body);
+}
+
+.lnav-logo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--lnav-card);
+  transition: transform 250ms ease;
+}
+
+.lnav-logo img {
+  width: 22px;
+  height: 22px;
+}
+
+.lnav-brand:hover .lnav-logo {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.lnav-brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.lnav-brand-copy strong {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.lnav-brand-copy span {
+  color: var(--lnav-primary);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Links ---------- */
+.lnav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lnav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--lnav-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 150ms ease;
+}
+
+.lnav-link:hover,
+.lnav-link:focus-visible,
+.lnav-link.is-active {
+  color: #fff;
+}
+
+.lnav-link:focus-visible {
+  outline: 2px solid var(--lnav-primary);
+  outline-offset: 2px;
+}
+
+.lnav-link-label {
+  position: relative;
+  z-index: 1;
+}
+
+.lnav-hover {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: var(--lnav-card);
+}
+
+.lnav-active-bar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -11px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lnav-primary);
+}
+
+/* ---------- Actions ---------- */
+.lnav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.lnav-lang {
+  display: inline-flex;
+  align-items: center;
+  color: var(--lnav-muted);
+}
+
+.lnav-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--lnav-elevated);
+}
+
+.lnav-login {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--lnav-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.lnav-login:hover {
+  background: var(--lnav-card);
+}
+
+.lnav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 6px;
+  background: var(--lnav-primary);
+  color: var(--lnav-on-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.lnav-cta:hover {
+  background: #ffe066;
+}
+
+.lnav-cta:active {
+  background: var(--lnav-primary-active);
+}
+
+.lnav-cta svg {
+  transition: transform 180ms ease;
+}
+
+.lnav-cta:hover svg {
+  transform: translateX(3px);
+}
+
+.lnav-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--lnav-primary);
+  transform-origin: 0 50%;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+.lnav.is-scrolled .lnav-progress {
+  opacity: 1;
+}
+
+.lnav.is-open .lnav-progress {
+  opacity: 0;
+}
+
+/* ---------- Mobile ---------- */
+.lnav-toggle {
+  display: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 8px;
+  background: var(--lnav-card);
+  color: var(--lnav-body);
+  cursor: pointer;
+}
+
+.lnav-toggle span {
+  display: grid;
+  place-items: center;
+}
+
+.lnav-sheet {
+  position: fixed;
+  inset: 58px 0 0;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  background: #0b0e11;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-y: auto;
+}
+
+.lnav-sheet-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lnav-sheet-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 4px;
+  border-bottom: 1px solid #2b3139;
+  color: #eaecef;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.lnav-sheet-links a svg {
+  color: #707a8a;
+}
+
+.lnav-sheet-foot {
+  display: grid;
+  gap: 10px;
+  padding-top: 24px;
+}
+
+.lnav-sheet-foot .lnav-lang {
+  justify-self: start;
+  margin-bottom: 4px;
+}
+
+.lnav-sheet-login,
+.lnav-sheet-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lnav-sheet-login {
+  background: #1e2329;
+  color: #fff;
+}
+
+.lnav-sheet-cta {
+  background: #fcd535;
+  color: #181a20;
+}
+
+@media (max-width: 1180px) {
+  .lnav-inner {
+    gap: 20px;
+  }
+
+  .lnav-link {
+    padding: 0 9px;
+  }
+
+  .lnav-divider,
+  .lnav-actions .lnav-lang {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .lnav-links,
+  .lnav-actions {
+    display: none;
+  }
+
+  .lnav-toggle {
+    display: grid;
+  }
+
+  .lnav-inner {
+    width: calc(100vw - 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lnav,
+  .lnav-logo,
+  .lnav-cta svg {
+    transition: none;
+  }
+}

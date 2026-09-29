@@ -6,9 +6,18 @@ import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/routing";
+import { usesNewDesign } from "@/lib/redesigned-routes";
+import LandingNavbar from "./LandingNavbar";
 
+// The landing page runs its own design system, so it gets its own bar;
+// every other page keeps the classic navbar.
 export default function Navbar() {
+  const pathname = usePathname();
+  return usesNewDesign(pathname) ? <LandingNavbar /> : <ClassicNavbar />;
+}
+
+function ClassicNavbar() {
   const t = useTranslations("Navbar");
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +71,7 @@ export default function Navbar() {
             <Link href="/#pricing">{t("pricing")}</Link>
             <Link href="/tutorials">{t("tutorials")}</Link>
             <Link href="/faq">{t("faq")}</Link>
-            <Link href="/refer">{t("refer")}</Link>
+            <Link href="/affiliates">{t("refer")}</Link>
           </div>
 
           <div className="nav-actions desktop-only">
@@ -104,7 +113,7 @@ export default function Navbar() {
             <Link href="/tutorials" onClick={() => setIsOpen(false)}>
               {t("tutorials")}
             </Link>
-            <Link href="/refer" onClick={() => setIsOpen(false)}>
+            <Link href="/affiliates" onClick={() => setIsOpen(false)}>
               {t("refer")}
             </Link>
             <Link href="/faq" onClick={() => setIsOpen(false)}>

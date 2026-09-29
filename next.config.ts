@@ -4,6 +4,19 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  // The public affiliate page moved from /refer to /affiliates. Keep old
+  // links, bookmarks and search results working (referral links themselves
+  // use /r/CODE and ?ref=CODE, which are unaffected).
+  async redirects() {
+    return [
+      { source: "/refer", destination: "/affiliates", permanent: true },
+      {
+        source: "/:locale(en|hi|bn|ur|ar|de|es)/refer",
+        destination: "/:locale/affiliates",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
