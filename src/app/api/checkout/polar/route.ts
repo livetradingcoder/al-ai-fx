@@ -4,6 +4,7 @@ import { routing } from "@/i18n/routing";
 import { REF_COOKIE } from "@/lib/affiliate";
 import { priceCheckout, provisionFreeCouponCheckout } from "@/lib/checkout-pricing";
 import { polar, polarCheckoutRef } from "@/lib/polar";
+import { buildLocalizedPath } from "@/lib/seo";
 import { TIER_METADATA, UnknownTierError } from "@/lib/pricing-tiers";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
@@ -32,9 +33,10 @@ async function findPolarProduct(robot: string, tier: string) {
 
 function thankYouUrl(locale: Locale) {
   const base = (process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz").replace(/\/$/, "");
-  const prefix = locale === routing.defaultLocale ? "" : `/${locale}`; // localePrefix: as-needed
-  // Polar substitutes {CHECKOUT_ID}; the webhook stores the same ref.
-  return `${base}${prefix}/checkout/thank-you?orderRef=${polarCheckoutRef("{CHECKOUT_ID}")}`;
+  // Polar substitutes {CHECKOUT_ID}; the webhook stores the same ref. The
+  // braces must survive URL-encoding for that, hence the manual query string.
+  const path = buildLocalizedPath(locale, "/checkout/thank-you");
+  return `${base}${path}?orderRef=${polarCheckoutRef("{CHECKOUT_ID}")}`;
 }
 
 type CreateBody = {

@@ -84,6 +84,30 @@ Webhook events subscribed: `checkout.created/updated`, `order.created/paid/updat
 The URL uses the `www.` host on purpose: `www.al-ai-fx.xyz` is the canonical host and Polar does not
 follow redirects, so registering a host that redirects would make every delivery fail.
 
+## Crypto: OxaPay
+
+The **Pay with crypto** button posts the same body to `POST /api/checkout/oxapay`
+(`src/app/api/checkout/oxapay/route.ts`), which prices the order with the same helper and creates an
+OxaPay invoice (`POST https://api.oxapay.com/v1/payment/invoice`, header `merchant_api_key`). OxaPay only
+echoes `order_id`, `amount` and `email` back, so robot, tier, email, amount, affiliate ref and coupon go
+into the `callback_url` query string, signed with the merchant key (`src/lib/oxapay.ts`).
+
+`POST /api/webhooks/oxapay` verifies OxaPay's `HMAC` header (HMAC-SHA512 of the raw body, merchant key)
+**and** our query-string signature, checks `order_id` = `order_ref`, and provisions only on status
+`Paid` (`Paying` arrives first while the chain confirms and is just acknowledged). The external id is
+`OXAPAY-<order_ref>`, so the thank-you page polls it like any other order and redeliveries are no-ops.
+OxaPay retries a non-200 up to 5 times. It expects a `200 ok` response.
+
+| Env (Coolify → al-ai-fx) | Value |
+|---|---|
+| `OXAPAY_MERCHANT_API_KEY` | OxaPay → Merchant Service → Generate Merchant API Key |
+| `OXAPAY_SANDBOX` | `1` to create sandbox invoices while testing; unset for real payments |
+
+Without the key the crypto button answers 503 ("pay by card instead"). Paygate's routes
+(`/api/paygate/*`, `/api/webhooks/paygate`) are still deployed for orders already in flight, but the
+checkout page no longer links to them. OxaPay says callbacks may need its IPs allow-listed if the
+site sits behind a strict firewall (ask contact@oxapay.com for the list).
+
 ## Adding products
 
 When a robot or tier is added, create a Polar product with metadata `robot=<slug>` and `tier=<tier slug>`

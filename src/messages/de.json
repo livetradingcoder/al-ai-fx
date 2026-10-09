@@ -243,8 +243,8 @@
     "planLifetime": "Lifetime Access",
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "Mit Karte bezahlen",
-    "payWithCrypto": "Mit Krypto über Paygate.to bezahlen",
-    "checkoutRedirect": "Sie werden zu einem sicheren Checkout weitergeleitet, um die Zahlung abzuschließen. Kartenzahlungen wickelt Polar ab, Krypto-Zahlungen Paygate.to."
+    "payWithCrypto": "Mit Krypto bezahlen",
+    "checkoutRedirect": "Sie werden zu einem sicheren Checkout weitergeleitet, um die Zahlung abzuschließen. Kartenzahlungen wickelt Polar ab, Krypto-Zahlungen OxaPay."
   },
   "Tutorials": {
     "platformTutorials": "Plattform-Tutorials",

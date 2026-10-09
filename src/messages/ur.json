@@ -243,8 +243,8 @@
     "planLifetime": "Lifetime Access",
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "کارڈ سے ادائیگی کریں",
-    "payWithCrypto": "Paygate.to کے ذریعے کرپٹو سے ادائیگی کریں",
-    "checkoutRedirect": "ادائیگی مکمل کرنے کے لیے آپ کو ایک محفوظ چیک آؤٹ پر بھیجا جائے گا۔ کارڈ ادائیگیاں Polar سنبھالتا ہے؛ کرپٹو ادائیگیاں Paygate.to۔"
+    "payWithCrypto": "کرپٹو سے ادائیگی کریں",
+    "checkoutRedirect": "ادائیگی مکمل کرنے کے لیے آپ کو ایک محفوظ چیک آؤٹ پر بھیجا جائے گا۔ کارڈ ادائیگیاں Polar سنبھالتا ہے؛ کرپٹو ادائیگیاں OxaPay۔"
   },
   "Tutorials": {
     "platformTutorials": "پلیٹ فارم ٹیوٹوریلز",
