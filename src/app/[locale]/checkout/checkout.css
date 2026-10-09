@@ -442,6 +442,20 @@
   opacity: 0.8;
 }
 
+/* Secondary provider (crypto) under the card button. */
+.co-submit-alt {
+  margin-top: 10px;
+  height: 48px;
+  background: transparent;
+  color: var(--co-primary);
+  border: 1px solid var(--co-primary);
+  font-weight: 600;
+}
+
+.co-submit-alt:hover:not(:disabled) {
+  background: rgba(255, 224, 102, 0.08);
+}
+
 .co-pay-note {
   color: var(--co-muted-strong);
   font-size: 0.82rem;

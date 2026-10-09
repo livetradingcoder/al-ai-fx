@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { webhooks } from "@polar-sh/sdk/2026-10";
 import { provisionSubscription, UnknownTierError } from "@/lib/subscriptions";
+import { redeemCoupon, validateCoupon } from "@/lib/coupons";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import {
   polarOrderAmount,
@@ -97,6 +98,28 @@ async function handleOrderPaid(order: PolarOrder) {
       currency,
       target.refCode,
     );
+    // The coupon that set the checkout price is consumed only now that the
+    // money has landed, the same as the Paygate callback does.
+    if (target.couponCode && !result.duplicated) {
+      const check = await validateCoupon({
+        code: target.couponCode,
+        robotSlug: target.robotSlug,
+        tier: target.tierSlug,
+        email,
+      });
+      if (check.ok) {
+        await redeemCoupon({
+          couponId: check.couponId,
+          email,
+          robotSlug: target.robotSlug,
+          tier: target.tierSlug,
+          amountBefore: check.priceBefore,
+          amountAfter: amount,
+          userId: result.userId,
+          orderId: result.orderId ?? null,
+        });
+      }
+    }
     console.log(
       "[Polar] order %s → %s/%s user=%s duplicated=%s",
       order.id,
