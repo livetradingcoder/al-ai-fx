@@ -218,7 +218,7 @@ export default function ThankYouClient() {
           {paid
             ? "Your payment has been confirmed and your licence is active. Sign in with the link in your email, add your MT5 account number, and your build is compiled within minutes."
             : status === "pending"
-              ? "Nothing has been charged yet. Complete the payment in the Paygate window — this page updates on its own as soon as the payment lands."
+              ? "Nothing has been charged yet. Complete the payment in the payment window — this page updates on its own as soon as the payment lands."
               : "Nothing was charged for this checkout. The payment window was closed or never completed, so no licence was created and no email was sent. You can try again, or start with the free trial."}
         </p>
 
@@ -259,7 +259,7 @@ export default function ThankYouClient() {
                 type="button"
                 className="btn-primary"
                 style={{ border: "none", alignSelf: "center" }}
-                onClick={() => window.open(checkoutUrl, "al-ai-fx-paygate", "noopener,noreferrer")}
+                onClick={() => window.open(checkoutUrl, "al-ai-fx-payment", "noopener,noreferrer")}
               >
                 Open secure checkout
               </button>

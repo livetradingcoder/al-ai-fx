@@ -9,6 +9,7 @@ import { provisionSubscription } from "@/lib/subscriptions";
 export type ValidCoupon = Extract<CouponCheck, { ok: true }>;
 
 export interface PricedCheckout {
+  robotName: string;
   listPrice: number;
   chargeable: number;
   discountPercent: number;
@@ -59,6 +60,7 @@ export async function priceCheckout(input: {
   return {
     ok: true,
     priced: {
+      robotName: resolved.robot.name,
       listPrice: resolved.amount,
       chargeable,
       discountPercent,

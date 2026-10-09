@@ -243,8 +243,8 @@
     "planLifetime": "Lifetime Access",
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "কার্ডে পেমেন্ট করুন",
-    "payWithCrypto": "Paygate.to-এর মাধ্যমে ক্রিপ্টোতে পেমেন্ট করুন",
-    "checkoutRedirect": "পেমেন্ট সম্পন্ন করতে আপনাকে একটি নিরাপদ চেকআউটে পাঠানো হবে। কার্ড পেমেন্ট প্রক্রিয়া করে Polar; ক্রিপ্টো পেমেন্ট Paygate.to।"
+    "payWithCrypto": "ক্রিপ্টোতে পেমেন্ট করুন",
+    "checkoutRedirect": "পেমেন্ট সম্পন্ন করতে আপনাকে একটি নিরাপদ চেকআউটে পাঠানো হবে। কার্ড পেমেন্ট প্রক্রিয়া করে Polar; ক্রিপ্টো পেমেন্ট OxaPay।"
   },
   "Tutorials": {
     "platformTutorials": "প্ল্যাটফর্ম টিউটোরিয়াল",

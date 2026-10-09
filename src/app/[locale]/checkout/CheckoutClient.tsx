@@ -249,9 +249,9 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
     }
   }
 
-  // Card payments go through Polar, crypto through Paygate. Both endpoints
+  // Card payments go through Polar, crypto through OxaPay. Both endpoints
   // answer the same shape, so the thank-you flow is shared.
-  async function handleCheckout(provider: "polar" | "paygate") {
+  async function handleCheckout(provider: "polar" | "oxapay") {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
       return;
@@ -282,7 +282,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
       }
 
       const response = await fetch(
-        provider === "polar" ? "/api/checkout/polar" : "/api/paygate/create-session",
+        provider === "polar" ? "/api/checkout/polar" : "/api/checkout/oxapay",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -600,7 +600,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                       type="button"
                       className="co-submit co-submit-alt"
                       disabled={isSubmitting}
-                      onClick={() => void handleCheckout("paygate")}
+                      onClick={() => void handleCheckout("oxapay")}
                     >
                       {`${t("payWithCrypto")} · ${formatUsd(payable)}`}
                     </button>
@@ -613,7 +613,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                   <div className="co-pay-meta">
                     <span>
                       <ShieldCheck size={14} aria-hidden="true" />
-                      Card by Polar · Crypto by Paygate
+                      Card by Polar · Crypto by OxaPay
                     </span>
                     {!isFreeTrial && (
                       <span>
