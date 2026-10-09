@@ -249,7 +249,9 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
     }
   }
 
-  async function handlePaygateRedirect() {
+  // Card payments go through Polar, crypto through Paygate. Both endpoints
+  // answer the same shape, so the thank-you flow is shared.
+  async function handleCheckout(provider: "polar" | "paygate") {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
       return;
@@ -279,17 +281,21 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
         return;
       }
 
-      const response = await fetch("/api/paygate/create-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tier,
-          email: email.trim().toLowerCase(),
-          currency: "USD",
-          robotSlug: selectedSlug,
-          couponCode: coupon?.code ?? couponCode.trim() ?? "",
-        }),
-      });
+      const response = await fetch(
+        provider === "polar" ? "/api/checkout/polar" : "/api/paygate/create-session",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tier,
+            email: email.trim().toLowerCase(),
+            currency: "USD",
+            robotSlug: selectedSlug,
+            couponCode: coupon?.code ?? couponCode.trim() ?? "",
+            locale,
+          }),
+        },
+      );
 
       const data = (await response.json()) as {
         amount?: number | string;
@@ -309,7 +315,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
       }
 
       if (!response.ok || !data.checkoutUrl) {
-        throw new Error(data.error || "Unable to initialize Paygate checkout.");
+        throw new Error(data.error || "Unable to initialize checkout.");
       }
 
       const orderRef = "orderRef" in data && typeof data.orderRef === "string" ? data.orderRef : "";
@@ -411,7 +417,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                 className="co-form"
                 onSubmit={(event) => {
                   event.preventDefault();
-                  void handlePaygateRedirect();
+                  void handleCheckout("polar");
                 }}
               >
                 {robots && robots.length > 1 && (
@@ -586,17 +592,28 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                       ? t("startFreeTrial")
                       : isSubmitting
                         ? t("redirecting")
-                        : `${t("proceedToPaygate")} · ${formatUsd(payable)}`}
+                        : `${t("payByCard")} · ${formatUsd(payable)}`}
                   </button>
 
+                  {!isFreeTrial && (
+                    <button
+                      type="button"
+                      className="co-submit co-submit-alt"
+                      disabled={isSubmitting}
+                      onClick={() => void handleCheckout("paygate")}
+                    >
+                      {`${t("payWithCrypto")} · ${formatUsd(payable)}`}
+                    </button>
+                  )}
+
                   <p className="co-pay-note">
-                    {isFreeTrial ? t("freeTrialAction") : t("paygateRedirect")}
+                    {isFreeTrial ? t("freeTrialAction") : t("checkoutRedirect")}
                   </p>
 
                   <div className="co-pay-meta">
                     <span>
                       <ShieldCheck size={14} aria-hidden="true" />
-                      Supported by Paygate
+                      Card by Polar · Crypto by Paygate
                     </span>
                     {!isFreeTrial && (
                       <span>

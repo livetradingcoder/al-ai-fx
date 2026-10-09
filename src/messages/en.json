@@ -241,7 +241,10 @@
     "plan6Months": "Biannual Plan",
     "plan1Year": "Yearly Plan",
     "planLifetime": "Lifetime Access",
-    "planLifetimeSource": "Lifetime + Source"
+    "planLifetimeSource": "Lifetime + Source",
+    "payByCard": "Pay by card",
+    "payWithCrypto": "Pay with crypto via Paygate.to",
+    "checkoutRedirect": "You'll be sent to a secure hosted checkout to finish paying. Card payments are processed by Polar; crypto by Paygate.to."
   },
   "Tutorials": {
     "platformTutorials": "Platform Tutorials",

@@ -3,11 +3,10 @@ import { createHmac } from "node:crypto";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { validateEmail } from "@/lib/validation";
 import { UnknownTierError } from "@/lib/pricing-tiers";
-import { resolveRobotPrice, UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
+import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { cookies } from "next/headers";
-import { REF_COOKIE, referredDiscountForCheckout } from "@/lib/affiliate";
-import { redeemCoupon, validateCoupon } from "@/lib/coupons";
-import { provisionSubscription } from "@/lib/subscriptions";
+import { REF_COOKIE } from "@/lib/affiliate";
+import { priceCheckout, provisionFreeCouponCheckout } from "@/lib/checkout-pricing";
 
 const PAYGATE_WALLET_ENDPOINT = "https://api.paygate.to/control/wallet.php";
 const PAYGATE_PROCESS_PAYMENT_ENDPOINT = "https://checkout.paygate.to/process-payment.php";
@@ -56,10 +55,12 @@ export async function POST(req: Request) {
 
     // Fail-closed, server-authoritative price resolution — refuses unknown/inactive
     // robot, unknown tier, or an untiered/inactive price row. NEVER trust a client
-    // amount; NEVER coerce to a default robot.
-    let resolved;
+    // amount; NEVER coerce to a default robot. Referral discount vs coupon
+    // (never stacked) is shared with the Polar route.
+    const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
+    let priced;
     try {
-      resolved = await resolveRobotPrice(robotSlug, tier);
+      priced = await priceCheckout({ email, robotSlug, tier, couponCode: body.couponCode, refCode });
     } catch (err) {
       if (
         err instanceof UnknownTierError ||
@@ -70,6 +71,10 @@ export async function POST(req: Request) {
       }
       throw err;
     }
+    if (!priced.ok) {
+      return NextResponse.json({ error: priced.error }, { status: 400 });
+    }
+    const { chargeable, listPrice, discountPercent, coupon, couponWon } = priced.priced;
 
     const payoutAddress = process.env.PAYGATE_PAYOUT_USDC_ADDRESS;
     if (!payoutAddress) {
@@ -89,70 +94,19 @@ export async function POST(req: Request) {
       );
     }
 
-    // Two possible discounts, and they do NOT stack: whichever is cheaper for
-    // the customer wins. Stacking a 35% affiliate rate on top of a 15% referral
-    // discount on top of a coupon is how a sale ends up costing money.
-    const round2 = (n: number) => Math.round(n * 100) / 100;
-
-    const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
-    const discountPercent = await referredDiscountForCheckout({ email, code: refCode });
-    const referralPrice =
-      discountPercent > 0 ? round2((resolved.amount * (100 - discountPercent)) / 100) : resolved.amount;
-
-    const couponCodeRaw = (body.couponCode || "").trim();
-    let coupon: Awaited<ReturnType<typeof validateCoupon>> | null = null;
-    let couponPrice = resolved.amount;
-    if (couponCodeRaw) {
-      const check = await validateCoupon({ code: couponCodeRaw, robotSlug, tier, email });
-      if (!check.ok) {
-        return NextResponse.json({ error: check.reason }, { status: 400 });
-      }
-      coupon = check;
-      couponPrice = check.priceAfter;
-    }
-
-    const chargeable = Math.min(referralPrice, couponPrice);
-    const couponWon = coupon !== null && couponPrice <= referralPrice;
-
     const amount = chargeable.toFixed(2);
     const orderRef = crypto.randomUUID();
 
     // A code that zeroes the price skips Paygate — there is nothing to charge —
-    // but goes through the SAME provisioning call a paid order does, so the
-    // licence, email, MT5 lock, compile and download all behave identically.
-    // That is the point: a test buyer exercises the real funnel, not a stub.
+    // but goes through the SAME provisioning call a paid order does.
     if (chargeable <= 0) {
-      if (!coupon || !coupon.ok) {
+      if (!coupon) {
         return NextResponse.json({ error: "This plan requires payment." }, { status: 400 });
       }
       try {
-        const result = await provisionSubscription(
-          email,
-          tier,
-          robotSlug,
-          `COUPON-${coupon.code}-${orderRef}`,
-          0,
-          currency,
-          refCode,
+        return NextResponse.json(
+          await provisionFreeCouponCheckout({ email, tier, robotSlug, currency, refCode, coupon }),
         );
-        await redeemCoupon({
-          couponId: coupon.couponId,
-          email,
-          robotSlug,
-          tier,
-          amountBefore: coupon.priceBefore,
-          amountAfter: 0,
-          userId: result.userId,
-          orderId: result.orderId ?? null,
-        });
-        console.warn(`[coupon] FREE checkout ${coupon.code} -> ${email} (${robotSlug}/${tier})`);
-        return NextResponse.json({
-          freeCheckout: true,
-          orderRef,
-          amount: "0.00",
-          currency,
-          couponCode: coupon.code,
-        });
       } catch (err) {
         if (
           err instanceof UnknownTierError ||
@@ -247,7 +201,7 @@ export async function POST(req: Request) {
       provider,
       currency,
       amount,
-      listPrice: resolved.amount.toFixed(2),
+      listPrice: listPrice.toFixed(2),
       discountPercent,
       couponCode: couponWon && coupon?.ok ? coupon.code : null,
       couponLabel: couponWon && coupon?.ok ? coupon.label : null,

@@ -241,7 +241,10 @@
     "plan6Months": "Biannual Plan",
     "plan1Year": "Yearly Plan",
     "planLifetime": "Lifetime Access",
-    "planLifetimeSource": "Lifetime + Source"
+    "planLifetimeSource": "Lifetime + Source",
+    "payByCard": "कार्ड से भुगतान करें",
+    "payWithCrypto": "Paygate.to के ज़रिए क्रिप्टो से भुगतान करें",
+    "checkoutRedirect": "भुगतान पूरा करने के लिए आपको एक सुरक्षित चेकआउट पर भेजा जाएगा। कार्ड भुगतान Polar संभालता है; क्रिप्टो भुगतान Paygate.to।"
   },
   "Tutorials": {
     "platformTutorials": "प्लेटफ़ॉर्म ट्यूटोरियल",

@@ -241,7 +241,10 @@
     "plan6Months": "Biannual Plan",
     "plan1Year": "Yearly Plan",
     "planLifetime": "Lifetime Access",
-    "planLifetimeSource": "Lifetime + Source"
+    "planLifetimeSource": "Lifetime + Source",
+    "payByCard": "الدفع بالبطاقة",
+    "payWithCrypto": "الدفع بالعملات المشفرة عبر Paygate.to",
+    "checkoutRedirect": "سيتم توجيهك إلى صفحة دفع آمنة لإتمام العملية. تتم معالجة مدفوعات البطاقات عبر Polar، والعملات المشفرة عبر Paygate.to."
   },
   "Tutorials": {
     "platformTutorials": "دروس المنصة",

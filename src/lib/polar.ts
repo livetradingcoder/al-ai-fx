@@ -38,6 +38,8 @@ export interface PolarOrderTarget {
   robotSlug: string;
   tierSlug: string;
   refCode: string | null;
+  // App coupon that set the price (redeemed once the order is paid).
+  couponCode: string | null;
 }
 
 // Which (robot, tier) an order buys. Checkout metadata wins over product
@@ -55,6 +57,7 @@ export function resolvePolarOrderTarget(
     robotSlug: robotSlug.toLowerCase(),
     tierSlug: tierSlug.toLowerCase(),
     refCode: metaString(meta.ref),
+    couponCode: metaString(meta.coupon),
   };
 }
 

@@ -16,15 +16,25 @@ test("resolvePolarOrderTarget: product metadata maps the order", () => {
     metadata: {},
     product: product({ robot: "gold-multirange-4", tier: "10-days" }),
   });
-  assert.deepEqual(target, { robotSlug: "gold-multirange-4", tierSlug: "10-days", refCode: null });
+  assert.deepEqual(target, {
+    robotSlug: "gold-multirange-4",
+    tierSlug: "10-days",
+    refCode: null,
+    couponCode: null,
+  });
 });
 
-test("resolvePolarOrderTarget: checkout metadata wins over product metadata and carries ref", () => {
+test("resolvePolarOrderTarget: checkout metadata wins over product metadata and carries ref + coupon", () => {
   const target = resolvePolarOrderTarget({
-    metadata: { robot: "Precision-Trader", tier: "1-MONTH", ref: "ABC123" },
+    metadata: { robot: "Precision-Trader", tier: "1-MONTH", ref: "ABC123", coupon: "LAUNCH50" },
     product: product({ robot: "gold-multirange-4", tier: "10-days" }),
   });
-  assert.deepEqual(target, { robotSlug: "precision-trader", tierSlug: "1-month", refCode: "ABC123" });
+  assert.deepEqual(target, {
+    robotSlug: "precision-trader",
+    tierSlug: "1-month",
+    refCode: "ABC123",
+    couponCode: "LAUNCH50",
+  });
 });
 
 test("resolvePolarOrderTarget: refuses orders without a full mapping", () => {
