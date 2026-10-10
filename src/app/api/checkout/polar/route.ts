@@ -36,7 +36,7 @@ function thankYouUrl(locale: Locale) {
   // Polar substitutes {CHECKOUT_ID}; the webhook stores the same ref. The
   // braces must survive URL-encoding for that, hence the manual query string.
   const path = buildLocalizedPath(locale, "/checkout/thank-you");
-  return `${base}${path}?orderRef=${polarCheckoutRef("{CHECKOUT_ID}")}`;
+  return `${base}${path}?orderRef=${polarCheckoutRef("{CHECKOUT_ID}")}&from=polar`;
 }
 
 type CreateBody = {

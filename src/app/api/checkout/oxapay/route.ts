@@ -114,7 +114,7 @@ export async function POST(req: Request) {
       orderRef,
       description: `${robotName} · ${tier} · al-ai-fx`,
       callbackUrl: callbackUrl.toString(),
-      returnUrl: `${base}${buildCheckoutThankYouPath(locale, oxapayOrderRef(orderRef))}`,
+      returnUrl: `${base}${buildCheckoutThankYouPath(locale, oxapayOrderRef(orderRef))}&from=oxapay`,
     });
 
     return NextResponse.json({
