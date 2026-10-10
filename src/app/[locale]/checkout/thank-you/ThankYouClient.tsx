@@ -57,6 +57,9 @@ const GIVE_UP_AFTER_MS = 4 * 60 * 1000;
 export default function ThankYouClient() {
   const searchParams = useSearchParams();
   const orderRef = searchParams?.get("orderRef") || "";
+  // Set by the provider's success/return URL: the buyer has paid and is
+  // waiting for the webhook, so don't offer to open the checkout again.
+  const returnedFromProvider = Boolean(searchParams?.get("from"));
   const [status, setStatus] = useState<"idle" | "pending" | "success" | "failed" | "unpaid">(
     orderRef ? "pending" : "failed",
   );
@@ -211,15 +214,19 @@ export default function ThankYouClient() {
           {paid
             ? "Payment confirmed"
             : status === "pending"
-              ? "Finish your secure checkout"
+              ? returnedFromProvider
+                ? "Confirming your payment…"
+                : "Finish your secure checkout"
               : "No payment received"}
         </h1>
         <p style={{ color: "var(--text-secondary)", lineHeight: "1.7", marginBottom: "2rem" }}>
           {paid
             ? "Your payment has been confirmed and your licence is active. Sign in with the link in your email, add your MT5 account number, and your build is compiled within minutes."
             : status === "pending"
-              ? "Nothing has been charged yet. Complete the payment in the payment window — this page updates on its own as soon as the payment lands."
-              : "Nothing was charged for this checkout. The payment window was closed or never completed, so no licence was created and no email was sent. You can try again, or start with the free trial."}
+              ? returnedFromProvider
+                ? "Thanks — the payment provider is confirming your payment. This usually takes a few seconds; this page updates on its own."
+                : "Nothing has been charged yet. Complete the payment on the provider's page — this page updates on its own as soon as the payment lands."
+              : "Nothing was charged for this checkout. The payment was not completed, so no licence was created and no email was sent. You can try again, or start with the free trial."}
         </p>
 
         <div
@@ -254,7 +261,7 @@ export default function ThankYouClient() {
 
         {!paid ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {checkoutUrl ? (
+            {checkoutUrl && !(returnedFromProvider && status === "pending") ? (
               <button
                 type="button"
                 className="btn-primary"

@@ -25,7 +25,6 @@ import {
   trackBeginCheckout,
   trackViewContent,
 } from "@/lib/marketing-client";
-import { buildCheckoutThankYouPath } from "@/lib/marketing";
 import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
 import "./checkout.css";
 
@@ -204,7 +203,9 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
       tier: input.tier,
     });
 
-    window.location.assign(buildCheckoutThankYouPath(locale, input.orderRef));
+    // Straight to the hosted checkout. Polar and OxaPay send the buyer back
+    // to the thank-you page themselves, which then waits for the webhook.
+    window.location.assign(input.checkoutUrl);
   }
 
   // Re-checking on every robot/plan change would fight the user's typing, so
