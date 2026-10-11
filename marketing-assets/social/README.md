@@ -1,6 +1,6 @@
 # Social launch kit — GoldBot / al-ai-fx.xyz
 
-Three ready-to-post pieces to open the AL-ai-FX social accounts. Each has a
+Three ready-to-post pieces to open the AL-ai-FX social accounts, plus a 25 s launch video that strings them together. Each has a
 1:1 feed image (`*-1x1.jpg`, 1080×1080) and a 9:16 story/reel cover
 (`*-9x16.jpg`, 1080×1920), a short caption for X, a long caption for
 Instagram / LinkedIn / Facebook, and a Higgsfield prompt for a motion version.
@@ -199,6 +199,36 @@ Elegant glass hourglass with brass pillars filled with fine glowing gold sand, m
 ```
 
 ---
+
+## Launch video
+
+`launch-video-9x16.mp4` (1080×1920, Reels / TikTok / Shorts / Stories) and
+`launch-video-1x1.mp4` (1080×1080, feed and X). 25 s, 30 fps, H.264, silent.
+
+Timeline, built by `video.py` from the same copy and layout as the three
+static posts, over a slow Ken Burns move on each brand image:
+
+| Time | Scene | What happens |
+|------|-------|--------------|
+| 0–8 s | Launch | Headline lands line by line, then the three pills |
+| 8–17 s | How it works | The five steps appear one after another with their ETAs |
+| 17–25 s | Free trial | "3 days. $0. No card." then the CTA button, holds on the end card |
+
+Notes:
+
+- **Add audio in the app.** The file is silent on purpose: trending audio
+  picked inside Instagram or TikTok reaches further than a baked-in track, and
+  there is no licence question.
+- **Shorter cuts.** `python3 marketing-assets/social/video.py story A` renders
+  only the 8 s launch scene (`launch-video-9x16-A.mp4`); any subset works,
+  e.g. `story AC` for launch plus trial.
+- **Cover frame.** Use the matching static JPG as the cover so the grid stays
+  consistent.
+- **Rebuild** after editing copy in `video.py` (needs an ffmpeg with libx264:
+  `pip install imageio-ffmpeg`, or set `FFMPEG=/path/to/ffmpeg`). A full
+  build of both sizes takes about a minute.
+- Same compliance rules as the stills: no performance claims, risk line on
+  every frame.
 
 ## Platform notes
 
