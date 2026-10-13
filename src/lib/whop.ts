@@ -16,6 +16,10 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 // our own `source` marker in metadata and quietly acknowledges the rest.
 
 const DEFAULT_BASE = "https://api.whop.com/api/v1";
+// Whop versions its API by date, and a key without a pin falls back to the 2025
+// behaviour (company_id, plain-number totals, nested objects). Everything here is
+// written against 2026-10-13: account_id, Money objects, flat plan_id/product_id.
+export const WHOP_API_VERSION_DATE = "2026-10-13";
 export const WHOP_SOURCE = "al-ai-fx";
 
 export function whopKey(): string | null {
@@ -64,6 +68,7 @@ export async function whopFetch<T>(path: string, init: RequestInit & { idempoten
     headers: {
       Authorization: `Bearer ${key}`,
       Accept: "application/json",
+      "Api-Version-Date": WHOP_API_VERSION_DATE,
       ...(rest.body ? { "Content-Type": "application/json" } : {}),
       ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
@@ -125,6 +130,7 @@ export async function createWhopCheckout(input: WhopCheckoutInput): Promise<Whop
         robot: input.robotSlug,
         tier: input.tier,
         email: input.email,
+        amount: input.amountUsd.toFixed(2),
         ...(input.refCode ? { ref: input.refCode } : {}),
         ...(input.couponCode ? { coupon: input.couponCode } : {}),
       },
@@ -179,14 +185,23 @@ export interface WhopPayment {
   substatus?: string;
   currency?: string;
   customer_email?: string | null;
+  user?: { email?: string | null } | null;
   total?: Money;
   metadata?: Record<string, unknown> | null;
+}
+
+// membership.activated payload — only what the fallback needs.
+export interface WhopMembership {
+  id?: string;
+  status?: string;
+  metadata?: Record<string, unknown> | null;
+  user?: { email?: string | null } | null;
 }
 
 export interface WhopEvent {
   id?: string;
   type?: string;
-  data?: WhopPayment;
+  data?: WhopPayment & WhopMembership;
 }
 
 function metaString(value: unknown): string | null {
@@ -202,18 +217,26 @@ export interface WhopPaymentTarget {
   email: string | null;
   refCode: string | null;
   couponCode: string | null;
+  // The price we asked Whop to charge (metadata.amount). Only used when the
+  // order has to be provisioned from a membership event, which carries no payment.
+  expectedAmount: number | null;
 }
 
 // What a payment bought, from the metadata we set at checkout. null when the
 // payment is not ours (another product or app in the same Whop company).
-export function resolveWhopPaymentTarget(payment: Pick<WhopPayment, "metadata" | "customer_email">): WhopPaymentTarget | null {
+export function resolveWhopPaymentTarget(
+  payment: Pick<WhopPayment, "metadata" | "customer_email" | "user">,
+): WhopPaymentTarget | null {
   const meta = payment.metadata ?? {};
   if (meta.source !== WHOP_SOURCE) return null;
   const orderRef = metaString(meta.order_ref);
   const robotSlug = metaString(meta.robot);
   const tierSlug = metaString(meta.tier);
   if (!orderRef || !robotSlug || !tierSlug) return null;
-  const email = (metaString(meta.email) ?? metaString(payment.customer_email))?.toLowerCase() ?? null;
+  const email =
+    (metaString(meta.email) ?? metaString(payment.customer_email) ?? metaString(payment.user?.email))?.toLowerCase() ??
+    null;
+  const expected = Number.parseFloat(metaString(meta.amount) ?? "");
   return {
     orderRef,
     robotSlug: robotSlug.toLowerCase(),
@@ -221,6 +244,7 @@ export function resolveWhopPaymentTarget(payment: Pick<WhopPayment, "metadata" |
     email,
     refCode: metaString(meta.ref),
     couponCode: metaString(meta.coupon),
+    expectedAmount: Number.isFinite(expected) && expected >= 0 ? expected : null,
   };
 }
 
@@ -240,4 +264,10 @@ export function isWhopPaid(payment: Pick<WhopPayment, "status" | "substatus">): 
   if (payment.status !== undefined && payment.status !== "paid") return false;
   if (payment.substatus !== undefined && payment.substatus !== "succeeded") return false;
   return true;
+}
+
+// membership.activated is the fallback for purchases that carry no paid payment
+// (a 100%-off promo code): the membership is what proves the buyer got in.
+export function isWhopMembershipLive(membership: Pick<WhopMembership, "status">): boolean {
+  return membership.status === undefined || ["active", "completed", "trialing"].includes(membership.status);
 }
