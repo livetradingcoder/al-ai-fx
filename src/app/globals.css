@@ -5026,6 +5026,133 @@ html:lang(ar) .landing-hero-title {
 
 .shell-content { padding: 30px; }
 
+/* admin workspace ---------------------------------------------------------
+   Admins get two workspaces: Admin and My account. The switch sits at the top
+   of the rail; the topbar badge says which account you are signed in as. */
+.rail-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: rgba(244, 220, 162, 0.04);
+}
+
+.rail-switch a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 6px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rail-switch a:hover { color: var(--text-primary); }
+
+.rail-switch a[aria-current="true"] {
+  background: rgba(244, 220, 162, 0.14);
+  color: var(--accent-primary-light);
+  box-shadow: inset 0 0 0 1px var(--border-strong, rgba(244, 220, 162, 0.32));
+}
+
+.rail-switch svg { width: 15px; height: 15px; flex: none; }
+
+.topbar-chip .topbar-role {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(244, 220, 162, 0.14);
+  color: var(--accent-primary-light);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* admin home */
+.admin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.admin-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.admin-actions a,
+a.btn-mini { text-decoration: none; }
+a.btn-mini { display: inline-block; }
+
+.attn-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+
+.attn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(244, 220, 162, 0.3);
+  border-radius: 12px;
+  background: rgba(244, 220, 162, 0.06);
+  font-size: 0.92rem;
+}
+
+.attn-row[data-tone="bad"] {
+  border-color: rgba(239, 127, 105, 0.4);
+  background: rgba(239, 127, 105, 0.08);
+}
+
+.attn-dot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-primary-light);
+}
+
+.attn-row[data-tone="bad"] .attn-dot { background: #ef7f69; }
+.attn-text { flex: 1; min-width: 0; }
+
+.stat-delta { color: var(--accent-success); font-weight: 700; }
+
+.admin-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.latest-list { list-style: none; margin: 0; padding: 0; }
+
+.latest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.latest-row:first-child { border-top: 0; padding-top: 0; }
+.latest-row .cell-stack { min-width: 0; }
+.latest-row .robot-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.latest-end { display: grid; justify-items: end; gap: 4px; flex: none; }
+
+@media (max-width: 900px) {
+  .admin-split { grid-template-columns: 1fr; }
+  .rail-switch { margin-bottom: 12px; }
+}
+
 /* cards ------------------------------------------------------------------- */
 .card {
   border: 1px solid var(--border-color);

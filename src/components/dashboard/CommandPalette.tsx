@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 
+import {
+  ACCOUNT_NAV,
+  ADMIN_NAV,
+  ADMIN_VIEW_ACCOUNT,
+  type NavGroup,
+} from "@/components/dashboard/nav";
+
 type Item = { group: string; label: string; href: string };
 
 /**
@@ -23,27 +30,22 @@ export default function CommandPalette() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   const items: Item[] = useMemo(() => {
-    const base: Item[] = [
-      { group: t("menu"), label: t("overview"), href: "/dashboard" },
-      { group: t("menu"), label: t("myLicenses"), href: "/dashboard/licenses" },
-      { group: t("menu"), label: t("guidedSetup"), href: "/dashboard/onboarding" },
-      { group: t("menu"), label: t("downloads"), href: "/dashboard/downloads" },
-      { group: t("menu"), label: t("affiliate"), href: "/dashboard/affiliate" },
-      { group: t("accountGroup"), label: t("billing"), href: "/dashboard/billing" },
-      { group: t("accountGroup"), label: t("profile"), href: "/dashboard/profile" },
-      { group: t("accountGroup"), label: t("settings"), href: "/dashboard/settings" },
+    // An admin's "Overview" is their own customer dashboard; plain /dashboard
+    // would send them to the admin home.
+    const toItems = (groups: NavGroup[]): Item[] =>
+      groups.flatMap((group) =>
+        group.items.map((item) => ({
+          group: t(group.label),
+          label: t(item.label),
+          href: isAdmin && item.href === "/dashboard" ? ADMIN_VIEW_ACCOUNT : item.href,
+        })),
+      );
+
+    const account: Item[] = [
+      ...toItems(ACCOUNT_NAV),
       { group: t("helpGroup"), label: t("openTutorial"), href: "/tutorials/1" },
     ];
-    if (isAdmin) {
-      base.push(
-        { group: t("administration"), label: t("adminOverview"), href: "/dashboard/admin" },
-        { group: t("administration"), label: t("manageUsers"), href: "/dashboard/admin/users" },
-        { group: t("administration"), label: t("manageRobots"), href: "/dashboard/admin/robots" },
-        { group: t("administration"), label: t("manageAffiliates"), href: "/dashboard/admin/affiliates" },
-        { group: t("administration"), label: t("manageCoupons"), href: "/dashboard/admin/coupons" },
-      );
-    }
-    return base;
+    return isAdmin ? [...toItems(ADMIN_NAV), ...account] : account;
   }, [isAdmin, t]);
 
   const results = useMemo(() => {

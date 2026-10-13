@@ -38,7 +38,9 @@ export default async function AdminUsersPage() {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>User Management</h1>
-        <AddUserForm />
+        <div id="add" style={{ scrollMarginTop: '110px' }}>
+          <AddUserForm />
+        </div>
         <UsersTable users={users} currentUserId={session.user.id} />
       </div>
     </div>

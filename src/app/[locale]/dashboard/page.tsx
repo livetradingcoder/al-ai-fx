@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { redirect as redirectLocalized } from "@/i18n/routing";
 import { getCompiledFilename } from "@/lib/compiler-filename";
 
 const LockIcon = (
@@ -13,12 +14,23 @@ const LockIcon = (
   </svg>
 );
 
-export default async function DashboardOverview() {
+export default async function DashboardOverview({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const t = await getTranslations("Dashboard");
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
     redirect("/login");
+  }
+
+  // Admins open on the admin home. This page is every entry point's default
+  // (login, magic links, the navbar's Dashboard button), so one check here
+  // covers them all; ?view=account is how an admin reaches their own view.
+  if (session.user.role === "ADMIN" && (await searchParams).view !== "account") {
+    redirectLocalized({ href: "/dashboard/admin", locale: await getLocale() });
   }
 
   const user = await prisma.user.findUnique({

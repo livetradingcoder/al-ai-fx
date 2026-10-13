@@ -384,7 +384,11 @@
     "guidedSetup": "सेटअप",
     "affiliate": "एफिलिएट",
     "manageAffiliates": "एफिलिएट प्रोग्राम",
-    "manageCoupons": "कूपन"
+    "manageCoupons": "कूपन",
+    "workspaceAdmin": "एडमिन",
+    "workspaceAccount": "मेरा खाता",
+    "manageOrders": "ऑर्डर",
+    "manageLicences": "लाइसेंस"
   },
   "Nav": {},
   "Consent": {

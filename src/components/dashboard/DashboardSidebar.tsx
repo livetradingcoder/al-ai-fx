@@ -4,6 +4,13 @@ import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
+import {
+  ACCOUNT_NAV,
+  ADMIN_NAV,
+  ADMIN_VIEW_ACCOUNT,
+  isAdminPath,
+  type NavItem,
+} from "@/components/dashboard/nav";
 import { openSupportChat } from "@/components/NdeskWidget";
 import { Link } from "@/i18n/routing";
 
@@ -47,6 +54,11 @@ const Icon = {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 9V7a1 1 0 011-1h14a1 1 0 011 1v2a2 2 0 000 4v2a1 1 0 01-1 1H5a1 1 0 01-1-1v-2a2 2 0 000-4z" />
       <path d="M14 7v10" strokeDasharray="2 3" />
+    </svg>
+  ),
+  orders: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" />
     </svg>
   ),
   setup: (
@@ -96,37 +108,56 @@ export default function DashboardSidebar() {
   const isAdmin = session?.user?.role === "ADMIN";
   const localePrefix = locale === "en" ? "" : `/${locale}`;
 
+  // The route decides the workspace. Only admins have a second one, so a
+  // customer's rail is the account rail whatever URL they type.
+  const inAdmin = isAdmin && isAdminPath(pathname);
+  const groups = inAdmin ? ADMIN_NAV : ACCOUNT_NAV;
+
   const isActive = (path: string) =>
     pathname === `${localePrefix}${path}` || pathname === path;
 
-  const railLink = (href: string, icon: React.ReactNode, label: string) => (
+  // An admin's "Overview" is their own customer dashboard, and plain
+  // /dashboard would send them to the admin home.
+  const hrefFor = (item: NavItem) =>
+    isAdmin && item.href === "/dashboard" ? ADMIN_VIEW_ACCOUNT : item.href;
+
+  const railLink = (item: NavItem) => (
     <Link
-      href={href}
+      key={item.href}
+      href={hrefFor(item)}
       className="rail-link"
-      aria-current={isActive(href) ? "page" : undefined}
+      aria-current={isActive(item.href) ? "page" : undefined}
     >
-      {icon}
-      {label}
+      {Icon[item.icon]}
+      {t(item.label)}
     </Link>
   );
 
   return (
     <aside className="shell-rail">
-      <nav className="rail-group" aria-label={t("menu")}>
-        <p className="rail-group-label">{t("menu")}</p>
-        {railLink("/dashboard", Icon.overview, t("overview"))}
-        {railLink("/dashboard/licenses", Icon.licence, t("myLicenses"))}
-        {railLink("/dashboard/onboarding", Icon.setup, t("guidedSetup"))}
-        {railLink("/dashboard/downloads", Icon.downloads, t("downloads"))}
-        {railLink("/dashboard/affiliate", Icon.affiliate, t("affiliate"))}
-      </nav>
+      {isAdmin ? (
+        <div
+          className="rail-switch"
+          role="group"
+          aria-label={`${t("workspaceAdmin")} / ${t("workspaceAccount")}`}
+        >
+          <Link href="/dashboard/admin" aria-current={inAdmin ? "true" : undefined}>
+            {Icon.admin}
+            {t("workspaceAdmin")}
+          </Link>
+          <Link href={ADMIN_VIEW_ACCOUNT} aria-current={inAdmin ? undefined : "true"}>
+            {Icon.profile}
+            {t("workspaceAccount")}
+          </Link>
+        </div>
+      ) : null}
 
-      <nav className="rail-group" aria-label={t("accountGroup")}>
-        <p className="rail-group-label">{t("accountGroup")}</p>
-        {railLink("/dashboard/billing", Icon.billing, t("billing"))}
-        {railLink("/dashboard/profile", Icon.profile, t("profile"))}
-        {railLink("/dashboard/settings", Icon.settings, t("settings"))}
-      </nav>
+      {groups.map((group) => (
+        <nav key={group.label} className="rail-group" aria-label={t(group.label)}>
+          <p className="rail-group-label">{t(group.label)}</p>
+          {group.items.map(railLink)}
+        </nav>
+      ))}
 
       <nav className="rail-group" aria-label={t("helpGroup")}>
         <p className="rail-group-label">{t("helpGroup")}</p>
@@ -135,17 +166,6 @@ export default function DashboardSidebar() {
           {t("support")}
         </button>
       </nav>
-
-      {isAdmin ? (
-        <nav className="rail-group" aria-label={t("administration")}>
-          <p className="rail-group-label">{t("administration")}</p>
-          {railLink("/dashboard/admin", Icon.admin, t("adminOverview"))}
-          {railLink("/dashboard/admin/users", Icon.users, t("manageUsers"))}
-          {railLink("/dashboard/admin/robots", Icon.robots, t("manageRobots"))}
-          {railLink("/dashboard/admin/affiliates", Icon.affiliate, t("manageAffiliates"))}
-          {railLink("/dashboard/admin/coupons", Icon.coupons, t("manageCoupons"))}
-        </nav>
-      ) : null}
 
       <div className="rail-group">
         <button

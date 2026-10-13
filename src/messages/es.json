@@ -384,7 +384,11 @@
     "guidedSetup": "Configuración",
     "affiliate": "Afiliados",
     "manageAffiliates": "Programa de afiliados",
-    "manageCoupons": "Cupones"
+    "manageCoupons": "Cupones",
+    "workspaceAdmin": "Admin",
+    "workspaceAccount": "Mi cuenta",
+    "manageOrders": "Pedidos",
+    "manageLicences": "Licencias"
   },
   "Nav": {},
   "Consent": {

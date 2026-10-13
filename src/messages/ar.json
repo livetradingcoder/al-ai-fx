@@ -384,7 +384,11 @@
     "guidedSetup": "الإعداد",
     "affiliate": "التسويق بالعمولة",
     "manageAffiliates": "برنامج العمولة",
-    "manageCoupons": "الكوبونات"
+    "manageCoupons": "الكوبونات",
+    "workspaceAdmin": "المشرف",
+    "workspaceAccount": "حسابي",
+    "manageOrders": "الطلبات",
+    "manageLicences": "التراخيص"
   },
   "Nav": {},
   "Consent": {

@@ -384,7 +384,11 @@
     "guidedSetup": "Setup",
     "affiliate": "Affiliate",
     "manageAffiliates": "Affiliate programme",
-    "manageCoupons": "Coupons"
+    "manageCoupons": "Coupons",
+    "workspaceAdmin": "Admin",
+    "workspaceAccount": "My account",
+    "manageOrders": "Orders",
+    "manageLicences": "Licences"
   },
   "Nav": {},
   "Consent": {

@@ -384,7 +384,11 @@
     "guidedSetup": "Einrichtung",
     "affiliate": "Partnerprogramm",
     "manageAffiliates": "Partnerprogramm",
-    "manageCoupons": "Gutscheine"
+    "manageCoupons": "Gutscheine",
+    "workspaceAdmin": "Admin",
+    "workspaceAccount": "Mein Konto",
+    "manageOrders": "Bestellungen",
+    "manageLicences": "Lizenzen"
   },
   "Nav": {},
   "Consent": {

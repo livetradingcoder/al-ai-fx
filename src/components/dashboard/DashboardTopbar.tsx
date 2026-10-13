@@ -5,34 +5,23 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import CommandPalette from "@/components/dashboard/CommandPalette";
+import { ACCOUNT_NAV, ADMIN_NAV, findNavItem, isAdminPath } from "@/components/dashboard/nav";
 
 /**
  * Context strip above the content: which area you're in, and who you're
  * signed in as. No search box — a search that returns nothing would be
- * decoration, and there are six pages.
+ * decoration, and there are only a handful of pages.
  */
 export default function DashboardTopbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const t = useTranslations("Dashboard");
 
-  const area = pathname.includes("/dashboard/admin")
-    ? t("administration")
-    : /\/(profile|settings|billing)$/.test(pathname)
-      ? t("accountGroup")
-      : t("menu");
-
-  const title = pathname.includes("/admin/users")
-    ? t("manageUsers")
-    : pathname.includes("/admin/robots")
-      ? t("manageRobots")
-      : pathname.includes("/admin")
-        ? t("adminOverview")
-        : pathname.includes("/licenses")
-          ? t("myLicenses")
-          : pathname.includes("/billing")
-            ? t("billing")
-            : t("overview");
+  const isAdmin = session?.user?.role === "ADMIN";
+  // Same lookup the sidebar uses, so a page is named the same in both places.
+  const match = findNavItem(pathname, isAdminPath(pathname) ? ADMIN_NAV : ACCOUNT_NAV);
+  const area = t(match?.group.label ?? "menu");
+  const title = t(match?.item.label ?? "overview");
 
   const email = session?.user?.email ?? "";
   const initials = (session?.user?.name || email || "?")
@@ -50,6 +39,7 @@ export default function DashboardTopbar() {
       <div className="topbar-chip">
         <span className="topbar-avatar" aria-hidden="true">{initials}</span>
         <span title={email}>{email}</span>
+        {isAdmin ? <span className="topbar-role">{t("workspaceAdmin")}</span> : null}
       </div>
     </header>
   );

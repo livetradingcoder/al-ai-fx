@@ -384,7 +384,11 @@
     "guidedSetup": "সেটআপ",
     "affiliate": "অ্যাফিলিয়েট",
     "manageAffiliates": "অ্যাফিলিয়েট প্রোগ্রাম",
-    "manageCoupons": "কুপন"
+    "manageCoupons": "কুপন",
+    "workspaceAdmin": "অ্যাডমিন",
+    "workspaceAccount": "আমার অ্যাকাউন্ট",
+    "manageOrders": "অর্ডার",
+    "manageLicences": "লাইসেন্স"
   },
   "Nav": {},
   "Consent": {
