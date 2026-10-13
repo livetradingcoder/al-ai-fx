@@ -6,7 +6,9 @@ import { Link } from "@/i18n/routing";
 import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
 import { HEARTBEAT_DEAD_SECONDS } from "@/lib/compiler-config";
 import { mailDeliveryStatus } from "@/lib/mail";
+import { metaTrackingStatus } from "@/lib/meta-events";
 import { timeAgo } from "@/lib/time-ago";
+import MetaTracking from "./MetaTracking";
 
 const DAY = 24 * 60 * 60_000;
 
@@ -31,6 +33,7 @@ export default async function AdminDashboard() {
   }
 
   const mail = mailDeliveryStatus();
+  const metaStatus = await metaTrackingStatus();
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * DAY);
   const monthAgo = new Date(now.getTime() - 30 * DAY);
@@ -293,6 +296,20 @@ export default async function AdminDashboard() {
         <p className="cell-note" style={{ marginTop: 0, marginBottom: '12px' }}>
           {plural(todayCompilations, 'compilation')} so far today.
         </p>
+        <MetaTracking
+          status={{
+            ...metaStatus,
+            recent: metaStatus.recent.map((send) => ({
+              when: timeAgo(new Date(send.at), now),
+              events: send.events.join(', '),
+              ok: send.ok,
+              test: send.test,
+              detail: send.ok
+                ? `${send.eventsReceived ?? 0} received${send.fbtraceId ? ` · ${send.fbtraceId}` : ''}`
+                : send.error ?? 'failed',
+            })),
+          }}
+        />
         <div className="glass-panel" style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>Email delivery</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Mail leaves through the Mailgun API — these are the environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>

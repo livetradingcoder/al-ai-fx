@@ -5,6 +5,8 @@ import { sendPurchaseConfirmationEmail } from "@/lib/mail";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
+import { inBackground, sendPurchaseEvent } from "@/lib/meta-events";
+import type { MetaUserInput } from "@/lib/meta-capi";
 
 // Re-export so existing imports elsewhere (webhook route.ts, create-session, etc.)
 // don't need to change their import path in this plan. Plan 02-02 may migrate
@@ -29,6 +31,10 @@ export async function findOrCreateUser(email: string) {
   return { user, emailSuccess };
 }
 
+/** What a payment provider tells us about the buyer, beyond their email. It only
+ *  ever goes to Meta hashed, and only for a visitor who accepted ad cookies. */
+export type BuyerDetails = Pick<MetaUserInput, "firstName" | "lastName" | "city" | "state" | "zip" | "country">;
+
 function formatTierLabel(tier: PricingTier) {
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -45,6 +51,7 @@ export async function provisionSubscription(
   amount?: number,
   currency?: string,
   refCode?: string | null,
+  buyer?: BuyerDetails,
 ) {
   const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
@@ -135,6 +142,22 @@ export async function provisionSubscription(
     orderId = order.id;
 
     await recordCommission({ orderId: order.id, userId: user.id, amount });
+
+    // Tell Meta's Conversions API, in the background and fenced off: a tracking
+    // problem must never be able to fail an order that has already been paid.
+    inBackground(() =>
+      sendPurchaseEvent({
+        orderRef: paygateId,
+        email,
+        userId: user.id,
+        amount,
+        currency: currency || "USD",
+        robotSlug: robot.slug,
+        robotName: robot.name,
+        tierSlug: tierRaw,
+        customer: buyer,
+      }),
+    );
   }
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)

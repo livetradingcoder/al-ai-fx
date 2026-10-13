@@ -72,6 +72,12 @@ export async function checkApiRateLimit(identifier: string): Promise<{ success: 
   return rateLimiter.limit(identifier, 100, 60 * 1000);
 }
 
+export async function checkMetaEventRateLimit(identifier: string): Promise<{ success: boolean }> {
+  // 120 relayed browsing events per minute: a few per page view, with room to
+  // spare, but a script cannot use /api/meta/event to flood the pixel.
+  return rateLimiter.limit(`meta:${identifier}`, 120, 60 * 1000);
+}
+
 export async function checkWebhookRateLimit(identifier: string): Promise<{ success: boolean }> {
   // 1000 requests per minute
   return rateLimiter.limit(identifier, 1000, 60 * 1000);

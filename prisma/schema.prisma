@@ -80,6 +80,23 @@ model Order {
   commission Commission?
 }
 
+/// What a visitor's browser looked like when they started paying, kept so the
+/// Purchase we send to Meta's Conversions API (from the payment webhook, long
+/// after the browser has gone) can carry the same match keys the pixel had.
+/// Written only for visitors who accepted advertising cookies, keyed by the same
+/// reference Order.paygateId ends up holding, and pruned after 30 days.
+model CheckoutAttribution {
+  orderRef  String   @id
+  fbp       String?
+  fbc       String?
+  ip        String?
+  userAgent String?
+  sourceUrl String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Robot {
   id               String   @id @default(cuid())
   slug             String   @unique // "goldbot" — join key for Blob path (sources/<slug>/) + compiled filename

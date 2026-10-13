@@ -5,6 +5,11 @@
 export const CONSENT_STORAGE_KEY = "al_consent_v1";
 export const CONSENT_OPEN_EVENT = "al:open-consent";
 
+// The same choice, in a cookie. localStorage is invisible to the server, and
+// the Conversions API events our own routes send to Meta may only go out for a
+// visitor who accepted. This is the preference itself, not a tracker.
+export const CONSENT_COOKIE = "al_consent";
+
 export type ConsentChoice = "granted" | "denied";
 
 // EEA, UK and Switzerland: storage is denied until the visitor accepts.
@@ -47,4 +52,11 @@ g('consent','default',${granted});
 g('set','ads_data_redaction',true);
 try{var c=localStorage.getItem('${CONSENT_STORAGE_KEY}');if(c==='granted'||c==='denied'){g('consent','update',{ad_storage:c,ad_user_data:c,ad_personalization:c,analytics_storage:c});}}catch(e){}
 })();`;
+}
+
+/** Keeps the cookie in step with the choice. Browser only; a no-op elsewhere. */
+export function writeConsentCookie(choice: ConsentChoice) {
+  if (typeof document === "undefined") return;
+  const secure = typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${CONSENT_COOKIE}=${choice}; Max-Age=31536000; Path=/; SameSite=Lax${secure}`;
 }

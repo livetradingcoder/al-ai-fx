@@ -15,15 +15,18 @@ import {
   Tag,
   Zap,
 } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
   storePendingCheckout,
+  trackAddToCart,
   trackBeginCheckout,
-  trackViewContent,
+  trackCompleteRegistration,
+  trackInitiateCheckout,
+  trackStartTrial,
 } from "@/lib/marketing-client";
 import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
 import { CardBrands, CryptoBrands } from "./PaymentBrands";
@@ -202,6 +205,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
       robotName: robot?.name ?? robotNameParam ?? undefined,
       robotSlug: selectedSlug,
       tier: input.tier,
+      tierSlug: input.tier,
     });
 
     // Straight to the hosted checkout. Polar and OxaPay send the buyer back
@@ -273,10 +277,20 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
           }),
         });
 
+        const trialData = (await response.json().catch(() => ({}))) as {
+          error?: string;
+          subscriptionId?: string;
+          userId?: string;
+        };
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to activate free trial.");
+          throw new Error(trialData.error || "Failed to activate free trial.");
         }
+
+        // The server sent its copies as it created the trial; the ids it
+        // returned let the pixel send the same events, counted once.
+        const trialRobot = { robotSlug: selectedSlug, robotName: robot?.name ?? robotNameParam };
+        if (trialData.subscriptionId) trackStartTrial({ subscriptionId: trialData.subscriptionId, ...trialRobot });
+        if (trialData.userId) trackCompleteRegistration({ userId: trialData.userId, robotName: trialRobot.robotName });
 
         setIsSubmitting(false);
         setIsSuccess(true);
@@ -342,14 +356,33 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
     }
   }
 
+  // Meta's funnel. Landing on checkout with a robot and plan is InitiateCheckout
+  // (once); each robot and plan the buyer settles on is AddToCart. Nothing fires
+  // until the robot list has loaded and says this plan exists for this robot,
+  // so there is never an event for a plan the price below is guessing at.
+  const metaAdded = useRef(new Set<string>());
+  const metaInitiated = useRef(false);
+  const metaRobotName = robot?.name;
+  const metaPlanExists = robot ? robot.prices[tier] !== undefined : false;
   useEffect(() => {
-    trackViewContent({
-      contentName: selectedPlan.name,
-      contentType: "checkout",
+    if (!metaRobotName || !metaPlanExists || !selectedSlug) return;
+    const item = {
+      robotSlug: selectedSlug,
+      robotName: metaRobotName,
+      tierSlug: tier,
+      amount: displayAmount,
       currency: "USD",
-      value: Number.parseFloat(selectedPlan.amount),
-    });
-  }, [selectedPlan.amount, selectedPlan.name]);
+    };
+    const key = `${selectedSlug}|${tier}`;
+    if (!metaAdded.current.has(key)) {
+      metaAdded.current.add(key);
+      trackAddToCart(item);
+    }
+    if (!metaInitiated.current) {
+      metaInitiated.current = true;
+      trackInitiateCheckout(item);
+    }
+  }, [metaRobotName, metaPlanExists, selectedSlug, tier, displayAmount]);
 
   const monthlyEquivalent: Partial<Record<TierId, number>> = {
     "6-months": 6,

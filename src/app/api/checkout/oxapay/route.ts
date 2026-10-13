@@ -7,6 +7,8 @@ import { buildCheckoutThankYouPath } from "@/lib/marketing";
 import { createOxapayInvoice, oxapayKey, oxapayOrderRef, signCallbackParams } from "@/lib/oxapay";
 import { TIER_METADATA, UnknownTierError } from "@/lib/pricing-tiers";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { inBackground, rememberCheckoutAttribution, sendAddPaymentInfoEvent } from "@/lib/meta-events";
+import { readMetaRequestContext } from "@/lib/meta-request";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
@@ -117,9 +119,19 @@ export async function POST(req: Request) {
       returnUrl: `${base}${buildCheckoutThankYouPath(locale, oxapayOrderRef(orderRef))}&from=oxapay`,
     });
 
+    // Meta: remember the browser for the webhook, report the payment-info step.
+    const fullRef = oxapayOrderRef(orderRef);
+    const metaCtx = readMetaRequestContext(req);
+    inBackground(async () => {
+      await rememberCheckoutAttribution(fullRef, metaCtx);
+      await sendAddPaymentInfoEvent({
+        ctx: metaCtx, orderRef: fullRef, email, amount: chargeable, currency: "USD", robotSlug, robotName, tierSlug: tier,
+      });
+    });
+
     return NextResponse.json({
       checkoutUrl: invoice.paymentUrl,
-      orderRef: oxapayOrderRef(orderRef),
+      orderRef: fullRef,
       trackId: invoice.trackId,
       currency: "USD",
       amount,

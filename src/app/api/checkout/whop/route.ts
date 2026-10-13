@@ -6,6 +6,8 @@ import { priceCheckout, provisionFreeCouponCheckout } from "@/lib/checkout-prici
 import { buildCheckoutThankYouPath } from "@/lib/marketing";
 import { TIER_METADATA, UnknownTierError } from "@/lib/pricing-tiers";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { inBackground, rememberCheckoutAttribution, sendAddPaymentInfoEvent } from "@/lib/meta-events";
+import { readMetaRequestContext } from "@/lib/meta-request";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import { WHOP_MIN_AMOUNT, createWhopCheckout, whopKey, whopOrderRef, whopProductId } from "@/lib/whop";
@@ -123,9 +125,19 @@ export async function POST(req: Request) {
       redirectUrl: `${base}${buildCheckoutThankYouPath(locale, whopOrderRef(orderRef))}&from=whop`,
     });
 
+    // Meta: remember the browser for the webhook, report the payment-info step.
+    const fullRef = whopOrderRef(orderRef);
+    const metaCtx = readMetaRequestContext(req);
+    inBackground(async () => {
+      await rememberCheckoutAttribution(fullRef, metaCtx);
+      await sendAddPaymentInfoEvent({
+        ctx: metaCtx, orderRef: fullRef, email, amount: chargeable, currency: "USD", robotSlug, robotName, tierSlug: tier,
+      });
+    });
+
     return NextResponse.json({
       checkoutUrl: checkout.purchaseUrl,
-      orderRef: whopOrderRef(orderRef),
+      orderRef: fullRef,
       currency: "USD",
       amount: chargeable.toFixed(2),
       listPrice: listPrice.toFixed(2),

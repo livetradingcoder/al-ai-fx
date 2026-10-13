@@ -8,7 +8,6 @@ import {
   clearPendingCheckout,
   getPendingCheckout,
   trackPurchase,
-  trackViewContent,
 } from "@/lib/marketing-client";
 
 type OrderStatusResponse =
@@ -90,13 +89,6 @@ export default function ThankYouClient() {
       return;
     }
 
-    trackViewContent({
-      contentName: pendingCheckout?.tier || "GoldBot Checkout",
-      contentType: "checkout_status",
-      currency: pendingCheckout?.currency,
-      value: pendingCheckout?.amount,
-    });
-
     let isActive = true;
 
     let intervalId = 0;
@@ -127,6 +119,7 @@ export default function ThankYouClient() {
             robotName: pendingCheckout?.robotName,
             robotSlug: pendingCheckout?.robotSlug,
             tier: formatTier(data.pricingTier ?? pendingCheckout?.tier),
+            tierSlug: pendingCheckout?.tier,
           };
 
           trackPurchase(purchase);

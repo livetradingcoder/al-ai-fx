@@ -10,8 +10,10 @@ import {
   CONSENT_STORAGE_KEY,
   consentState,
   parseConsentChoice,
+  writeConsentCookie,
   type ConsentChoice,
 } from "@/lib/consent";
+import { ensureFbcCookie } from "@/lib/marketing-client";
 import "./consent-banner.css";
 
 // gtag's consent commands must reach the dataLayer as an `arguments` object;
@@ -63,11 +65,15 @@ export default function ConsentBanner() {
     } catch {
       // Private mode: the choice still applies to this page view.
     }
+    // The server reads this one: it decides whether anything goes to Meta.
+    writeConsentCookie(choice);
     window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
 
     pushConsentUpdate("consent", "update", consentState(choice));
     window.dataLayer?.push({ event: "consent_update", consent_choice: choice });
     window.fbq?.("consent", choice === "granted" ? "grant" : "revoke");
+    // A visitor who landed from an ad and accepts now still gets their click ID.
+    if (choice === "granted") ensureFbcCookie();
     setOverride("closed");
   }
 

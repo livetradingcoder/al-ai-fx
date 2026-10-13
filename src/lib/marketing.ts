@@ -5,6 +5,12 @@ import { buildLocalizedPath } from "@/lib/seo";
 // NEXT_PUBLIC_GTM_ID overrides it, e.g. to silence tags on a staging host.
 export const DEFAULT_GTM_ID = "GTM-PN7C6WJP";
 
+// The Meta pixel (dataset) for al-ai-fx.xyz. Public for the same reason: it
+// ships in the page source and appears in every pixel request. The Conversions
+// API sends to the same ID, which is what lets Meta pair the two copies of an
+// event. NEXT_PUBLIC_META_PIXEL_ID overrides it.
+export const DEFAULT_META_PIXEL_ID = "1100062386089751";
+
 type MarketingEnv = Partial<
   Record<
     | "NEXT_PUBLIC_GTM_ID"
@@ -61,7 +67,7 @@ export function getMarketingConfig(env: MarketingEnv = process.env as unknown as
     googleAdsId,
     beginCheckoutSendTo: buildGoogleAdsSendTo(googleAdsId, beginCheckoutLabel),
     purchaseSendTo: buildGoogleAdsSendTo(googleAdsId, purchaseLabel),
-    metaPixelId: cleanEnvValue(env.NEXT_PUBLIC_META_PIXEL_ID),
+    metaPixelId: cleanEnvValue(env.NEXT_PUBLIC_META_PIXEL_ID) ?? DEFAULT_META_PIXEL_ID,
   };
 }
 
@@ -75,6 +81,8 @@ export type EcommerceEventInput = {
   currency: string;
   orderRef: string;
   tier: string;
+  /** The plan as a slug ("1-month"), which `tier` (often a display label) is not. For Meta. */
+  tierSlug?: string;
   robotName?: string;
   robotSlug?: string;
 };

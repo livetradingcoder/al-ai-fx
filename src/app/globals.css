@@ -5185,6 +5185,28 @@ a.btn-mini { display: inline-block; }
 .admin-dialog .admin-dialog-head h2 { margin: 0; font-size: 1.25rem; }
 .admin-dialog-head .card-label { margin-bottom: 6px; }
 
+/* Meta tracking status rows on the admin home */
+.meta-rows { display: grid; gap: 0; }
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.meta-row:first-child { border-top: 0; }
+.meta-row span { color: var(--text-secondary); flex: none; }
+.meta-row strong { font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .meta-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .meta-row strong { text-align: left; }
+}
+
 /* the page behind must not scroll while a dialog is open */
 body:has(dialog.admin-dialog[open]) { overflow: hidden; }
 

@@ -61,6 +61,24 @@ export function resolvePolarOrderTarget(
   };
 }
 
+// The name and billing address on a paid order, for Meta's matching. Card
+// buyers fill these in on Polar's page, so they are the best match keys we get.
+export function polarBuyerDetails(
+  order: Pick<PolarOrder, "billing_name" | "billing_address" | "customer">,
+) {
+  const name = (order.billing_name ?? order.customer.name ?? "").trim();
+  const [firstName, ...rest] = name.split(/\s+/).filter(Boolean);
+  const address = order.billing_address ?? order.customer.billing_address ?? null;
+  return {
+    firstName: firstName || undefined,
+    lastName: rest.join(" ") || undefined,
+    city: address?.city ?? undefined,
+    state: address?.state ?? undefined,
+    zip: address?.postal_code ?? undefined,
+    country: address?.country ?? undefined,
+  };
+}
+
 // External id stored in Order.paygateId. provisionSubscription dedupes on it,
 // so a redelivered order.paid is a no-op. Keyed on the checkout when there is
 // one: the success URL carries {CHECKOUT_ID}, so the thank-you page can poll

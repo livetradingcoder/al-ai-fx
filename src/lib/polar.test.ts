@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  polarBuyerDetails,
   polarCheckoutRef,
   polarOrderAmount,
   polarOrderRef,
@@ -54,4 +55,48 @@ test("polarOrderAmount: cents → dollars, currency upper-cased", () => {
   assert.deepEqual(polarOrderAmount({ net_amount: 1000, currency: "usd" }), { amount: 10, currency: "USD" });
   assert.deepEqual(polarOrderAmount({ net_amount: 0, currency: "usd" }), { amount: 0, currency: "USD" });
   assert.deepEqual(polarOrderAmount({ net_amount: 2999, currency: "eur" }), { amount: 29.99, currency: "EUR" });
+});
+
+const buyerOrder = (over: Record<string, unknown>) =>
+  ({
+    billing_name: null,
+    billing_address: null,
+    customer: { name: null, billing_address: null },
+    ...over,
+  }) as unknown as Parameters<typeof polarBuyerDetails>[0];
+
+test("polarBuyerDetails: splits the billing name and reads the address", () => {
+  assert.deepEqual(
+    polarBuyerDetails(
+      buyerOrder({
+        billing_name: "  Ana Maria de Souza ",
+        billing_address: { city: "Lisbon", state: null, postal_code: "1000-001", country: "PT" },
+      }),
+    ),
+    {
+      firstName: "Ana",
+      lastName: "Maria de Souza",
+      city: "Lisbon",
+      state: undefined,
+      zip: "1000-001",
+      country: "PT",
+    },
+  );
+});
+
+test("polarBuyerDetails: falls back to the customer's name and address, and survives having neither", () => {
+  assert.deepEqual(
+    polarBuyerDetails(
+      buyerOrder({ customer: { name: "Cher", billing_address: { country: "US", postal_code: "94043" } } }),
+    ),
+    { firstName: "Cher", lastName: undefined, city: undefined, state: undefined, zip: "94043", country: "US" },
+  );
+  assert.deepEqual(polarBuyerDetails(buyerOrder({})), {
+    firstName: undefined,
+    lastName: undefined,
+    city: undefined,
+    state: undefined,
+    zip: undefined,
+    country: undefined,
+  });
 });

@@ -4,6 +4,7 @@ import { provisionSubscription, UnknownTierError } from "@/lib/subscriptions";
 import { redeemCoupon, validateCoupon } from "@/lib/coupons";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import {
+  polarBuyerDetails,
   polarOrderAmount,
   polarOrderRef,
   resolvePolarOrderTarget,
@@ -97,6 +98,7 @@ async function handleOrderPaid(order: PolarOrder) {
       amount,
       currency,
       target.refCode,
+      polarBuyerDetails(order),
     );
     // The coupon that set the checkout price is consumed only now that the
     // money has landed, the same as the Paygate callback does.

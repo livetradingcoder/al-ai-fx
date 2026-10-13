@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG, formatUsd } from "@/lib/catalog-tiers";
 import type { PricingTier } from "@prisma/client";
 import { breadcrumbJsonLd, buildMetadata, jsonLdScript, robotProductJsonLd } from "@/lib/seo";
+import TrackViewContent from "@/components/marketing/TrackViewContent";
 
 // English-only page (like /catalog): copy comes from DB Robot fields, which are
 // single-language — registering a PublicPageKey would force 7-locale PAGE_COPY
@@ -96,6 +97,13 @@ export default async function RobotDetailPage(props: {
     <main className="main-content landing-shell">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(productLd)} />
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(breadcrumbLd)} />
+      {/* ViewContent for Meta: the entry price is the lowest paid plan. */}
+      <TrackViewContent
+        robotSlug={robot.slug}
+        robotName={robot.name}
+        amount={paidPrices.length ? Math.min(...paidPrices.map((p) => p.amount)) : 0}
+        currency="USD"
+      />
       <section className="landing-section">
         <div className="landing-container">
           <p style={{ marginBottom: "2rem" }}>

@@ -7,6 +7,8 @@ import { cookies } from "next/headers";
 import { clientIp, REF_COOKIE } from "@/lib/affiliate";
 import { checkTrialAvailability, hashTrialIp, recordTrialClaim } from "@/lib/trial-limits";
 import { validateEmail } from "@/lib/validation";
+import { inBackground, sendTrialEvents } from "@/lib/meta-events";
+import { readMetaRequestContext } from "@/lib/meta-request";
 
 export async function POST(req: Request) {
   // Rate limiting - 2 trials per IP per day
@@ -96,6 +98,23 @@ export async function POST(req: Request) {
 
     if (!result.duplicated) {
       await recordTrialClaim({ robotSlug, email: normalizedEmail, ipHash });
+
+      // Meta: a trial started and an account was created. The page fires the
+      // pixel copies with ids derived from the same user and subscription ids.
+      if ("subscriptionId" in result && result.subscriptionId) {
+        const subscriptionId = result.subscriptionId;
+        const metaCtx = readMetaRequestContext(req);
+        inBackground(() =>
+          sendTrialEvents({
+            ctx: metaCtx,
+            email: normalizedEmail,
+            userId: result.userId,
+            subscriptionId,
+            robotSlug,
+            robotName: resolved.robot.name,
+          }),
+        );
+      }
     }
 
     if (result.duplicated && result.alreadyTrialed) {

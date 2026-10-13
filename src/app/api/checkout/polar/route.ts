@@ -7,6 +7,8 @@ import { polar, polarCheckoutRef } from "@/lib/polar";
 import { buildLocalizedPath } from "@/lib/seo";
 import { TIER_METADATA, UnknownTierError } from "@/lib/pricing-tiers";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
+import { inBackground, rememberCheckoutAttribution, sendAddPaymentInfoEvent } from "@/lib/meta-events";
+import { readMetaRequestContext } from "@/lib/meta-request";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
@@ -95,7 +97,7 @@ export async function POST(req: Request) {
     if (!priced.ok) {
       return NextResponse.json({ error: priced.error }, { status: 400 });
     }
-    const { chargeable, listPrice, discountPercent, coupon, couponWon } = priced.priced;
+    const { chargeable, listPrice, discountPercent, coupon, couponWon, robotName } = priced.priced;
 
     if (chargeable <= 0) {
       if (!coupon) {
@@ -132,9 +134,20 @@ export async function POST(req: Request) {
       success_url: thankYouUrl(resolveLocale(body.locale ?? null)),
     });
 
+    // Meta: remember what this browser looked like (the payment webhook has no
+    // browser) and report the payment-info step. Background, and fenced off.
+    const orderRef = polarCheckoutRef(checkout.id);
+    const metaCtx = readMetaRequestContext(req);
+    inBackground(async () => {
+      await rememberCheckoutAttribution(orderRef, metaCtx);
+      await sendAddPaymentInfoEvent({
+        ctx: metaCtx, orderRef, email, amount: chargeable, currency: "USD", robotSlug, robotName, tierSlug: tier,
+      });
+    });
+
     return NextResponse.json({
       checkoutUrl: checkout.url,
-      orderRef: polarCheckoutRef(checkout.id),
+      orderRef,
       currency: "USD",
       amount: chargeable.toFixed(2),
       listPrice: listPrice.toFixed(2),
