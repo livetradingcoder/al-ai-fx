@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import CheckoutClient from "./CheckoutClient";
 import { getPageMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { getSettings, REF_COOKIE } from "@/lib/affiliate";
+import { whopEnabled } from "@/lib/whop";
 
 export async function generateMetadata({
   params,
@@ -16,6 +18,10 @@ export async function generateMetadata({
 }
 
 export default async function CheckoutPage() {
+  // Whether the Whop button is offered depends on the running container's env,
+  // so the page must not be prerendered. The cookie read below already opts in,
+  // this makes it explicit.
+  await connection();
   // The cookie is httpOnly, so the client cannot see it — the server reads it
   // and tells the page what to promise. Only a live affiliate code counts, so
   // a stale or revoked one advertises nothing.
@@ -33,5 +39,5 @@ export default async function CheckoutPage() {
     // Never block checkout over a discount banner.
   }
 
-  return <CheckoutClient referralDiscount={referralDiscount} />;
+  return <CheckoutClient referralDiscount={referralDiscount} whopEnabled={whopEnabled()} />;
 }

@@ -244,7 +244,8 @@
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "Mit Karte bezahlen",
     "payWithCrypto": "Mit Krypto bezahlen",
-    "checkoutRedirect": "Sie werden zu einem sicheren Checkout weitergeleitet, um die Zahlung abzuschließen. Kartenzahlungen wickelt Polar ab, Krypto-Zahlungen OxaPay."
+    "checkoutRedirect": "Sie werden zu einem sicheren Checkout weitergeleitet, um die Zahlung abzuschließen. Kartenzahlungen wickeln Polar oder Whop ab, Krypto-Zahlungen OxaPay.",
+    "payWithWhop": "Mit Whop bezahlen"
   },
   "Tutorials": {
     "platformTutorials": "Plattform-Tutorials",

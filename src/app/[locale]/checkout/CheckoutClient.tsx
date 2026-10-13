@@ -55,7 +55,7 @@ function formatUsd(amount: number): string {
     : `$${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
-function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
+function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: number; whopEnabled: boolean }) {
   const t = useTranslations("Checkout");
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -250,9 +250,9 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
     }
   }
 
-  // Card payments go through Polar, crypto through OxaPay. Both endpoints
-  // answer the same shape, so the thank-you flow is shared.
-  async function handleCheckout(provider: "polar" | "oxapay") {
+  // Card payments go through Polar (or Whop), crypto through OxaPay. All three
+  // endpoints answer the same shape, so the thank-you flow is shared.
+  async function handleCheckout(provider: "polar" | "oxapay" | "whop") {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
       return;
@@ -283,7 +283,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
       }
 
       const response = await fetch(
-        provider === "polar" ? "/api/checkout/polar" : "/api/checkout/oxapay",
+        `/api/checkout/${provider}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -596,6 +596,17 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                         : `${t("payByCard")} · ${formatUsd(payable)}`}
                   </button>
 
+                  {!isFreeTrial && whopEnabled && (
+                    <button
+                      type="button"
+                      className="co-submit co-submit-alt"
+                      disabled={isSubmitting}
+                      onClick={() => void handleCheckout("whop")}
+                    >
+                      {`${t("payWithWhop")} · ${formatUsd(payable)}`}
+                    </button>
+                  )}
+
                   {!isFreeTrial && (
                     <button
                       type="button"
@@ -614,7 +625,7 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
                   <div className="co-pay-meta">
                     <span>
                       <ShieldCheck size={14} aria-hidden="true" />
-                      Card by Polar · Crypto by OxaPay
+                      {whopEnabled ? "Card by Polar or Whop" : "Card by Polar"} · Crypto by OxaPay
                     </span>
                     {!isFreeTrial && (
                       <span>
@@ -706,7 +717,13 @@ function CheckoutContent({ referralDiscount }: { referralDiscount: number }) {
   );
 }
 
-export default function CheckoutClient({ referralDiscount = 0 }: { referralDiscount?: number }) {
+export default function CheckoutClient({
+  referralDiscount = 0,
+  whopEnabled = false,
+}: {
+  referralDiscount?: number;
+  whopEnabled?: boolean;
+}) {
   const t = useTranslations("Checkout");
 
   return (
@@ -718,7 +735,7 @@ export default function CheckoutClient({ referralDiscount = 0 }: { referralDisco
         </div>
       }
     >
-      <CheckoutContent referralDiscount={referralDiscount} />
+      <CheckoutContent referralDiscount={referralDiscount} whopEnabled={whopEnabled} />
     </Suspense>
   );
 }
