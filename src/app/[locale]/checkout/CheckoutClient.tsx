@@ -26,6 +26,7 @@ import {
   trackViewContent,
 } from "@/lib/marketing-client";
 import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
+import { CardBrands, CryptoBrands } from "./PaymentBrands";
 import "./checkout.css";
 
 type RobotInfo = {
@@ -594,6 +595,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       : isSubmitting
                         ? t("redirecting")
                         : `${t("payByCard")} · ${formatUsd(payable)}`}
+                    {!isFreeTrial && <CardBrands />}
                   </button>
 
                   {!isFreeTrial && whopEnabled && (
@@ -604,6 +606,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       onClick={() => void handleCheckout("whop")}
                     >
                       {`${t("payWithWhop")} · ${formatUsd(payable)}`}
+                      <CardBrands />
                     </button>
                   )}
 
@@ -615,6 +618,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       onClick={() => void handleCheckout("oxapay")}
                     >
                       {`${t("payWithCrypto")} · ${formatUsd(payable)}`}
+                      <CryptoBrands />
                     </button>
                   )}
 
@@ -705,7 +709,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                   </li>
                   <li>
                     <ShieldCheck size={15} aria-hidden="true" />
-                    Payment handled securely by Paygate
+                    Payment handled securely by our payment partners
                   </li>
                 </ul>
               </div>

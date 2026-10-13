@@ -456,6 +456,53 @@
   background: rgba(255, 224, 102, 0.08);
 }
 
+/* Payment-method marks inside the pay buttons. They sit at the right edge so
+   the label stays centred, and drop in line after the label on a phone, where
+   there is no room beside it. */
+.co-submit {
+  position: relative;
+}
+
+.co-brands {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.co-brand {
+  display: inline-grid;
+  place-items: center;
+  height: 22px;
+  min-width: 34px;
+  padding: 0 4px;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(11, 14, 17, 0.14);
+}
+
+.co-brand svg {
+  display: block;
+}
+
+.co-brand.is-coin {
+  width: 22px;
+  min-width: 22px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+@media (max-width: 640px) {
+  .co-brands {
+    position: static;
+    transform: none;
+  }
+}
+
 .co-pay-note {
   color: var(--co-muted-strong);
   font-size: 0.82rem;
