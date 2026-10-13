@@ -158,7 +158,7 @@ export default async function AdminDashboard() {
             </p>
           </div>
           <div className="admin-actions">
-            <Link href="/dashboard/admin/users#add" className="btn-primary btn-sm">
+            <Link href="/dashboard/admin/users?add=1" className="btn-primary btn-sm">
               Add a person
             </Link>
             <Link href="/dashboard/admin/users" className="btn-mini">

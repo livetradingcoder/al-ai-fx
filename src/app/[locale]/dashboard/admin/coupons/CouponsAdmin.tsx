@@ -9,6 +9,7 @@ import {
   type SortDef,
 } from "@/components/dashboard/table-view";
 import type { ActionResult } from "@/lib/action-result";
+import Dialog from "@/components/dashboard/Dialog";
 import { createCoupon, deleteCoupon, setCouponActive } from "./actions";
 
 export type CouponRow = {
@@ -76,6 +77,8 @@ export default function CouponsAdmin({
   robots: RobotOption[];
 }) {
   const [notice, setNotice] = useState<Notice>(null);
+  const [creating, setCreating] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [form, setForm] = useState({
     code: "",
@@ -108,173 +111,194 @@ export default function CouponsAdmin({
       }
     });
 
+  function closeCreating() {
+    setCreating(false);
+    setFormError(null);
+  }
+
+  // A failure stays in the dialog so it can be fixed in place. Success closes
+  // it and says so above the list, where the new code has appeared.
+  const create = () =>
+    start(async () => {
+      setFormError(null);
+      try {
+        const res = await createCoupon({
+          code: form.code,
+          kind: form.kind,
+          value: form.value,
+          robotId: form.robotId || null,
+          tier: form.tier || null,
+          maxRedemptions: form.maxRedemptions ? Number(form.maxRedemptions) : null,
+          oncePerEmail: form.oncePerEmail,
+          expiresAt: form.expiresAt || null,
+          note: form.note || null,
+        });
+        if (res.ok) {
+          setForm((f) => ({ ...f, code: "", note: "" }));
+          closeCreating();
+          setNotice({ kind: "ok", text: res.message });
+        } else {
+          setFormError(res.error);
+        }
+      } catch {
+        setFormError("Something went wrong");
+      }
+    });
+
   return (
     <>
-      <section className="card" style={{ marginBottom: "20px" }}>
-        <div className="admin-table-head">
-          <div>
-            <p className="card-label">New code</p>
-            <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Create a coupon</h2>
-          </div>
-        </div>
-
-        {notice && <p className={`admin-notice is-${notice.kind}`}>{notice.text}</p>}
-
-        <div className="settings-grid">
-          <label>
-            <span className="card-label">Code</span>
-            <input
-              className="enroll-input"
-              style={{ marginTop: "8px", letterSpacing: "0.08em" }}
-              placeholder="LAUNCH-2026"
-              value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-            />
-          </label>
-
-          <label>
-            <span className="card-label">Type</span>
-            <select
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              value={form.kind}
-              onChange={(e) => setForm({ ...form, kind: e.target.value as typeof form.kind })}
-            >
-              <option value="FREE">Free — skips payment entirely</option>
-              <option value="PERCENT">Percent off</option>
-              <option value="FIXED">Fixed amount off</option>
-            </select>
-          </label>
-
-          {form.kind !== "FREE" && (
-            <label>
-              <span className="card-label">{form.kind === "PERCENT" ? "Percent" : "Amount ($)"}</span>
-              <input
-                className="enroll-input"
-                style={{ marginTop: "8px" }}
-                inputMode="decimal"
-                value={form.value}
-                onChange={(e) => setForm({ ...form, value: Number(e.target.value) || 0 })}
-              />
-            </label>
-          )}
-
-          <label>
-            <span className="card-label">Robot</span>
-            <select
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              value={form.robotId}
-              onChange={(e) => setForm({ ...form, robotId: e.target.value })}
-            >
-              <option value="">Any robot</option>
-              {robots.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="card-label">Plan</span>
-            <select
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              value={form.tier}
-              onChange={(e) => setForm({ ...form, tier: e.target.value })}
-            >
-              <option value="">Any plan</option>
-              {TIERS.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, " ").toLowerCase()}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="card-label">Max uses</span>
-            <input
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              inputMode="numeric"
-              placeholder="unlimited"
-              value={form.maxRedemptions}
-              onChange={(e) => setForm({ ...form, maxRedemptions: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span className="card-label">Expires</span>
-            <input
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              type="date"
-              value={form.expiresAt}
-              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-            />
-          </label>
-
-          <label>
-            <span className="card-label">Note (admin only)</span>
-            <input
-              className="enroll-input"
-              style={{ marginTop: "8px" }}
-              placeholder="who it's for"
-              value={form.note}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
-            />
-          </label>
-        </div>
-
-        <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "16px", fontSize: "0.88rem" }}>
-          <input
-            type="checkbox"
-            checked={form.oncePerEmail}
-            onChange={(e) => setForm({ ...form, oncePerEmail: e.target.checked })}
-          />
-          One use per email address
-        </label>
-
-        <div style={{ marginTop: "20px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
-          <button
-            type="button"
-            className="btn-primary btn-sm"
-            disabled={pending || !form.code.trim()}
-            onClick={() =>
-              run(async () => {
-                const res = await createCoupon({
-                  code: form.code,
-                  kind: form.kind,
-                  value: form.value,
-                  robotId: form.robotId || null,
-                  tier: form.tier || null,
-                  maxRedemptions: form.maxRedemptions ? Number(form.maxRedemptions) : null,
-                  oncePerEmail: form.oncePerEmail,
-                  expiresAt: form.expiresAt || null,
-                  note: form.note || null,
-                });
-                if (res.ok) setForm({ ...form, code: "", note: "" });
-                return res;
-              })
-            }
-          >
-            {pending ? "Working…" : "Create coupon"}
-          </button>
-          <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
-            A free code creates the licence immediately — no payment page, same emails and compile.
-          </span>
-        </div>
-      </section>
-
       <section className="card">
         <div className="admin-table-head">
           <div>
             <p className="card-label">Codes</p>
             <h2 style={{ fontSize: "1.15rem", margin: 0 }}>All coupons</h2>
           </div>
+          <button type="button" className="btn-primary btn-sm" onClick={() => setCreating(true)}>
+            Create coupon
+          </button>
         </div>
+
+        <Dialog open={creating} onClose={closeCreating} eyebrow="New code" title="Create a coupon" wide>
+          {formError && (
+            <p className="admin-notice is-error" role="alert">
+              {formError}
+            </p>
+          )}
+
+          <div className="settings-grid">
+            <label>
+              <span className="card-label">Code</span>
+              <input
+                className="enroll-input"
+                style={{ marginTop: "8px", letterSpacing: "0.08em" }}
+                data-autofocus
+                placeholder="LAUNCH-2026"
+                value={form.code}
+                onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+              />
+            </label>
+
+            <label>
+              <span className="card-label">Type</span>
+              <select
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                value={form.kind}
+                onChange={(e) => setForm({ ...form, kind: e.target.value as typeof form.kind })}
+              >
+                <option value="FREE">Free — skips payment entirely</option>
+                <option value="PERCENT">Percent off</option>
+                <option value="FIXED">Fixed amount off</option>
+              </select>
+            </label>
+
+            {form.kind !== "FREE" && (
+              <label>
+                <span className="card-label">{form.kind === "PERCENT" ? "Percent" : "Amount ($)"}</span>
+                <input
+                  className="enroll-input"
+                  style={{ marginTop: "8px" }}
+                  inputMode="decimal"
+                  value={form.value}
+                  onChange={(e) => setForm({ ...form, value: Number(e.target.value) || 0 })}
+                />
+              </label>
+            )}
+
+            <label>
+              <span className="card-label">Robot</span>
+              <select
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                value={form.robotId}
+                onChange={(e) => setForm({ ...form, robotId: e.target.value })}
+              >
+                <option value="">Any robot</option>
+                {robots.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span className="card-label">Plan</span>
+              <select
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                value={form.tier}
+                onChange={(e) => setForm({ ...form, tier: e.target.value })}
+              >
+                <option value="">Any plan</option>
+                {TIERS.map((t) => (
+                  <option key={t} value={t}>
+                    {t.replace(/_/g, " ").toLowerCase()}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span className="card-label">Max uses</span>
+              <input
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                inputMode="numeric"
+                placeholder="unlimited"
+                value={form.maxRedemptions}
+                onChange={(e) => setForm({ ...form, maxRedemptions: e.target.value })}
+              />
+            </label>
+
+            <label>
+              <span className="card-label">Expires</span>
+              <input
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                type="date"
+                value={form.expiresAt}
+                onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+              />
+            </label>
+
+            <label>
+              <span className="card-label">Note (admin only)</span>
+              <input
+                className="enroll-input"
+                style={{ marginTop: "8px" }}
+                placeholder="who it's for"
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+              />
+            </label>
+          </div>
+
+          <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "16px", fontSize: "0.88rem" }}>
+            <input
+              type="checkbox"
+              checked={form.oncePerEmail}
+              onChange={(e) => setForm({ ...form, oncePerEmail: e.target.checked })}
+            />
+            One use per email address
+          </label>
+
+          <div style={{ marginTop: "20px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn-primary btn-sm"
+              disabled={pending || !form.code.trim()}
+              onClick={create}
+            >
+              {pending ? "Working…" : "Create coupon"}
+            </button>
+            <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
+              A free code creates the licence immediately — no payment page, same emails and compile.
+            </span>
+          </div>
+        </Dialog>
+
+        {notice && <p className={`admin-notice is-${notice.kind}`}>{notice.text}</p>}
 
         <TableToolbar view={view} filters={FILTERS} sorts={SORTS} searchPlaceholder="Search code or note…" />
 

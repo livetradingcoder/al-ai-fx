@@ -2,10 +2,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import AddUserForm from "./AddUserForm";
 import UsersTable from "./UsersTable";
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || session?.user?.role !== "ADMIN") {
@@ -34,14 +37,14 @@ export default async function AdminUsersPage() {
     }
   });
 
+  // The admin home's "Add a person" button links here with ?add=1.
+  const addOnArrival = (await searchParams).add === "1";
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '3rem' }}>User Management</h1>
-        <div id="add" style={{ scrollMarginTop: '110px' }}>
-          <AddUserForm />
-        </div>
-        <UsersTable users={users} currentUserId={session.user.id} />
+        <h1 style={{ fontSize: '2.1rem', marginBottom: '1.75rem' }}>User Management</h1>
+        <UsersTable users={users} currentUserId={session.user.id} defaultAdding={addOnArrival} />
       </div>
     </div>
   );

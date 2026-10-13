@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { toggleBlockUser, deleteUser, setUserRole } from "./actions";
+import AddUserForm from "./AddUserForm";
+import Dialog from "@/components/dashboard/Dialog";
 import {
   TablePager,
   TableToolbar,
@@ -50,12 +52,25 @@ const SORTS: SortDef<UserData>[] = [
 export default function UsersTable({
   users,
   currentUserId,
+  defaultAdding = false,
 }: {
   users: UserData[];
   currentUserId: string;
+  /** Open the "Add a person" dialog on arrival (the admin home links here). */
+  defaultAdding?: boolean;
 }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [adding, setAdding] = useState(defaultAdding);
+
+  function closeAdding() {
+    setAdding(false);
+    // The link that opened it carried ?add=1; drop that so a refresh doesn't
+    // open it again.
+    if (window.location.search.includes("add=1")) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }
 
   const view = useTableView(users, {
     // MT5 numbers are searchable too: support tickets quote the account, not
@@ -134,7 +149,19 @@ export default function UsersTable({
           <p className="card-label">People</p>
           <h2 style={{ fontSize: "1.15rem", margin: 0 }}>Platform users</h2>
         </div>
+        <button type="button" className="btn-primary btn-sm" onClick={() => setAdding(true)}>
+          Add a person
+        </button>
       </div>
+
+      <Dialog open={adding} onClose={closeAdding} eyebrow="Access" title="Add a person">
+        <AddUserForm
+          onDone={(message) => {
+            closeAdding();
+            setNotice({ kind: "ok", text: message });
+          }}
+        />
+      </Dialog>
 
       {notice && (
         <p className={`admin-notice is-${notice.kind}`} role="status">
