@@ -110,6 +110,9 @@ site sits behind a strict firewall (ask contact@oxapay.com for the list).
 
 ## Whop (extra card option)
 
+Every Whop call pins `Api-Version-Date: 2026-10-13` (Whop versions its API by date; an unpinned key can fall
+back to the 2025 behaviour with different field names).
+
 A third button, **Pay with Whop**, appears on the checkout page when `WHOP_API_KEY` and a Whop product are
 configured (the page reads this at request time, so it follows the container's env). It posts the same body as
 the Polar/OxaPay buttons to `POST /api/checkout/whop` (`src/app/api/checkout/whop/route.ts`), which prices the
@@ -122,8 +125,10 @@ appended; `failed`/`canceled` shows the unpaid state straight away, otherwise th
 
 `POST /api/webhooks/whop` verifies the Standard Webhooks signature (`webhook-id`, `webhook-timestamp`,
 `webhook-signature: v1,<base64 HMAC-SHA256 of "id.timestamp.rawBody">`, keyed with the `ws_…` secret as shown,
-±5 min) and acts only on `payment.succeeded`. Licence parameters come from the metadata above; the recorded
-amount is what was actually paid (0 with a Whop promo code). The external id is `WHOP-<order_ref>`, so
+±5 min) and acts on `payment.succeeded` and `membership.activated` (subscribe the endpoint to **both**: a 100%-off
+promo purchase may produce only the membership event; the order is deduped, so whichever lands first provisions).
+Licence parameters come from the metadata above; the recorded amount is what was actually paid (0 with a Whop
+promo code), or the price we asked Whop to charge when only the membership event arrives. The external id is `WHOP-<order_ref>`, so
 redeliveries are no-ops and the thank-you page polls it like any other order.
 
 **The Whop company is shared with other apps**, so this endpoint also receives their payments (e.g. the school's

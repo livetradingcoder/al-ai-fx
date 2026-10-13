@@ -4,6 +4,8 @@ import { createHmac } from "node:crypto";
 
 import {
   WHOP_SOURCE,
+  WHOP_API_VERSION_DATE,
+  isWhopMembershipLive,
   isWhopPaid,
   resolveWhopPaymentTarget,
   verifyWhopWebhook,
@@ -55,14 +57,21 @@ test("verifyWhopWebhook: refuses timestamps more than 5 minutes off", () => {
 
 test("resolveWhopPaymentTarget: only payments carrying our source marker and mapping", () => {
   const meta = { source: WHOP_SOURCE, order_ref: "abc", robot: "Gold-MultiRange-4", tier: "10-DAYS", email: "Buyer@Example.com", ref: "R1", coupon: "C1" };
-  assert.deepEqual(resolveWhopPaymentTarget({ metadata: meta, customer_email: "other@example.com" }), {
+  assert.deepEqual(resolveWhopPaymentTarget({ metadata: { ...meta, amount: "29.00" }, customer_email: "other@example.com" }), {
     orderRef: "abc",
     robotSlug: "gold-multirange-4",
     tierSlug: "10-days",
     email: "buyer@example.com",
     refCode: "R1",
     couponCode: "C1",
+    expectedAmount: 29,
   });
+  assert.equal(resolveWhopPaymentTarget({ metadata: meta })?.expectedAmount, null, "no amount metadata → unknown");
+  assert.equal(
+    resolveWhopPaymentTarget({ metadata: { ...meta, email: undefined }, user: { email: "Nested@Example.com" } })?.email,
+    "nested@example.com",
+    "falls back to a nested user.email",
+  );
   // falls back to the email Whop collected
   assert.equal(
     resolveWhopPaymentTarget({ metadata: { ...meta, email: undefined }, customer_email: "Paid@Example.com" })?.email,
@@ -81,6 +90,18 @@ test("whopPaymentAmount: decimal-string Money in major units, currency upper-cas
   assert.deepEqual(whopPaymentAmount({ total: { amount: 14.5 }, currency: "eur" }), { amount: 14.5, currency: "EUR" });
   assert.equal(whopPaymentAmount({ total: null }), null);
   assert.equal(whopPaymentAmount({ total: { amount: "-1" } }), null);
+});
+
+test("isWhopMembershipLive: active/completed/trialing only", () => {
+  assert.equal(isWhopMembershipLive({ status: "active" }), true);
+  assert.equal(isWhopMembershipLive({ status: "completed" }), true);
+  assert.equal(isWhopMembershipLive({}), true, "the activated event itself is enough when status is absent");
+  assert.equal(isWhopMembershipLive({ status: "canceled" }), false);
+  assert.equal(isWhopMembershipLive({ status: "expired" }), false);
+});
+
+test("API version is pinned to a released date", () => {
+  assert.match(WHOP_API_VERSION_DATE, /^\d{4}-\d{2}-\d{2}$/);
 });
 
 test("isWhopPaid: only a paid/succeeded payment fulfils", () => {
