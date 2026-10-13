@@ -103,25 +103,25 @@ export default function SupportPage() {
             <div className="sp-heading" style={{ marginBottom: 8 }}>
               <span className="sp-eyebrow">Email us directly</span>
             </div>
-            <a href="mailto:support@AL-ai-FX.com" className="sp-channel">
+            <a href="mailto:support@al-ai-fx.xyz" className="sp-channel">
               <span className="sp-card-icon">
                 <Wrench size={20} aria-hidden="true" />
               </span>
               <div>
                 <strong>Technical support</strong>
                 <small>Installation, configuration, licences and MT5 accounts.</small>
-                <span className="sp-mono">support@AL-ai-FX.com</span>
+                <span className="sp-mono">support@al-ai-fx.xyz</span>
               </div>
               <Mail size={18} aria-hidden="true" />
             </a>
-            <a href="mailto:billing@AL-ai-FX.com" className="sp-channel">
+            <a href="mailto:support@al-ai-fx.xyz?subject=Billing" className="sp-channel">
               <span className="sp-card-icon">
                 <CreditCard size={20} aria-hidden="true" />
               </span>
               <div>
                 <strong>Billing inquiries</strong>
                 <small>Subscriptions, upgrades, payments and refunds.</small>
-                <span className="sp-mono">billing@AL-ai-FX.com</span>
+                <span className="sp-mono">support@al-ai-fx.xyz</span>
               </div>
               <Mail size={18} aria-hidden="true" />
             </a>

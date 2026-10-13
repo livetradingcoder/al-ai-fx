@@ -100,7 +100,7 @@ export default function LegalDocument({
               <p>Our team will explain anything here in plain language.</p>
             </div>
             <div className="sp-doc-contact-actions">
-              <a href="mailto:support@AL-ai-FX.com" className="sp-btn">
+              <a href="mailto:support@al-ai-fx.xyz" className="sp-btn">
                 <Mail size={15} aria-hidden="true" />
                 Email us
               </a>

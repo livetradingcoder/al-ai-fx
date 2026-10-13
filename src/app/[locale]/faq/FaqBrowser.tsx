@@ -211,7 +211,7 @@ export default function FaqBrowser({
           <p>Our team answers setup, licensing and billing questions.</p>
         </div>
         <div className="fq-contact-actions">
-          <a href="mailto:support@AL-ai-FX.com" className="fq-btn is-primary">
+          <a href="mailto:support@al-ai-fx.xyz" className="fq-btn is-primary">
             <Mail size={16} aria-hidden="true" />
             {contactSupport}
           </a>

@@ -561,11 +561,11 @@ export function organizationJsonLd() {
         alternateName: "AL-ai-FX Algorithms",
         url: SITE_URL,
         logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
-        email: "support@AL-ai-FX.com",
+        email: "support@al-ai-fx.xyz",
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "customer support",
-          email: "support@AL-ai-FX.com",
+          email: "support@al-ai-fx.xyz",
           availableLanguage: ["English", "German", "Spanish", "Arabic", "Hindi", "Bengali", "Urdu"],
         },
       },

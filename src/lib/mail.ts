@@ -66,6 +66,20 @@ const sender = {
   name: FROM_NAME,
 };
 
+/**
+ * What the admin dashboard reports about mail. Returns the same values the
+ * senders above actually use — including their fallbacks — so a deploy that
+ * cannot send is visible there. Never exposes the key itself.
+ */
+export function mailDeliveryStatus() {
+  return {
+    domain: MAILGUN_DOMAIN || null,
+    apiKeySet: !!MAILGUN_API_KEY && !MAILGUN_API_KEY.startsWith("SET_ME"),
+    sender: `${sender.name} <${sender.email}>`,
+    sending: mailgunConfigured,
+  };
+}
+
 function renderEmailTemplate(input: {
   buttonLabel: string;
   buttonUrl: string;

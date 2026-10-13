@@ -44,7 +44,7 @@ export default function LicensingPage() {
           <h1>{t("customAccessTitle")}</h1>
           <p className="sp-lead">{t("customAccessCopy")}</p>
           <div className="sp-hero-actions">
-            <a href="mailto:support@AL-ai-FX.com" className="sp-btn is-primary is-large">
+            <a href="mailto:support@al-ai-fx.xyz" className="sp-btn is-primary is-large">
               <Mail size={16} aria-hidden="true" />
               {t("customAccessPrimaryCta")}
             </a>
@@ -84,7 +84,7 @@ export default function LicensingPage() {
                   </ul>
                   <div className="sp-card-foot">
                     <a
-                      href={`mailto:support@AL-ai-FX.com?subject=${encodeURIComponent(`${offer.title} enquiry`)}`}
+                      href={`mailto:support@al-ai-fx.xyz?subject=${encodeURIComponent(`${offer.title} enquiry`)}`}
                       className="sp-card-link"
                     >
                       {offer.cta} <ArrowRight size={14} aria-hidden="true" />

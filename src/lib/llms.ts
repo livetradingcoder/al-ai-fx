@@ -120,7 +120,7 @@ export async function buildLlmsFullTxt() {
     `> ${SUMMARY}`,
     "",
     `Website: ${SITE_URL}`,
-    "Support: support@AL-ai-FX.com",
+    "Support: support@al-ai-fx.xyz",
     "",
     "## What GoldBot is",
     "",

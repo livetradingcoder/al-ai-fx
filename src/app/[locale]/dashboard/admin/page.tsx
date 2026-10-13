@@ -6,6 +6,7 @@ import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
 import LicencesTable from "./LicencesTable";
 import OrdersTable from "./OrdersTable";
 import { HEARTBEAT_DEAD_SECONDS } from "@/lib/compiler-config";
+import { mailDeliveryStatus } from "@/lib/mail";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -13,6 +14,8 @@ export default async function AdminDashboard() {
   if (!session?.user?.id || session?.user?.role !== "ADMIN") {
     redirect("/dashboard");
   }
+
+  const mail = mailDeliveryStatus();
 
   // 1. Fetch Total Users
   const totalUsers = await prisma.user.count({
@@ -128,23 +131,27 @@ export default async function AdminDashboard() {
 
         <div className="glass-panel" style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.15rem', marginBottom: '0.5rem' }}>Email delivery</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Mail leaves through the Mailgun API — these are the environment variables active on the server. If these are incorrect, adjust your deployment settings.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr)', gap: '1.5rem' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Host / Port</label>
-              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`} />
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Mailgun domain</label>
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={mail.domain ?? 'Not set'} />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Mailgun API key</label>
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={mail.apiKeySet ? 'Set' : 'Not set'} />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>From Name & Email</label>
-              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={`${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`} />
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>SMTP Username</label>
-              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={process.env.SMTP_USER || ''} />
+              <input disabled type="text" className="enroll-input" style={{opacity: 0.7, maxWidth: '500px'}} value={mail.sender} />
             </div>
           </div>
           <div style={{ marginTop: '2rem' }}>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>* Note: To make modifications to these configurations, you must redeploy your server after updating the `env` file.</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {mail.sending
+                ? '* Note: To make modifications to these configurations, you must redeploy your server after updating the `env` file.'
+                : '* Nothing is being sent: set MAILGUN_API_KEY and MAILGUN_DOMAIN, then redeploy.'}
+            </p>
           </div>
         </div>
 

@@ -7,10 +7,10 @@ import { Send } from "lucide-react";
 // visitor's own mail app — addressed to the right team for the topic, with
 // the details filled in. Nothing is sent without them seeing it first.
 const TOPICS = [
-  { id: "technical", label: "Setup & technical", to: "support@AL-ai-FX.com" },
-  { id: "licence", label: "Licence & MT5 account", to: "support@AL-ai-FX.com" },
-  { id: "billing", label: "Billing & refunds", to: "billing@AL-ai-FX.com" },
-  { id: "other", label: "Something else", to: "support@AL-ai-FX.com" },
+  { id: "technical", label: "Setup & technical", to: "support@al-ai-fx.xyz" },
+  { id: "licence", label: "Licence & MT5 account", to: "support@al-ai-fx.xyz" },
+  { id: "billing", label: "Billing & refunds", to: "support@al-ai-fx.xyz" },
+  { id: "other", label: "Something else", to: "support@al-ai-fx.xyz" },
 ] as const;
 
 export default function SupportForm() {
