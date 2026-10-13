@@ -11,7 +11,7 @@ A Polar product maps to a **(robot, tier)** through metadata: `robot=<Robot.slug
 Metadata), or let `/api/checkout/polar` pass it as checkout metadata. Checkout metadata wins.
 
 1. The checkout page's **Pay by card** button posts `{email, tier, robotSlug, couponCode}` to
-   `POST /api/checkout/polar` (the crypto button still posts to `/api/paygate/create-session`). The
+   `POST /api/checkout/polar` (the crypto button posts to `/api/checkout/oxapay`). The
    server resolves the price itself — list price from `RobotPrice`, referral discount or coupon,
    whichever is cheaper (`src/lib/checkout-pricing.ts`, shared with Paygate) — and creates the Polar
    checkout with that amount as an **ad-hoc price** on the product mapped to robot + tier, Polar
@@ -39,7 +39,7 @@ makes a mis-mapped product visible. Only `billing_reason=purchase` orders are pr
 | `src/lib/checkout-pricing.ts` | Server-side price + discount rule and the free-coupon provisioning, shared by Polar and Paygate |
 | `src/app/api/webhooks/polar/route.ts` | Webhook receiver: verifies the signature, provisions on `order.paid` |
 | `src/app/api/checkout/polar/route.ts` | `POST` for the checkout page's card button; `GET` redirect for links |
-| `src/app/[locale]/checkout/CheckoutClient.tsx` | "Pay by card" (Polar) primary button, "Pay with crypto via Paygate.to" secondary |
+| `src/app/[locale]/checkout/CheckoutClient.tsx` | "Pay by card" (Polar) primary button, "Pay with crypto" secondary |
 
 ## Environment variables
 
@@ -107,6 +107,44 @@ Without the key the crypto button answers 503 ("pay by card instead"). Paygate's
 (`/api/paygate/*`, `/api/webhooks/paygate`) are still deployed for orders already in flight, but the
 checkout page no longer links to them. OxaPay says callbacks may need its IPs allow-listed if the
 site sits behind a strict firewall (ask contact@oxapay.com for the list).
+
+## Whop (extra card option)
+
+A third button, **Pay with Whop**, appears on the checkout page when `WHOP_API_KEY` and a Whop product are
+configured (the page reads this at request time, so it follows the container's env). It posts the same body as
+the Polar/OxaPay buttons to `POST /api/checkout/whop` (`src/app/api/checkout/whop/route.ts`), which prices the
+order with the shared helper and creates a Whop checkout configuration
+(`POST https://api.whop.com/api/v1/checkout_configurations`) with an **inline one-time plan**: price from our DB
+(after referral/coupon), `expiration_days` from the tier, hidden visibility. Whop reuses a matching plan or
+creates one. `metadata` `{source: "al-ai-fx", order_ref, robot, tier, email, ref?, coupon?}` is copied onto the
+payment. The buyer returns to the thank-you page with `?payment=pay_…&status=succeeded|failed|canceled`
+appended; `failed`/`canceled` shows the unpaid state straight away, otherwise the page waits for the webhook.
+
+`POST /api/webhooks/whop` verifies the Standard Webhooks signature (`webhook-id`, `webhook-timestamp`,
+`webhook-signature: v1,<base64 HMAC-SHA256 of "id.timestamp.rawBody">`, keyed with the `ws_…` secret as shown,
+±5 min) and acts only on `payment.succeeded`. Licence parameters come from the metadata above; the recorded
+amount is what was actually paid (0 with a Whop promo code). The external id is `WHOP-<order_ref>`, so
+redeliveries are no-ops and the thank-you page polls it like any other order.
+
+**The Whop company is shared with other apps**, so this endpoint also receives their payments (e.g. the school's
+Pro). Anything without our `source` marker is acknowledged with 200 and ignored. Never answer 4xx for that:
+Whop retries for ~71 hours and then disables the endpoint.
+
+| Env (Coolify → al-ai-fx) | Value |
+|---|---|
+| `WHOP_API_KEY` | Account API key (Whop → Developer). Needs checkout-configuration create, plan create, payment read, member read (+ email) |
+| `WHOP_WEBHOOK_SECRET` | `ws_…` from the webhook you create for `https://www.al-ai-fx.xyz/api/webhooks/whop` (shown once) |
+| `WHOP_PRODUCT_ID` | `prod_…` the checkouts are sold under (one product is enough) |
+| `WHOP_PRODUCTS_JSON` | optional `{"<robot slug>":"prod_…"}` to give a robot its own product |
+| `WHOP_ACCOUNT_ID` | optional `biz_…` |
+
+Whop variants cannot be priced below 1.00, so a discount that brings the price under $1 (but not to 0) answers
+"too small for Whop — pay by card or crypto". Free (100% app coupon) orders never reach Whop.
+Every distinct price creates one hidden plan on Whop (the same price is reused).
+
+Test without real money: create a 100%-off Whop promo code in the Whop dashboard, buy any tier through the
+button, enter the code on Whop's page, and confirm the thank-you page flips to "Payment confirmed". Remove the
+promo code afterwards.
 
 ## Adding products
 

@@ -60,8 +60,12 @@ export default function ThankYouClient() {
   // Set by the provider's success/return URL: the buyer has paid and is
   // waiting for the webhook, so don't offer to open the checkout again.
   const returnedFromProvider = Boolean(searchParams?.get("from"));
+  // Whop appends ?status=succeeded|failed|canceled to its redirect. Anything but
+  // succeeded means the buyer did not pay, so don't make them wait for a webhook.
+  const providerStatus = searchParams?.get("status");
+  const providerSaysUnpaid = providerStatus === "failed" || providerStatus === "canceled";
   const [status, setStatus] = useState<"idle" | "pending" | "success" | "failed" | "unpaid">(
-    orderRef ? "pending" : "failed",
+    !orderRef ? "failed" : providerSaysUnpaid ? "unpaid" : "pending",
   );
   // Whichever robot/plan the buyer was on, so "try again" returns to it even
   // when the payment window came back in a fresh tab (storage is per session).
@@ -76,6 +80,12 @@ export default function ThankYouClient() {
   useEffect(() => {
     if (!orderRef) {
       setErrorMessage("Missing order reference. Start again from the checkout page.");
+      setIsChecking(false);
+      return;
+    }
+    if (providerSaysUnpaid) {
+      // The provider already told us the buyer did not pay; nothing to wait for.
+      setStatus("unpaid");
       setIsChecking(false);
       return;
     }
@@ -167,7 +177,7 @@ export default function ThankYouClient() {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [orderRef, pendingCheckout]);
+  }, [orderRef, pendingCheckout, providerSaysUnpaid]);
 
   // Only offer the trial when there really is one to claim.
   useEffect(() => {

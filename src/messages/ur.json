@@ -244,7 +244,8 @@
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "کارڈ سے ادائیگی کریں",
     "payWithCrypto": "کرپٹو سے ادائیگی کریں",
-    "checkoutRedirect": "ادائیگی مکمل کرنے کے لیے آپ کو ایک محفوظ چیک آؤٹ پر بھیجا جائے گا۔ کارڈ ادائیگیاں Polar سنبھالتا ہے؛ کرپٹو ادائیگیاں OxaPay۔"
+    "checkoutRedirect": "ادائیگی مکمل کرنے کے لیے آپ کو ایک محفوظ چیک آؤٹ پر بھیجا جائے گا۔ کارڈ ادائیگیاں Polar یا Whop سنبھالتے ہیں؛ کرپٹو ادائیگیاں OxaPay۔",
+    "payWithWhop": "Whop سے ادائیگی کریں"
   },
   "Tutorials": {
     "platformTutorials": "پلیٹ فارم ٹیوٹوریلز",
