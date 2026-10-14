@@ -9,7 +9,7 @@ import {
   CONSENT_OPEN_EVENT,
   CONSENT_STORAGE_KEY,
   consentState,
-  parseConsentChoice,
+  readEffectiveConsent,
   writeConsentCookie,
   type ConsentChoice,
 } from "@/lib/consent";
@@ -27,12 +27,10 @@ function pushConsentUpdate(..._args: unknown[]) {
 
 const CONSENT_CHANGE_EVENT = "al:consent-change";
 
+// The stored choice, or the default outside Europe: either way there is
+// nothing to ask, so the banner stays shut until "Cookie settings" opens it.
 function readStoredChoice(): ConsentChoice | "none" {
-  try {
-    return parseConsentChoice(window.localStorage.getItem(CONSENT_STORAGE_KEY)) ?? "none";
-  } catch {
-    return "none";
-  }
+  return readEffectiveConsent() ?? "none";
 }
 
 function subscribeToChoice(onChange: () => void) {

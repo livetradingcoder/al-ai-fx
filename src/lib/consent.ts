@@ -6,8 +6,9 @@ export const CONSENT_STORAGE_KEY = "al_consent_v1";
 export const CONSENT_OPEN_EVENT = "al:open-consent";
 
 // The same choice, in a cookie. localStorage is invisible to the server, and
-// the Conversions API events our own routes send to Meta may only go out for a
-// visitor who accepted. This is the preference itself, not a tracker.
+// the Conversions API events our own routes send to Meta may only go out when
+// it says "granted" (accepted, or the default outside Europe). This is the
+// preference itself, not a tracker.
 export const CONSENT_COOKIE = "al_consent";
 
 export type ConsentChoice = "granted" | "denied";
@@ -31,6 +32,61 @@ export function consentState(choice: ConsentChoice) {
 
 export function parseConsentChoice(value: string | null | undefined): ConsentChoice | null {
   return value === "granted" || value === "denied" ? value : null;
+}
+
+// Meta has no regional consent defaults of its own, and no CDN in front of the
+// site tells the server where a visitor is. The browser's time zone is the
+// signal: Europe (with the Atlantic islands that belong to it) means the visitor
+// is asked first; anywhere else ad tracking is on, and "Cookie settings" in the
+// footer turns it off. An unknown time zone is treated as Europe.
+export const CONSENT_REQUIRED_TIME_ZONE_PREFIX = "Europe/";
+export const CONSENT_REQUIRED_TIME_ZONES = [
+  "Atlantic/Azores", "Atlantic/Canary", "Atlantic/Faroe", "Atlantic/Madeira", "Atlantic/Reykjavik",
+  "Arctic/Longyearbyen", "CET", "EET", "Eire", "GB", "GB-Eire", "Iceland", "MET", "Poland",
+  "Portugal", "WET",
+];
+
+export function timeZoneRequiresConsent(timeZone: string | null | undefined) {
+  if (!timeZone) return true;
+  return (
+    timeZone.startsWith(CONSENT_REQUIRED_TIME_ZONE_PREFIX) || CONSENT_REQUIRED_TIME_ZONES.includes(timeZone)
+  );
+}
+
+export function currentTimeZone(): string | null {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  } catch {
+    return null;
+  }
+}
+
+/** The choice that applies: the visitor's own, else on by default outside Europe. */
+export function effectiveConsentChoice(
+  stored: ConsentChoice | null,
+  timeZone: string | null | undefined,
+): ConsentChoice | null {
+  if (stored) return stored;
+  return timeZoneRequiresConsent(timeZone) ? null : "granted";
+}
+
+/** The effective choice in this browser. Browser only. */
+export function readEffectiveConsent(): ConsentChoice | null {
+  let stored: ConsentChoice | null = null;
+  try {
+    stored = parseConsentChoice(window.localStorage.getItem(CONSENT_STORAGE_KEY));
+  } catch {
+    // Private mode: fall back to the regional default.
+  }
+  return effectiveConsentChoice(stored, currentTimeZone());
+}
+
+/**
+ * The same rule for the inline pixel snippet, which runs before any bundle:
+ * defines `askFirst` (true where the visitor must accept first).
+ */
+export function buildAskFirstScript() {
+  return `var askFirst=true;try{var tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';askFirst=!tz||tz.indexOf('${CONSENT_REQUIRED_TIME_ZONE_PREFIX}')===0||${JSON.stringify(CONSENT_REQUIRED_TIME_ZONES)}.indexOf(tz)>=0;}catch(e){}`;
 }
 
 /**

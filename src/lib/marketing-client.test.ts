@@ -33,6 +33,9 @@ const fakeWindow: Record<string, unknown> = {
 const fakeDocument = { cookie: "" };
 
 Object.assign(globalThis, { window: fakeWindow, document: fakeDocument, location: fakeWindow.location });
+// A European visitor unless a test says otherwise: with no stored choice, they
+// have not consented. (Outside Europe the default is on; tested below.)
+process.env.TZ = "Europe/Berlin";
 globalThis.fetch = (async (url: unknown, init?: RequestInit) => {
   fetchCalls.push({ url: String(url), body: JSON.parse(String(init?.body ?? "{}")) });
   return new Response(null, { status: 204 });
@@ -82,6 +85,24 @@ test("nothing is relayed to our server without consent; the pixel call is still 
   local.set("al_consent_v1", "denied");
   lib.trackViewContent(item);
   assert.equal(fetchCalls.length, 0);
+});
+
+test("outside Europe a visitor who made no choice is tracked, until they reject", () => {
+  process.env.TZ = "Asia/Karachi";
+  try {
+    reset({ consent: false });
+    lib.trackInitiateCheckout(item);
+    assert.equal(fetchCalls.length, 1);
+
+    lib.syncConsentCookie();
+    assert.match(fakeDocument.cookie, /^al_consent=granted;/);
+
+    local.set("al_consent_v1", "denied");
+    lib.trackViewContent(item);
+    assert.equal(fetchCalls.length, 1);
+  } finally {
+    process.env.TZ = "Europe/Berlin";
+  }
 });
 
 test("AddPaymentInfo uses the derived ID the server used, and is never relayed", () => {

@@ -1,6 +1,6 @@
 import Script from "next/script";
 
-import { CONSENT_COOKIE, CONSENT_STORAGE_KEY } from "@/lib/consent";
+import { CONSENT_COOKIE, CONSENT_STORAGE_KEY, buildAskFirstScript } from "@/lib/consent";
 import { getMarketingConfig } from "@/lib/marketing";
 
 export default function MarketingScripts() {
@@ -43,10 +43,15 @@ export default function MarketingScripts() {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              // Meta has no regional consent defaults, so the pixel waits for
-              // an explicit accept everywhere; ConsentBanner grants it later.
+              // The visitor's own choice wins. Without one, Europe waits for an
+              // accept (ConsentBanner grants it later) and everywhere else the
+              // pixel is on until the visitor turns it off in Cookie settings.
               var consent = null;
               try { consent = localStorage.getItem('${CONSENT_STORAGE_KEY}'); } catch (e) {}
+              if (consent !== 'granted' && consent !== 'denied') {
+                ${buildAskFirstScript()}
+                if (!askFirst) consent = 'granted';
+              }
               // The server cannot read localStorage, and it decides whether
               // anything goes to the Conversions API: keep a cookie copy of the choice.
               if (consent === 'granted' || consent === 'denied') {

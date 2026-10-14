@@ -1,6 +1,6 @@
 "use client";
 
-import { CONSENT_STORAGE_KEY, parseConsentChoice, writeConsentCookie } from "@/lib/consent";
+import { readEffectiveConsent, writeConsentCookie } from "@/lib/consent";
 import {
   buildEcommerceDataLayerEvent,
   getMarketingConfig,
@@ -77,13 +77,12 @@ function pushEcommerceEvent(event: "begin_checkout" | "purchase", input: Ecommer
 // plain fbq('track') would feed that one our events too. Each carries an eventID
 // so the Conversions API copy of the same event is counted once, not twice.
 
-/** Whether the visitor has accepted advertising cookies. Nothing is relayed to our server without it. */
+/**
+ * Whether advertising cookies are allowed: accepted, or not turned off outside
+ * Europe. Nothing is relayed to our server without it.
+ */
 function hasAdConsent() {
-  try {
-    return parseConsentChoice(window.localStorage.getItem(CONSENT_STORAGE_KEY)) === "granted";
-  } catch {
-    return false;
-  }
+  return readEffectiveConsent() === "granted";
 }
 
 function newEventId() {
@@ -179,14 +178,13 @@ export function ensureFbcCookie() {
   }
 }
 
-/** Mirrors an earlier choice (made before the server could see it) into the cookie. */
+/**
+ * Mirrors the choice that applies (an earlier one made before the server could
+ * see it, or the default outside Europe) into the cookie the server reads.
+ */
 export function syncConsentCookie() {
-  try {
-    const choice = parseConsentChoice(window.localStorage.getItem(CONSENT_STORAGE_KEY));
-    if (choice) writeConsentCookie(choice);
-  } catch {
-    // Private mode: the banner's own click still writes the cookie.
-  }
+  const choice = readEffectiveConsent();
+  if (choice) writeConsentCookie(choice);
 }
 
 // --- the events the site reports -------------------------------------------------
