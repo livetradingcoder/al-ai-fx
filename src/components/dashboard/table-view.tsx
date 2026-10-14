@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 export type SortDef<T> = { key: string; label: string; compare: (a: T, b: T) => number };
 export type FilterDef<T> = { key: string; label: string; test: (row: T) => boolean };
@@ -80,11 +80,14 @@ export function TableToolbar<T>({
   filters,
   sorts,
   searchPlaceholder,
+  children,
 }: {
   view: TableView<T>;
   filters?: FilterDef<T>[];
   sorts: SortDef<T>[];
   searchPlaceholder: string;
+  /** Extra controls (a toggle chip, say) shown beside the search box. */
+  children?: ReactNode;
 }) {
   return (
     <div className="table-toolbar">
@@ -101,6 +104,8 @@ export function TableToolbar<T>({
           aria-label={searchPlaceholder}
         />
       </label>
+
+      {children}
 
       {filters && filters.length > 0 && (
         <label className="toolbar-field">

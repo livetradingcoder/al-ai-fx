@@ -6335,6 +6335,54 @@ body:has(dialog.admin-dialog[open]) { overflow: hidden; }
 /* the native dropdown list is OS-rendered — keep its rows readable in dark */
 .toolbar-field option { background: #14110d; color: var(--text-primary); }
 
+/* An on/off chip beside the search box. Pressed means the thing is shown. */
+.toolbar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.toolbar-chip svg { width: 15px; height: 15px; flex: none; }
+.toolbar-chip .chip-tick { opacity: 0; }
+
+.toolbar-chip:hover {
+  color: var(--text-primary);
+  border-color: rgba(244, 220, 162, 0.35);
+}
+
+.toolbar-chip[aria-pressed="true"] {
+  color: var(--accent-primary-light);
+  background: rgba(244, 220, 162, 0.08);
+  border-color: rgba(244, 220, 162, 0.45);
+}
+
+.toolbar-chip[aria-pressed="true"] .chip-tick { opacity: 1; }
+
+.toolbar-chip:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.chip-count {
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
 .table-pager {
   display: flex;
   flex-wrap: wrap;

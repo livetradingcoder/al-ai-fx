@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import {
   TablePager,
   TableToolbar,
@@ -10,19 +11,30 @@ import {
 
 export type OrderRow = {
   id: string;
+  /** A payment, or a free trial: a licence with no payment behind it. */
+  kind: "order" | "trial";
   email: string;
   tier: string;
   amount: number;
   currency: string;
   paygateId: string | null;
+  /** Trials only: the robot the trial is for. */
+  robotName?: string;
+  /** An order's payment status, or a trial's licence status (ACTIVE, EXPIRED…). */
   status: string;
   createdAt: string;
 };
 
+// A trial has a licence status, not a payment status, so each payment filter
+// names "an order" — otherwise every trial would land under Failed.
 const FILTERS: FilterDef<OrderRow>[] = [
-  { key: "success", label: "Paid", test: (r) => r.status === "SUCCESS" },
-  { key: "pending", label: "Pending", test: (r) => r.status === "PENDING" },
-  { key: "failed", label: "Failed", test: (r) => r.status !== "SUCCESS" && r.status !== "PENDING" },
+  { key: "success", label: "Paid", test: (r) => r.kind === "order" && r.status === "SUCCESS" },
+  { key: "pending", label: "Pending", test: (r) => r.kind === "order" && r.status === "PENDING" },
+  {
+    key: "failed",
+    label: "Failed",
+    test: (r) => r.kind === "order" && r.status !== "SUCCESS" && r.status !== "PENDING",
+  },
 ];
 
 const SORTS: SortDef<OrderRow>[] = [
@@ -32,27 +44,45 @@ const SORTS: SortDef<OrderRow>[] = [
   { key: "email", label: "Email A–Z", compare: (a, b) => a.email.localeCompare(b.email) },
 ];
 
-function tone(status: string) {
-  if (status === "SUCCESS") return "live";
-  if (status === "PENDING") return "soon";
+function tone(row: OrderRow) {
+  if (row.kind === "trial") return row.status === "ACTIVE" ? "live" : "off";
+  if (row.status === "SUCCESS") return "live";
+  if (row.status === "PENDING") return "soon";
   return "bad";
 }
 
 export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
-  const view = useTableView(orders, {
+  // Trials sit in the list so a new sign-up is visible, but they are not sales:
+  // the chip takes them out so the list reads as payments only.
+  const [showTrials, setShowTrials] = useState(true);
+  const trialCount = useMemo(() => orders.filter((o) => o.kind === "trial").length, [orders]);
+  const rows = useMemo(
+    () => (showTrials ? orders : orders.filter((o) => o.kind === "order")),
+    [orders, showTrials],
+  );
+
+  const view = useTableView(rows, {
     // Paygate references are searchable: chasing a payment starts from the
     // reference the customer or the gateway quotes, not their email.
     search: (row, q) =>
       row.email.toLowerCase().includes(q) ||
-      (row.paygateId ?? "").toLowerCase().includes(q),
+      (row.paygateId ?? "").toLowerCase().includes(q) ||
+      (row.robotName ?? "").toLowerCase().includes(q),
     filters: FILTERS,
     sorts: SORTS,
     pageSize: 10,
   });
 
   const paid = orders
-    .filter((o) => o.status === "SUCCESS")
+    .filter((o) => o.kind === "order" && o.status === "SUCCESS")
     .reduce((sum, o) => sum + o.amount, 0);
+
+  const emptyText =
+    rows.length > 0
+      ? "No orders match those filters."
+      : trialCount > 0 && !showTrials
+        ? "No payments yet — free trials are hidden."
+        : "No orders yet.";
 
   return (
     <section className="card" style={{ marginTop: "20px" }}>
@@ -70,8 +100,26 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
         view={view}
         filters={FILTERS}
         sorts={SORTS}
-        searchPlaceholder="Search email or payment reference…"
-      />
+        searchPlaceholder="Search email, robot or payment reference…"
+      >
+        <button
+          type="button"
+          className="toolbar-chip"
+          aria-pressed={showTrials}
+          title={showTrials ? "Hide free trials" : "Show free trials"}
+          onClick={() => {
+            setShowTrials((on) => !on);
+            view.setPage(1);
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path className="chip-tick" d="M8 12.5l2.7 2.7L16 9.5" />
+          </svg>
+          Free trials
+          <span className="chip-count">{trialCount}</span>
+        </button>
+      </TableToolbar>
 
       <div className="table-wrap">
         <table className="data-table is-wide">
@@ -88,7 +136,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
             {view.pageRows.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
-                  {orders.length === 0 ? "No orders yet." : "No orders match those filters."}
+                  {emptyText}
                 </td>
               </tr>
             )}
@@ -97,17 +145,23 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                 <td data-label="Customer">
                   <span className="cell-stack">
                     <span className="robot-name">{row.email}</span>
-                    <span className="robot-slug">{row.paygateId ?? "no reference"}</span>
+                    <span className="robot-slug">
+                      {row.kind === "trial"
+                        ? `Free trial · ${row.robotName ?? "robot"}`
+                        : (row.paygateId ?? "no reference")}
+                    </span>
                   </span>
                 </td>
                 <td data-label="Tier" style={{ whiteSpace: "nowrap" }}>
                   {row.tier.replace(/_/g, " ")}
                 </td>
                 <td data-label="Amount" style={{ whiteSpace: "nowrap", fontWeight: 600 }}>
-                  ${row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {row.currency}
+                  {row.kind === "trial"
+                    ? "Free"
+                    : `$${row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${row.currency}`}
                 </td>
                 <td data-label="Status">
-                  <span className="pill" data-tone={tone(row.status)}>
+                  <span className="pill" data-tone={tone(row)}>
                     {row.status}
                   </span>
                 </td>
