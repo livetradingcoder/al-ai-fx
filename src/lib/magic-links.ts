@@ -54,7 +54,12 @@ export function buildMagicLinkUrl({
  * confirmation) and the compile-ready delivery email — do NOT hand-roll a new
  * token or public download route.
  */
-export function buildDashboardMagicLink(input: { email: string; userId: string }) {
+export function buildDashboardMagicLink(
+  input: { email: string; userId: string },
+  // Mail that is read hours or days after it is sent (the setup reminders) asks
+  // for a longer life and a landing page; everything else keeps the 30 minutes.
+  options: { expiresIn?: jwt.SignOptions["expiresIn"]; callbackUrl?: string } = {},
+) {
   const secret = process.env.NEXTAUTH_SECRET;
   const baseUrl = process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz";
   if (!secret) {
@@ -63,6 +68,7 @@ export function buildDashboardMagicLink(input: { email: string; userId: string }
   const token = createMagicLinkToken(
     { email: input.email, purpose: "login", userId: input.userId },
     secret,
+    options.expiresIn,
   );
-  return buildMagicLinkUrl({ baseUrl, locale: "en", token });
+  return buildMagicLinkUrl({ baseUrl, callbackUrl: options.callbackUrl, locale: "en", token });
 }

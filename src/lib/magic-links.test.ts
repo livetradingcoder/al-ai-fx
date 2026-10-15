@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import jwt from "jsonwebtoken";
+
 import {
+  buildDashboardMagicLink,
   buildMagicLinkUrl,
   createMagicLinkToken,
   verifyMagicLinkToken,
@@ -47,4 +50,32 @@ test("buildMagicLinkUrl prefixes non-default locales and preserves callback", ()
     url,
     "https://www.al-ai-fx.xyz/de/magic-login?token=abc&callbackUrl=%2Fdashboard%2Flicenses",
   );
+});
+
+function lifetimeSeconds(link: string) {
+  const token = new URL(link).searchParams.get("token") ?? "";
+  const payload = jwt.decode(token) as { exp: number; iat: number };
+  return payload.exp - payload.iat;
+}
+
+test("buildDashboardMagicLink keeps the 30 minute life and no landing page by default", () => {
+  process.env.NEXTAUTH_SECRET = "dashboard-link-secret";
+  const link = buildDashboardMagicLink({ email: "a@example.com", userId: "user_1" });
+  const url = new URL(link);
+
+  assert.equal(url.pathname, "/magic-login");
+  assert.equal(url.searchParams.has("callbackUrl"), false);
+  assert.equal(lifetimeSeconds(link), 30 * 60);
+  assert.equal(verifyMagicLinkToken(url.searchParams.get("token") ?? "", "dashboard-link-secret").userId, "user_1");
+});
+
+test("buildDashboardMagicLink can ask for a longer life and a landing page", () => {
+  process.env.NEXTAUTH_SECRET = "dashboard-link-secret";
+  const link = buildDashboardMagicLink(
+    { email: "a@example.com", userId: "user_1" },
+    { expiresIn: "3d", callbackUrl: "/dashboard/onboarding" },
+  );
+
+  assert.equal(new URL(link).searchParams.get("callbackUrl"), "/dashboard/onboarding");
+  assert.equal(lifetimeSeconds(link), 3 * 24 * 60 * 60);
 });

@@ -24,6 +24,7 @@ model User {
   sessions            UserSession[]
   affiliate           Affiliate?
   referredBy          Referral?
+  reminderOptOut ReminderOptOut?
 }
 
 /// One row per sign-in. Auth uses JWTs (stateless), so without this table a
@@ -63,6 +64,7 @@ model Subscription {
   updatedAt        DateTime    @updatedAt
 
   compilations Compilation[]
+  reminder     Mt5Reminder?
 }
 
 model Order {
@@ -506,4 +508,25 @@ model OutboundWebhookDelivery {
 
   @@index([webhookId, createdAt])
   @@index([createdAt])
+}
+
+/// How far the "link your MT5 account" reminder emails have got for one
+/// licence (see src/lib/mt5-reminders.ts). `sent` is the number of the last
+/// reminder delivered, so each one goes out at most once; `failures` counts
+/// sends that bounced, and the reminders for that licence stop after a few.
+model Mt5Reminder {
+  subscriptionId String       @id
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  sent           Int          @default(0)
+  failures       Int          @default(0)
+  /// When the last reminder went out; null until one has.
+  lastSentAt     DateTime?
+}
+
+/// A person who used the unsubscribe link in a reminder email. Only the
+/// setup reminders stop - account, billing and delivery emails are unaffected.
+model ReminderOptOut {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

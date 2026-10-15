@@ -4,6 +4,8 @@
 // all sender functions and their no-op-safe `if (!client)` guards are
 // unchanged. A sending key is sufficient (messages endpoint only).
 import { buildUnsubscribeUrl } from "@/lib/marketing-unsubscribe";
+import { buildMt5ReminderContent } from "@/lib/mt5-reminder-email";
+import type { ReminderKind } from "@/lib/mt5-reminder-schedule";
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
@@ -28,6 +30,8 @@ type MailMessage = {
   html: string;
   text: string;
   category?: string;
+  // Extra message headers, e.g. List-Unsubscribe on the setup reminders.
+  headers?: Record<string, string>;
 };
 
 const client = mailgunConfigured
@@ -40,6 +44,7 @@ const client = mailgunConfigured
         form.set("html", msg.html);
         form.set("text", msg.text);
         if (msg.category) form.set("o:tag", msg.category);
+        for (const [name, value] of Object.entries(msg.headers ?? {})) form.set(`h:${name}`, value);
 
         const response = await fetch(
           `${MAILGUN_API_BASE}/${MAILGUN_DOMAIN}/messages`,
@@ -55,7 +60,10 @@ const client = mailgunConfigured
 
         if (!response.ok) {
           const data = (await response.json().catch(() => ({}))) as { message?: string };
-          throw new Error(data.message || `Mailgun API error (HTTP ${response.status})`);
+          // The status rides along so callers can tell a bad recipient (4xx) from an outage.
+          throw Object.assign(new Error(data.message || `Mailgun API error (HTTP ${response.status})`), {
+            status: response.status,
+          });
         }
       },
     }
@@ -534,4 +542,82 @@ export async function sendSubscriberWelcomeEmail(email: string) {
     category: "EducationNewsletter",
   });
   console.log(`[Mail] Subscriber welcome email sent to ${email}`);
+}
+
+export type Mt5ReminderEmailInput = {
+  email: string;
+  kind: ReminderKind;
+  stage: number;
+  robotName: string;
+  expiresAt: Date | null;
+  /** Signs the person in and lands them on the setup page. */
+  magicLinkUrl: string;
+  /** Stops the setup reminders; also offered to mail clients as one-click unsubscribe. */
+  optOutUrl: string;
+};
+
+/** The reminder as it will be sent, without sending it. */
+export function renderMt5ReminderEmail(input: Mt5ReminderEmailInput) {
+  const siteUrl = (process.env.NEXTAUTH_URL || "https://www.al-ai-fx.xyz").replace(/\/+$/, "");
+  const content = buildMt5ReminderContent({
+    kind: input.kind,
+    stage: input.stage,
+    robotName: input.robotName,
+    expiresAt: input.expiresAt,
+    siteUrl,
+  });
+  const newLinkUrl = `${siteUrl}/forgot-password`;
+  const why = "You are getting this because your GoldBot licence has no MT5 account linked yet.";
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: content.buttonLabel,
+    buttonUrl: input.magicLinkUrl,
+    eyebrow: content.eyebrow,
+    intro: content.intro,
+    title: content.title,
+    detailLines: content.detailLines,
+    footerHtml:
+      `${why} The sign-in button works for 3 days; after that, ` +
+      `<a href="${newLinkUrl}" style="color:#9e9079;">request a new sign-in link</a>. ` +
+      `<a href="${input.optOutUrl}" style="color:#9e9079;">Stop these reminders</a>.`,
+    footerText:
+      `${why} The sign-in link works for 3 days; after that, request a new one at ${newLinkUrl}. ` +
+      `Stop these reminders: ${input.optOutUrl}`,
+  });
+
+  return {
+    subject: content.subject,
+    html,
+    text,
+    headers: {
+      "List-Unsubscribe": `<${input.optOutUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  };
+}
+
+/**
+ * "Link your MT5 account" reminder. Unlike the other senders this reports
+ * whether anything was sent: returns false when mail isn't configured, so the
+ * caller doesn't record a reminder that never left. Throws if the provider
+ * refuses the message.
+ */
+export async function sendMt5ReminderEmail(input: Mt5ReminderEmailInput): Promise<boolean> {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping MT5 reminder email.");
+    return false;
+  }
+
+  const { subject, html, text, headers } = renderMt5ReminderEmail(input);
+  await client.send({
+    from: sender,
+    to: [{ email: input.email }],
+    subject,
+    html,
+    text,
+    category: "MT5Reminder",
+    headers,
+  });
+  console.log(`[Mail] MT5 reminder ${input.kind} #${input.stage} sent`);
+  return true;
 }
