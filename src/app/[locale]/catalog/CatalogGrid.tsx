@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Clock, Crown, LifeBuoy, Sparkles } from "lucide-react";
+
+import { parseCatalogFilter, withCatalogFilter, type CatalogFilterId } from "@/lib/catalog-filter";
 
 export type CatalogRobot = {
   slug: string;
@@ -18,27 +21,36 @@ export type CatalogRobot = {
   flagship: boolean;
 };
 
-type FilterId = "all" | "multirange" | "breakout" | "trial";
-
 // Families come from the robot names the catalog already uses; anything that
 // matches neither still shows under "All".
-const FILTERS: { id: FilterId; label: string; match: (r: CatalogRobot) => boolean }[] = [
+const FILTERS: { id: CatalogFilterId; label: string; match: (r: CatalogRobot) => boolean }[] = [
   { id: "all", label: "All robots", match: () => true },
   { id: "multirange", label: "MultiRange", match: (r) => /multirange/i.test(r.name) },
   { id: "breakout", label: "Breakout", match: (r) => /breakout/i.test(r.name) },
-  { id: "trial", label: "Free trial", match: (r) => r.hasFreeTrial },
+  { id: "free-trial", label: "Free trial", match: (r) => r.hasFreeTrial },
 ];
 
 const usd = (amount: number) => `$${amount.toLocaleString("en-US")}`;
 
 export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
-  const [filter, setFilter] = useState<FilterId>("all");
+  const searchParams = useSearchParams();
 
   const counts = useMemo(
     () => Object.fromEntries(FILTERS.map((f) => [f.id, robots.filter(f.match).length])),
     [robots],
   );
+
+  // The tab lives in the URL (?filter=free-trial), so it survives a reload,
+  // can be linked to, and follows the back button after a link into the page.
+  const filter = parseCatalogFilter(searchParams.get("filter"), (id) => counts[id] > 0);
   const visible = robots.filter(FILTERS.find((f) => f.id === filter)!.match);
+
+  // Next syncs history.replaceState with useSearchParams, so this re-renders
+  // without a server round trip. Replace, not push: tabs are not history.
+  const selectFilter = (id: CatalogFilterId) => {
+    const { pathname, search, hash } = window.location;
+    window.history.replaceState(null, "", `${pathname}${withCatalogFilter(search, id)}${hash}`);
+  };
 
   if (robots.length === 0) {
     return <div className="cat-empty">No robots available yet — check back soon.</div>;
@@ -54,7 +66,7 @@ export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
             role="tab"
             aria-selected={filter === f.id}
             className={`cat-filter ${filter === f.id ? "is-active" : ""}`}
-            onClick={() => setFilter(f.id)}
+            onClick={() => selectFilter(f.id)}
           >
             {filter === f.id && (
               <motion.span
