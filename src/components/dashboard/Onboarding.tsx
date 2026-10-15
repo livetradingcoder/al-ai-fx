@@ -180,6 +180,12 @@ export default function Onboarding({
                 />
                 <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", margin: "10px 0 18px" }}>
                   You can only set this once — it cannot be changed later.
+                  {tier === "FREE_TRIAL" && (
+                    <>
+                      {" "}
+                      A free trial can only use an MT5 account that has never been used with a GoldBot licence.
+                    </>
+                  )}
                 </p>
                 <button type="submit" className="btn-primary" disabled={saving || !account}>
                   {saving ? "Saving…" : "Save & lock"}

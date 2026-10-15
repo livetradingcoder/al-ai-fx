@@ -12,6 +12,8 @@ export type LicenceRow = {
   id: string;
   email: string;
   mt5AccountNumber: string | null;
+  /** How many licences, this one included, have ever used this MT5 account. */
+  accountLicences: number;
   robot: string;
   tier: string;
   status: string;
@@ -23,6 +25,7 @@ const FILTERS: FilterDef<LicenceRow>[] = [
   { key: "trial", label: "Free trials", test: (r) => r.tier === "FREE_TRIAL" },
   { key: "paid", label: "Paid", test: (r) => r.tier !== "FREE_TRIAL" },
   { key: "unlinked", label: "No MT5 account yet", test: (r) => !r.mt5AccountNumber },
+  { key: "reused", label: "MT5 account reused", test: (r) => r.accountLicences > 1 },
 ];
 
 const SORTS: SortDef<LicenceRow>[] = [
@@ -86,6 +89,13 @@ export default function LicencesTable({ licences }: { licences: LicenceRow[] }) 
                     <span className="robot-slug">
                       {row.mt5AccountNumber ? `MT5 ${row.mt5AccountNumber}` : "MT5 not linked"}
                     </span>
+                    {row.accountLicences > 1 && (
+                      <span className="cell-note">
+                        <span className="pill" data-tone="soon">
+                          Also used on {row.accountLicences - 1} other {row.accountLicences === 2 ? "licence" : "licences"}
+                        </span>
+                      </span>
+                    )}
                   </span>
                 </td>
                 <td data-label="Robot">{row.robot}</td>

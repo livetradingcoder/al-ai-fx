@@ -19,6 +19,17 @@ const SECTIONS: LegalSection[] = [
     body: <p>Each subscription is intended for the licensed account scope defined in your plan. Unauthorized redistribution is prohibited.</p>,
   },
   {
+    id: "free-trials",
+    title: "Free Trials",
+    body: (
+      <p>
+        A free trial is for evaluating a robot yourself and is limited to one per person and one per MT5 account. An MT5 account that has
+        already been linked to any GoldBot licence, free or paid, cannot be used for a new free trial. Creating several accounts to get repeated
+        free trials is not allowed, and we may refuse a trial or withdraw a licence obtained that way.
+      </p>
+    ),
+  },
+  {
     id: "payments",
     title: "Payments",
     body: <p>Subscriptions are billed according to the selected plan. Renewal, cancellation, and billing details are managed through your account and payment provider flow.</p>,
@@ -40,7 +51,7 @@ export default function TermsConditionsPage() {
     <LegalDocument
       path="/terms-conditions"
       title="Terms & Conditions"
-      updated="April 16, 2026"
+      updated="October 15, 2026"
       intro={"By using GoldBot services, you agree to these terms regarding account use, licensing, payments, and acceptable use."}
       sections={SECTIONS}
     />

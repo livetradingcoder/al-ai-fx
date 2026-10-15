@@ -45,7 +45,7 @@ export const EXTRA_EN: FaqItem[] = [
     id: "trial",
     category: "billing",
     q: "Is there a free trial?",
-    a: "Yes. The 3-day trial activates instantly and needs no card. Availability can be limited per visitor, and the checkout shows whether a trial is open to you.",
+    a: "Yes. The 3-day trial activates instantly and needs no card. Availability can be limited per visitor, and the checkout shows whether a trial is open to you. A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid.",
   },
   {
     id: "payment",

@@ -11,6 +11,12 @@ import { mailDeliveryStatus } from "@/lib/mail";
 
 export type EmailCronArgs = { dryRun: boolean; max: number };
 
+/** The same Bearer CRON_SECRET check as /api/compiler/reap. */
+export function isCronAuthorized(request: NextRequest): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+  return Boolean(cronSecret) && request.headers.get("authorization") === `Bearer ${cronSecret}`;
+}
+
 export async function runEmailCron(
   request: NextRequest,
   options: {
@@ -21,8 +27,7 @@ export async function runEmailCron(
     run: (args: EmailCronArgs) => Promise<unknown>;
   },
 ): Promise<Response> {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
+  if (!isCronAuthorized(request)) {
     return new Response("Unauthorized", { status: 401 });
   }
 

@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateMT5Account } from "@/lib/validation";
+import { ipFromHeaders } from "@/lib/client-ip";
+import { linkMt5Account, MT5_ACCOUNT_USED_MESSAGE } from "@/lib/trial-abuse";
+import { recordUserIp } from "@/lib/user-ip";
 
 type UpdateMt5Payload = {
   subscriptionId?: string;
@@ -37,11 +40,19 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Subscription not found' }, { status: 404 });
     }
 
-    // Update the subscription with the new MT5 account
-    await prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: { mt5AccountNumber: String(mt5AccountNumber) }
+    // Link the account. A free trial is refused an account that has already
+    // been used with any licence (see lib/trial-abuse.ts).
+    const account = String(mt5AccountNumber).trim();
+    const outcome = await linkMt5Account({
+      subscriptionId,
+      userId: session.user.id,
+      tier: subscription.tier,
+      accountNumber: account,
     });
+    if (!outcome.ok) {
+      return NextResponse.json({ error: MT5_ACCOUNT_USED_MESSAGE, code: "mt5-account-used" }, { status: 409 });
+    }
+    await recordUserIp({ userId: session.user.id, ip: ipFromHeaders((name) => req.headers.get(name)), source: "mt5" });
 
     // Create a new compilation job.
     // Denormalize robotId from the subscription at creation time: the compile

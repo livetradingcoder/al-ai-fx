@@ -4,6 +4,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  // The country database reads its .dat files from its own folder at run time;
+  // bundled, those paths would point nowhere.
+  serverExternalPackages: ["geoip-country"],
   // The public affiliate page moved from /refer to /affiliates. Keep old
   // links, bookmarks and search results working (referral links themselves
   // use /r/CODE and ?ref=CODE, which are unaffected).

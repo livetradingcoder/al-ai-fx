@@ -26,6 +26,7 @@ model User {
   referredBy          Referral?
   reminderOptOut ReminderOptOut?
   resultsRequest ResultsRequest?
+  ips            UserIp[]
 }
 
 /// One row per sign-in. Auth uses JWTs (stateless), so without this table a
@@ -545,4 +546,44 @@ model ResultsRequest {
   sentAt         DateTime?
   failures       Int       @default(0)
   createdAt      DateTime  @default(now())
+}
+
+/// Every MT5 account number ever linked to a licence, free or paid. A free
+/// trial refuses an account that appears here on any other licence (see
+/// src/lib/trial-abuse.ts). It exists to remember, so it is deliberately not
+/// deleted with the licence or the person: userId and subscriptionId are plain
+/// references, not foreign keys.
+model Mt5AccountUse {
+  id             String   @id @default(cuid())
+  accountNumber  String
+  userId         String
+  subscriptionId String
+  /// The licence's tier when the account was linked (FREE_TRIAL, ONE_MONTH, ...).
+  tier           String
+  createdAt      DateTime @default(now())
+
+  @@unique([subscriptionId, accountNumber])
+  @@index([accountNumber])
+}
+
+/// An IP address we have seen a person use (signing in, starting a free trial,
+/// linking an MT5 account), with the country it is in, looked up from a
+/// database on our own server. One row per person and address. Kept to spot
+/// repeated sign-ups; rows are deleted a year after the address was last seen.
+model UserIp {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip          String
+  /// ISO 3166-1 alpha-2 country code; null when the address is not in the database.
+  country     String?
+  /// What first brought us this address: "login", "trial" or "mt5".
+  source      String
+  hits        Int      @default(1)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  @@unique([userId, ip])
+  @@index([ip])
+  @@index([lastSeenAt])
 }

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { licencesPerAccount } from "@/lib/trial-abuse";
 import LicencesTable from "../LicencesTable";
 
 export const metadata = { title: "Licences" };
@@ -20,10 +21,15 @@ export default async function AdminLicencesPage() {
     orderBy: { createdAt: 'desc' },
     include: { user: { select: { email: true } }, robot: { select: { name: true } } },
   });
+  // How many licences have ever used each MT5 account, to flag one that is shared.
+  const perAccount = await licencesPerAccount(
+    subscriptionRows.flatMap((sub) => (sub.mt5AccountNumber ? [sub.mt5AccountNumber] : [])),
+  );
   const licences = subscriptionRows.map((sub) => ({
     id: sub.id,
     email: sub.user.email,
     mt5AccountNumber: sub.mt5AccountNumber,
+    accountLicences: sub.mt5AccountNumber ? (perAccount.get(sub.mt5AccountNumber) ?? 1) : 0,
     robot: sub.robot?.name ?? '—',
     tier: sub.tier,
     status: sub.status,

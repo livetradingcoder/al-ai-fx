@@ -7,6 +7,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { verifyMagicLinkToken } from "@/lib/magic-links";
+import { ipFromHeaders } from "@/lib/client-ip";
+import { recordUserIp } from "@/lib/user-ip";
 
 const ACCOUNT_STATE = { role: true, isBlocked: true, isDeleted: true } as const;
 
@@ -142,6 +144,9 @@ export const authOptions: NextAuthOptions = {
             },
           });
           token.sid = jti;
+          // The address (and its country) goes in a per-person list too, so an
+          // admin can see where an account is used from. Never throws.
+          await recordUserIp({ userId: user.id, ip: ipFromHeaders((name) => headerList.get(name)), source: "login" });
         } catch (err) {
           // Never block a legitimate sign-in because bookkeeping failed.
           console.error("[Auth] Could not record session:", err);

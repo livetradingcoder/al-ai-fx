@@ -9,6 +9,8 @@ import { checkTrialAvailability, hashTrialIp, recordTrialClaim } from "@/lib/tri
 import { validateEmail } from "@/lib/validation";
 import { inBackground, sendTrialEvents } from "@/lib/meta-events";
 import { readMetaRequestContext } from "@/lib/meta-request";
+import { ipFromHeaders } from "@/lib/client-ip";
+import { recordUserIp } from "@/lib/user-ip";
 
 export async function POST(req: Request) {
   // Rate limiting - 2 trials per IP per day
@@ -95,6 +97,10 @@ export async function POST(req: Request) {
       }
       throw err;
     }
+
+    // Where this person claimed from, kept (with its country) so a run of
+    // trials from one place is visible to an admin.
+    await recordUserIp({ userId: result.userId, ip: ipFromHeaders((name) => req.headers.get(name)), source: "trial" });
 
     if (!result.duplicated) {
       await recordTrialClaim({ robotSlug, email: normalizedEmail, ipHash });

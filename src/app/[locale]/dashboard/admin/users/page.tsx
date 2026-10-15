@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { loadUserLocations } from "@/lib/admin-locations";
 import UsersTable from "./UsersTable";
 
 export default async function AdminUsersPage({
@@ -37,6 +38,11 @@ export default async function AdminUsersPage({
     }
   });
 
+  // Where each person signs in from (address and country), and whether other
+  // accounts share it. Empty rather than an error if that data isn't there yet.
+  const locations = await loadUserLocations(users.map((user) => user.id));
+  const rows = users.map((user) => ({ ...user, location: locations.get(user.id) ?? null }));
+
   // The admin home's "Add a person" button links here with ?add=1.
   const addOnArrival = (await searchParams).add === "1";
 
@@ -44,7 +50,7 @@ export default async function AdminUsersPage({
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.1rem', marginBottom: '1.75rem' }}>User Management</h1>
-        <UsersTable users={users} currentUserId={session.user.id} defaultAdding={addOnArrival} />
+        <UsersTable users={rows} currentUserId={session.user.id} defaultAdding={addOnArrival} />
       </div>
     </div>
   );

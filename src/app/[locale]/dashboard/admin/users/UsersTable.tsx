@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toggleBlockUser, deleteUser, setUserRole } from "./actions";
 import AddUserForm from "./AddUserForm";
 import Dialog from "@/components/dashboard/Dialog";
+import type { UserLocation } from "@/lib/admin-locations";
 import {
   TablePager,
   TableToolbar,
@@ -27,6 +28,7 @@ interface UserData {
   isDeleted: boolean;
   createdAt: Date;
   subscriptions: Subscription[];
+  location: UserLocation | null;
 }
 
 type Notice = { kind: "ok" | "error"; text: string };
@@ -40,6 +42,7 @@ const FILTERS: FilterDef<UserData>[] = [
   { key: "admins", label: "Admins", test: (u) => u.role === "ADMIN" },
   { key: "blocked", label: "Blocked", test: (u) => u.isBlocked && !u.isDeleted },
   { key: "deleted", label: "Deleted", test: (u) => u.isDeleted },
+  { key: "shared-ip", label: "Shares an IP", test: (u) => (u.location?.sharedWith ?? 0) > 0 },
 ];
 
 const SORTS: SortDef<UserData>[] = [
@@ -77,7 +80,10 @@ export default function UsersTable({
     // the email, so that is what an admin has in hand.
     search: (user, q) =>
       user.email.toLowerCase().includes(q) ||
-      user.subscriptions.some((s) => (s.mt5AccountNumber ?? "").includes(q)),
+      user.subscriptions.some((s) => (s.mt5AccountNumber ?? "").includes(q)) ||
+      (user.location?.ip ?? "").includes(q) ||
+      (user.location?.country ?? "").toLowerCase() === q ||
+      (user.location?.countryName ?? "").toLowerCase().includes(q),
     filters: FILTERS,
     sorts: SORTS,
     pageSize: 25,
@@ -173,7 +179,7 @@ export default function UsersTable({
         view={view}
         filters={FILTERS}
         sorts={SORTS}
-        searchPlaceholder="Search email or MT5 account…"
+        searchPlaceholder="Search email, MT5 account, IP or country…"
       />
 
       <div className="table-wrap">
@@ -184,6 +190,7 @@ export default function UsersTable({
               <th>Role</th>
               <th>Active licences</th>
               <th>Joined</th>
+              <th>Location</th>
               <th>Access</th>
               <th style={{ textAlign: "right" }}>Actions</th>
             </tr>
@@ -191,7 +198,7 @@ export default function UsersTable({
           <tbody>
             {view.pageRows.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                <td colSpan={7} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
                   {users.length === 0 ? "No users yet." : "No users match those filters."}
                 </td>
               </tr>
@@ -215,6 +222,27 @@ export default function UsersTable({
                   <td data-label="Active licences">{activeCount(user)}</td>
 
                   <td data-label="Joined">{new Date(user.createdAt).toLocaleDateString()}</td>
+
+                  <td data-label="Location">
+                    {user.location ? (
+                      <span className="cell-stack">
+                        <span className="robot-name">{user.location.countryName ?? "Unknown country"}</span>
+                        <span className="robot-slug">{user.location.ip}</span>
+                        {user.location.addresses > 1 && (
+                          <span className="cell-note">{user.location.addresses} addresses seen</span>
+                        )}
+                        {user.location.sharedWith > 0 && (
+                          <span>
+                            <span className="pill" data-tone="soon" style={{ whiteSpace: "nowrap" }}>
+                              Shared IP · {user.location.sharedWith}
+                            </span>
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--text-muted)" }}>—</span>
+                    )}
+                  </td>
 
                   <td data-label="Access">
                     <span

@@ -70,6 +70,15 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         ],
       },
       { type: "p", text: "Each account can claim one free trial per robot." },
+      { type: "h2", id: "mt5-account-rule", text: "Why can't I link my MT5 account to the trial?" },
+      {
+        type: "p",
+        text: "A free trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid. If you see “This MT5 account has already been used with a GoldBot licence”, link a different MT5 account, or choose a plan to use that one. A paid plan has no such limit, so an account that had a trial can be used with a plan.",
+      },
+      {
+        type: "p",
+        text: "If you think the message is a mistake, contact support@al-ai-fx.xyz with your sign-in email and the MT5 account number.",
+      },
     ],
     links: [{ label: "Browse the robots", href: "/catalog" }],
     related: ["pricing", "before-you-buy"],
