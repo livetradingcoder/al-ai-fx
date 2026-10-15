@@ -192,6 +192,8 @@ export default function WebhooksAdmin({
                 className="enroll-input"
                 style={{ marginTop: "8px" }}
                 data-autofocus
+                name="webhook-label"
+                autoComplete="off"
                 placeholder="WhatsApp relay"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -203,7 +205,9 @@ export default function WebhooksAdmin({
               <input
                 className="enroll-input"
                 style={{ marginTop: "8px" }}
-                inputMode="url"
+                type="url"
+                name="webhook-endpoint"
+                autoComplete="off"
                 autoCapitalize="off"
                 spellCheck={false}
                 placeholder="https://…/api/webhooks/relay/…"
@@ -220,7 +224,8 @@ export default function WebhooksAdmin({
                 className="enroll-input"
                 style={{ marginTop: "8px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
                 type="password"
-                autoComplete="off"
+                name="webhook-signing-secret"
+                autoComplete="new-password"
                 spellCheck={false}
                 placeholder={editingRow ? "unchanged" : "Paste the secret from the receiving app"}
                 value={form.secret}

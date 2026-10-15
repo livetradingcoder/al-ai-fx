@@ -11,7 +11,7 @@ import {
   signatureHeaders,
 } from "./outbound-webhooks";
 
-const SECRET = "8d157fe9781d34056287ffd4d5e5ef234e8d07bd7b66662e";
+const SECRET = "test-secret-not-a-real-one-0123456789abcdef";
 
 test("signBody: HMAC-SHA256 hex of the exact body", () => {
   const body = '{"event":"sale.completed"}';
