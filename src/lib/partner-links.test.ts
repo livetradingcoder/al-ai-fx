@@ -19,9 +19,23 @@ test("the prop firm guide and help article both carry the partner offer", () => 
   assert.ok(article?.blocks.some((b) => b.type === "propfirm"), "article has no propfirm block");
 });
 
-test("the FAQ answer quotes the same code and discount, and links to the firm", () => {
+test("the checkout link is the firm's own checkout for the 5k one-step challenge", () => {
+  const checkout = new URL(PROP_FIRM.checkoutUrl);
+  assert.equal(checkout.protocol, "https:");
+  assert.equal(checkout.hostname, new URL(PROP_FIRM.url).hostname, "same site as the firm's home page");
+  assert.equal(checkout.pathname, "/checkout");
+  assert.equal(checkout.searchParams.get("type"), "oneStep");
+  assert.equal(checkout.searchParams.get("size"), "5k");
+  assert.equal(PROP_FIRM.price, "$9.99");
+});
+
+test("the FAQ answer quotes the same code, discount and price, and links to the checkout", () => {
   const item = EXTRA_EN.find((i) => i.id === "prop-firm-account");
   assert.ok(item);
   assert.ok(item.a.includes(PROP_FIRM.code) && item.a.includes(PROP_FIRM.discount));
-  assert.equal(item.link?.href, PROP_FIRM.url);
+  assert.ok(item.a.includes(PROP_FIRM.price), "the price is quoted from the same constant");
+  assert.match(item.a, /listed at/, "a third party's price is shown as listed, not promised");
+  assert.match(item.a, /can change/);
+  assert.equal(item.link?.href, PROP_FIRM.checkoutUrl);
+  assert.ok(item.link?.label.includes(PROP_FIRM.price));
 });

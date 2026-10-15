@@ -76,8 +76,8 @@ export const EXTRA_EN: FaqItem[] = [
     id: "prop-firm-account",
     category: "trading",
     q: "Where can I get a prop firm account?",
-    a: `${PROP_FIRM.name} is our partner prop firm: create an account with ${PROP_FIRM.discount} off using the code ${PROP_FIRM.code}. Every prop firm sets its own rules on EAs, so read them before you attach a robot to one of its accounts.`,
-    link: { href: PROP_FIRM.url, label: `Visit ${PROP_FIRM.name}` },
+    a: `${PROP_FIRM.name} is our partner prop firm: create an account with ${PROP_FIRM.discount} off using the code ${PROP_FIRM.code}, or go straight to its checkout for the ${PROP_FIRM.challenge}, listed at ${PROP_FIRM.price}. The firm sets its own prices and terms and can change them, and every prop firm sets its own rules on EAs, so read them before you attach a robot to one of its accounts.`,
+    link: { href: PROP_FIRM.checkoutUrl, label: `Buy the ${PROP_FIRM.challenge} (listed at ${PROP_FIRM.price})` },
   },
   {
     id: "guarantee",
