@@ -22,6 +22,13 @@ export const EXTRA_EN: FaqItem[] = [
     a: "A MetaTrader 5 account with your preferred broker. GoldBot cannot be installed on MT4 or other trading platforms, and your broker time must be set to GMT+3 for licence locking.",
   },
   {
+    id: "mobile",
+    category: "start",
+    q: "Does GoldBot work on Android, iPhone or tablets?",
+    a: "No. GoldBot is an Expert Advisor for the desktop MetaTrader 5 terminal, which runs on Windows, ideally on a VPS. The MT5 mobile apps can't run Expert Advisors, but you can sign in to the same account in the app to watch your positions and trade history while the EA runs on your PC or VPS.",
+    link: { href: "/guides/install-ea-on-mt5", label: "Read the install guide" },
+  },
+  {
     id: "speed",
     category: "start",
     q: "How quickly is my robot ready?",

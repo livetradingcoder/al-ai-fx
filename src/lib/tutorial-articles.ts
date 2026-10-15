@@ -124,7 +124,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
       {
         type: "list",
         items: [
-          "A MetaTrader 5 account with your preferred broker. GoldBot cannot be installed on MT4 or other platforms.",
+          "A MetaTrader 5 account with your preferred broker. GoldBot cannot be installed on MT4, other platforms or the MT5 mobile app.",
           "Broker server time set to GMT+3. The licence lock relies on it.",
           "Ideally a VPS, so MetaTrader runs 24/5 without interruption.",
         ],
