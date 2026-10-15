@@ -288,6 +288,15 @@
   color: #707a8a;
 }
 
+/* The page you are on. */
+.lnav-sheet-links a.is-active {
+  color: #fcd535;
+}
+
+.lnav-sheet-links a.is-active svg {
+  color: #fcd535;
+}
+
 .lnav-sheet-foot {
   display: grid;
   gap: 10px;

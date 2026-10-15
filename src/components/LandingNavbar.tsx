@@ -13,7 +13,8 @@ import {
 } from "framer-motion";
 import { ArrowRight, ChevronRight, Menu, X } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/routing";
+import { isOnPath } from "@/lib/nav-active";
 import "./landing-navbar.css";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -31,14 +32,20 @@ export default function LandingNavbar() {
   const accountHref = isLoggedIn ? "/dashboard" : "/login";
   const accountLabel = isLoggedIn ? "Dashboard" : t("login");
 
+  const pathname = usePathname();
+
+  // `match` is the page(s) a link stands for, so the bar shows where you are.
+  // Pricing is a section of the home page, tracked separately below.
   const links = [
-    { href: "/features", label: t("features") },
-    { href: "/catalog", label: t("robots") },
-    { href: "/#pricing", label: t("pricing") },
-    { href: "/tutorials", label: t("tutorials") },
-    { href: "/faq", label: t("faq") },
-    { href: "/affiliates", label: t("refer") },
+    { href: "/features", label: t("features"), match: ["/features"] },
+    { href: "/catalog", label: t("robots"), match: ["/catalog"] },
+    { href: "/#pricing", label: t("pricing"), match: [] as string[] },
+    { href: "/tutorials", label: t("tutorials"), match: ["/tutorials"] },
+    { href: "/faq", label: t("faq"), match: ["/faq"] },
+    { href: "/affiliates", label: t("refer"), match: ["/affiliates"] },
   ];
+  const isActive = (link: (typeof links)[number]) =>
+    link.href === "/#pricing" ? pricingActive && pathname === "/" : isOnPath(pathname, link.match);
 
   // Thin yellow bar along the bottom edge tracks reading progress.
   const { scrollYProgress } = useScroll();
@@ -51,7 +58,8 @@ export default function LandingNavbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Pricing is a section on this page, so mark it active while in view.
+  // Pricing is a section on the home page, so mark it active while in view.
+  // The bar outlives page changes, so look again whenever the page changes.
   useEffect(() => {
     const target = document.getElementById("pricing");
     if (!target) return;
@@ -61,7 +69,7 @@ export default function LandingNavbar() {
     );
     observer.observe(target);
     return () => observer.disconnect();
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -100,7 +108,7 @@ export default function LandingNavbar() {
 
           <ul className="lnav-links" onMouseLeave={() => setHovered(null)}>
             {links.map((link) => {
-              const active = link.href === "/#pricing" && pricingActive;
+              const active = isActive(link);
               return (
                 <li key={link.href}>
                   <Link
@@ -108,7 +116,7 @@ export default function LandingNavbar() {
                     className={`lnav-link ${active ? "is-active" : ""}`}
                     onMouseEnter={() => setHovered(link.href)}
                     onFocus={() => setHovered(link.href)}
-                    aria-current={active ? "true" : undefined}
+                    aria-current={active ? (link.match.length > 0 ? "page" : "true") : undefined}
                   >
                     {hovered === link.href && (
                       <motion.span
@@ -197,7 +205,12 @@ export default function LandingNavbar() {
                     show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: EASE } },
                   }}
                 >
-                  <Link href={link.href} onClick={close}>
+                  <Link
+                    href={link.href}
+                    onClick={close}
+                    className={isActive(link) ? "is-active" : undefined}
+                    aria-current={isActive(link) && link.match.length > 0 ? "page" : undefined}
+                  >
                     {link.label}
                     <ChevronRight size={18} aria-hidden="true" />
                   </Link>
