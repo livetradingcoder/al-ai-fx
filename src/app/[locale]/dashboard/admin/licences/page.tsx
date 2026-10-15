@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { licencesPerAccount } from "@/lib/trial-abuse";
 import LicencesTable from "../LicencesTable";
+import AllowAccountForm from "./AllowAccountForm";
 
 export const metadata = { title: "Licences" };
 
@@ -42,6 +43,7 @@ export default async function AdminLicencesPage() {
       <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
         Every licence issued, including free trials. Search by email, MT5 account or robot.
       </p>
+      <AllowAccountForm />
       <LicencesTable licences={licences} />
     </div>
   );

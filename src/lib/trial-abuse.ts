@@ -100,3 +100,18 @@ export async function licencesPerAccount(accountNumbers: string[]): Promise<Map<
   }
   return counts;
 }
+
+/** How many licences have used this account (what "Allow this account" would clear). */
+export async function accountHistoryCount(accountNumber: string): Promise<number> {
+  return prisma.mt5AccountUse.count({ where: { accountNumber } });
+}
+
+/**
+ * Lets an MT5 account start a free trial again by forgetting its history, for
+ * when an admin decides a refusal was a mistake. The licences that used it keep
+ * working; only the memory that makes a trial refuse it is cleared. Returns
+ * how many history rows went.
+ */
+export async function clearAccountHistory(accountNumber: string): Promise<number> {
+  return (await prisma.mt5AccountUse.deleteMany({ where: { accountNumber } })).count;
+}
