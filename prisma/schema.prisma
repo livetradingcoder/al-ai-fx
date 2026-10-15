@@ -464,3 +464,46 @@ model TrialClaim {
   @@index([ipHash, createdAt])
   @@index([createdAt])
 }
+
+/// An external URL that is told about things that happen here (a sale, a
+/// signup). Managed in the admin under Webhooks. Not to be confused with
+/// WebhookDelivery above, which is the replay guard for *incoming* Paygate calls.
+model OutboundWebhook {
+  id              String   @id @default(cuid())
+  name            String
+  url             String
+  /// HMAC-SHA256 key; signs every body, sent as X-Webhook-Signature.
+  secret          String
+  /// Event types this endpoint wants (see src/lib/outbound-webhooks.ts).
+  events          String[]
+  enabled         Boolean  @default(true)
+  /// "hex" = the bare digest, "prefixed" = sha256=<digest>.
+  signatureFormat String   @default("hex")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  deliveries OutboundWebhookDelivery[]
+}
+
+/// One event sent to one endpoint, with how that went. Kept so the admin can
+/// see what was sent, what came back, and redeliver a failure.
+model OutboundWebhookDelivery {
+  id            String          @id @default(cuid())
+  webhookId     String
+  webhook       OutboundWebhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  event         String
+  payload       Json
+  /// PENDING until the first attempt finishes, then DELIVERED (a 2xx) or FAILED.
+  status        String          @default("PENDING")
+  attempts      Int             @default(0)
+  httpStatus    Int?
+  responseBody  String?
+  error         String?
+  durationMs    Int?
+  createdAt     DateTime        @default(now())
+  lastAttemptAt DateTime?
+  deliveredAt   DateTime?
+
+  @@index([webhookId, createdAt])
+  @@index([createdAt])
+}

@@ -56,6 +56,11 @@ const Icon = {
       <path d="M14 7v10" strokeDasharray="2 3" />
     </svg>
   ),
+  webhooks: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13 3L5 13.5h6L10 21l8-10.5h-6z" />
+    </svg>
+  ),
   orders: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" />
