@@ -33,9 +33,17 @@ export async function generateMetadata({
     creator: "AL-ai-FX",
     publisher: "AL-ai-FX",
     formatDetection: { email: false, address: false, telephone: false },
+    // The robot's head on the brand's dark tile: the old icon was the whole
+    // logo with its wordmark, which is a smudge at tab size. The SVG is sharp
+    // at any size; the PNG and the app/favicon.ico (which Next links by
+    // itself) cover Safari, older browsers and home screens. "?v=" makes
+    // browsers drop the icon they cached before.
     icons: {
-      icon: "/favicon.png",
-      apple: "/favicon.png",
+      icon: [
+        { url: "/icon.svg?v=2", type: "image/svg+xml", sizes: "any" },
+        { url: "/icon-192.png?v=2", type: "image/png", sizes: "192x192" },
+      ],
+      apple: { url: "/apple-touch-icon.png?v=2", type: "image/png", sizes: "180x180" },
     },
   };
 }
