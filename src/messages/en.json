@@ -385,6 +385,7 @@
     "affiliate": "Affiliate",
     "manageAffiliates": "Affiliate programme",
     "manageCoupons": "Coupons",
+    "manageWebhooks": "Webhooks",
     "workspaceAdmin": "Admin",
     "workspaceAccount": "My account",
     "manageOrders": "Orders",

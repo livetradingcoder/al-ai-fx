@@ -6,6 +6,7 @@ import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
 import { inBackground, sendPurchaseEvent } from "@/lib/meta-events";
+import { emitWebhookEvent, inBackground as webhooksInBackground, providerOf, type EventData } from "@/lib/outbound-webhooks";
 import type { MetaUserInput } from "@/lib/meta-capi";
 
 // Re-export so existing imports elsewhere (webhook route.ts, create-session, etc.)
@@ -16,6 +17,7 @@ export { mapTier, computeExpirationDate, UnknownTierError };
 export async function findOrCreateUser(email: string) {
   let user = await prisma.user.findUnique({ where: { email } });
   const emailSuccess = true;
+  const created = !user;
 
   if (!user) {
     user = await prisma.user.create({
@@ -28,7 +30,7 @@ export async function findOrCreateUser(email: string) {
     console.log(`[Subscription Service] Created new user: ${email}`);
   }
 
-  return { user, emailSuccess };
+  return { user, emailSuccess, created };
 }
 
 /** What a payment provider tells us about the buyer, beyond their email. It only
@@ -53,7 +55,7 @@ export async function provisionSubscription(
   refCode?: string | null,
   buyer?: BuyerDetails,
 ) {
-  const { user, emailSuccess: welcomeEmailSuccess } = await findOrCreateUser(email);
+  const { user, emailSuccess: welcomeEmailSuccess, created: userCreated } = await findOrCreateUser(email);
   let overallEmailSuccess = welcomeEmailSuccess;
 
   if (paygateId) {
@@ -127,6 +129,23 @@ export async function provisionSubscription(
   // is a no-op once the user already has a referrer — the first one keeps them.
   await attachReferral({ userId: user.id, code: refCode });
 
+  // Webhook events are collected as things succeed and sent together once the
+  // purchase is safely recorded, in order, without holding up the caller. A
+  // purchase that failed part-way (unknown robot, duplicate) sends none.
+  const events: EventData[] = [];
+  if (userCreated) {
+    events.push({
+      type: "user.signup",
+      data: { userId: user.id, email, name: user.name, source: tier === "FREE_TRIAL" ? "trial" : "purchase" },
+    });
+  }
+  if (tier === "FREE_TRIAL") {
+    events.push({
+      type: "trial.started",
+      data: { userId: user.id, email, robotSlug: robot.slug, robotName: robot.name },
+    });
+  }
+
   let orderId = null;
   if (paygateId && amount !== undefined) {
     const order = await prisma.order.create({
@@ -140,6 +159,23 @@ export async function provisionSubscription(
       },
     });
     orderId = order.id;
+
+    events.push({
+      type: "sale.completed",
+      data: {
+        orderId: order.id,
+        orderRef: paygateId,
+        provider: providerOf(paygateId),
+        amount,
+        currency: currency || "USD",
+        tier,
+        robotSlug: robot.slug,
+        robotName: robot.name,
+        email,
+        userId: user.id,
+        refCode: refCode ?? null,
+      },
+    });
 
     await recordCommission({ orderId: order.id, userId: user.id, amount });
 
@@ -158,6 +194,12 @@ export async function provisionSubscription(
         customer: buyer,
       }),
     );
+  }
+
+  if (events.length > 0) {
+    webhooksInBackground(async () => {
+      for (const event of events) await emitWebhookEvent(event);
+    });
   }
 
   // Send purchase confirmation (for free trial, it's more of a trial confirmation)
