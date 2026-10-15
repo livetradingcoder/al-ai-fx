@@ -36,12 +36,23 @@ export async function countryOfIp(ip: string): Promise<string | null> {
 }
 
 const REGION_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
+const REGION_SHORT_NAMES = new Intl.DisplayNames(["en"], { type: "region", style: "short" });
 
 /** "DE" -> "Germany". Falls back to the code for anything the runtime doesn't know. */
 export function countryName(code: string | null | undefined): string | null {
   if (!code) return null;
   try {
     return REGION_NAMES.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+/** The same in the short form where there is one: "US" -> "US", "GB" -> "UK", "DE" -> "Germany". For tight table cells. */
+export function countryShortName(code: string | null | undefined): string | null {
+  if (!code) return null;
+  try {
+    return REGION_SHORT_NAMES.of(code) ?? countryName(code);
   } catch {
     return code;
   }

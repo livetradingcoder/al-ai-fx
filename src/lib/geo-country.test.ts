@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { countryName, countryOfIp } from "./geo-country";
+import { countryName, countryOfIp, countryShortName } from "./geo-country";
 
 test("well-known addresses resolve to their country", async () => {
   assert.equal(await countryOfIp("8.8.8.8"), "US");
@@ -20,4 +20,11 @@ test("a code becomes a readable name", () => {
   assert.equal(countryName("US"), "United States");
   assert.equal(countryName(null), null);
   assert.equal(countryName(""), null);
+});
+
+test("the short form is used where the runtime has one", () => {
+  assert.equal(countryShortName("US"), "US");
+  assert.equal(countryShortName("GB"), "UK");
+  assert.equal(countryShortName("DE"), "Germany");
+  assert.equal(countryShortName(null), null);
 });

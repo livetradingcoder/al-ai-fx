@@ -183,12 +183,11 @@ export default function UsersTable({
       />
 
       <div className="table-wrap">
-        <table className="data-table is-wide">
+        <table className="data-table is-wide is-tight">
           <thead>
             <tr>
               <th>User</th>
-              <th>Role</th>
-              <th>Active licences</th>
+              <th title="Active licences">Licences</th>
               <th>Joined</th>
               <th>Location</th>
               <th>Access</th>
@@ -198,7 +197,7 @@ export default function UsersTable({
           <tbody>
             {view.pageRows.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
+                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)" }}>
                   {users.length === 0 ? "No users yet." : "No users match those filters."}
                 </td>
               </tr>
@@ -212,35 +211,57 @@ export default function UsersTable({
                 <tr key={user.id} data-dim={user.isDeleted ? "true" : undefined}>
                   <td data-label="User">
                     <span className="cell-stack">
-                      <span className="robot-name">{user.email}</span>
-                      {mt5 && <span className="robot-slug">MT5 {mt5}</span>}
+                      <span className="robot-name cell-clip clip-lg" title={user.email}>
+                        {user.email}
+                      </span>
+                      <span className="cell-line">
+                        {user.role === "ADMIN" && (
+                          <span className="pill is-small" data-tone="soon">
+                            Admin
+                          </span>
+                        )}
+                        <span className="robot-slug cell-clip clip-lg" style={{ marginTop: 0 }}>
+                          {mt5 ? `MT5 ${mt5}` : "No MT5 account"}
+                        </span>
+                      </span>
                     </span>
                   </td>
 
-                  <td data-label="Role">{user.role === "ADMIN" ? "Admin" : "Customer"}</td>
-
-                  <td data-label="Active licences">{activeCount(user)}</td>
+                  <td data-label="Licences">{activeCount(user)}</td>
 
                   <td data-label="Joined">{new Date(user.createdAt).toLocaleDateString()}</td>
 
                   <td data-label="Location">
                     {user.location ? (
                       <span className="cell-stack">
-                        <span className="robot-name">{user.location.countryName ?? "Unknown country"}</span>
-                        <span className="robot-slug">{user.location.ip}</span>
-                        {user.location.addresses > 1 && (
-                          <span className="cell-note">{user.location.addresses} addresses seen</span>
-                        )}
-                        {user.location.sharedWith > 0 && (
-                          <span>
-                            <span className="pill" data-tone="soon" style={{ whiteSpace: "nowrap" }}>
-                              Shared IP · {user.location.sharedWith}
-                            </span>
+                        <span className="cell-line">
+                          <span className="robot-name cell-clip clip-sm" title={user.location.countryName ?? "Unknown country"}>
+                            {user.location.countryShort ?? "Unknown"}
                           </span>
-                        )}
+                          {user.location.sharedWith > 0 && (
+                            <span
+                              className="pill is-small"
+                              data-tone="soon"
+                              title={`${user.location.sharedWith} other ${user.location.sharedWith === 1 ? "account has" : "accounts have"} used the same IP address`}
+                            >
+                              Shared · {user.location.sharedWith}
+                            </span>
+                          )}
+                        </span>
+                        <span
+                          className="robot-slug cell-clip clip-sm"
+                          title={
+                            user.location.addresses > 1
+                              ? `${user.location.ip} (latest of ${user.location.addresses} addresses)`
+                              : user.location.ip
+                          }
+                        >
+                          {user.location.ip}
+                          {user.location.addresses > 1 ? ` +${user.location.addresses - 1}` : ""}
+                        </span>
                       </span>
                     ) : (
-                      <span style={{ color: "var(--text-muted)" }}>—</span>
+                      <span className="cell-muted">—</span>
                     )}
                   </td>
 

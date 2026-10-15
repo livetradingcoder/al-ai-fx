@@ -1,4 +1,4 @@
-import { countryName } from "@/lib/geo-country";
+import { countryName, countryShortName } from "@/lib/geo-country";
 import { prisma } from "@/lib/prisma";
 
 // What the admin Customers page shows about where each person comes from, built
@@ -11,6 +11,8 @@ export type UserLocation = {
   /** ISO country code of that address, when known. */
   country: string | null;
   countryName: string | null;
+  /** Short form for a narrow cell ("UK" for "United Kingdom"). */
+  countryShort: string | null;
   lastSeenAt: string;
   /** How many different addresses we have seen from them. */
   addresses: number;
@@ -70,6 +72,7 @@ export async function loadUserLocations(userIds: string[]): Promise<Map<string, 
         ip: latest.ip,
         country: latest.country,
         countryName: countryName(latest.country),
+        countryShort: countryShortName(latest.country),
         lastSeenAt: latest.lastSeenAt.toISOString(),
         addresses: own.length,
         sharedWith: others.size,

@@ -63,7 +63,7 @@ export default function LicencesTable({ licences }: { licences: LicenceRow[] }) 
       />
 
       <div className="table-wrap">
-        <table className="data-table is-wide">
+        <table className="data-table is-wide is-tight">
           <thead>
             <tr>
               <th>Customer</th>
@@ -85,17 +85,23 @@ export default function LicencesTable({ licences }: { licences: LicenceRow[] }) 
               <tr key={row.id}>
                 <td data-label="Customer">
                   <span className="cell-stack">
-                    <span className="robot-name">{row.email}</span>
-                    <span className="robot-slug">
-                      {row.mt5AccountNumber ? `MT5 ${row.mt5AccountNumber}` : "MT5 not linked"}
+                    <span className="robot-name cell-clip clip-lg" title={row.email}>
+                      {row.email}
                     </span>
-                    {row.accountLicences > 1 && (
-                      <span className="cell-note">
-                        <span className="pill" data-tone="soon">
-                          Also used on {row.accountLicences - 1} other {row.accountLicences === 2 ? "licence" : "licences"}
-                        </span>
+                    <span className="cell-line">
+                      <span className="robot-slug" style={{ marginTop: 0 }}>
+                        {row.mt5AccountNumber ? `MT5 ${row.mt5AccountNumber}` : "MT5 not linked"}
                       </span>
-                    )}
+                      {row.accountLicences > 1 && (
+                        <span
+                          className="pill is-small"
+                          data-tone="soon"
+                          title={`This MT5 account has also been used on ${row.accountLicences - 1} other ${row.accountLicences === 2 ? "licence" : "licences"}`}
+                        >
+                          Reused · {row.accountLicences - 1}
+                        </span>
+                      )}
+                    </span>
                   </span>
                 </td>
                 <td data-label="Robot">{row.robot}</td>

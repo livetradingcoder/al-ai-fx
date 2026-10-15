@@ -6403,6 +6403,25 @@ body:has(dialog.admin-dialog[open]) { overflow: hidden; }
    its sub-line each became their own column and shoved the row off-screen. */
 .cell-stack { display: grid; gap: 3px; min-width: 0; }
 
+/* Customers and licences tables: every row is the same height. A cell holds at
+   most two short lines that never wrap; a long value is cut with an ellipsis
+   (the full text is in its tooltip). On a phone the rows become stacked cards,
+   where wrapping is fine, so the clipping below is desktop-only. */
+.cell-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cell-muted { color: var(--text-muted); }
+.pill.is-small { padding: 2px 8px; font-size: 0.62rem; letter-spacing: 0.05em; white-space: nowrap; flex: none; }
+
+@media (min-width: 761px) {
+  .data-table.is-tight th,
+  .data-table.is-tight td { padding-left: 10px; padding-right: 10px; }
+  .data-table.is-tight td { white-space: nowrap; }
+  .data-table.is-tight .cell-clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .data-table.is-tight .clip-lg { max-width: 230px; }
+  .data-table.is-tight .clip-sm { max-width: 150px; }
+  .data-table.is-tight .row-actions { flex-wrap: nowrap; gap: 6px; }
+  .data-table.is-tight .btn-mini { padding: 6px 10px; }
+}
+
 .pill[data-tone="bad"] {
   color: #efa094;
   border-color: rgba(239, 127, 105, 0.45);
