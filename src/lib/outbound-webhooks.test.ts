@@ -126,6 +126,16 @@ test("buildEventBody: signup, trial and test messages", () => {
   });
   assert.equal(both.message, "🆕 New signup · 🧪 free trial — R\na@b.co", "a trial that made the account is one message");
   assert.equal(both.path, "/dashboard/admin/licences");
+  const sale = {
+    orderId: "o", orderRef: "POLAR-1", provider: "Polar", amount: 99, currency: "USD", tier: "ONE_MONTH",
+    robotSlug: "r", robotName: "R", email: "a@b.co", userId: "u", refCode: null,
+  };
+  assert.ok(!buildEventBody({ type: "sale.completed", data: sale }).title.includes("New customer"));
+  assert.equal(
+    buildEventBody({ type: "sale.completed", data: { ...sale, newCustomer: true } }).title,
+    "🆕 New customer · 💰 New sale — R · One Month",
+    "a new customer's first order is one message",
+  );
   const test_ = buildEventBody({ type: "webhook.test", data: { webhookName: "WhatsApp" } });
   assert.equal(test_.message, '✅ Test event\nWebhook "WhatsApp" is connected to AL-AI-FX.');
   assert.equal(test_.event, "webhook.test");

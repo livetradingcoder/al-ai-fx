@@ -140,7 +140,8 @@ export async function provisionSubscription(
       type: "trial.started",
       data: { userId: user.id, email, robotSlug: robot.slug, robotName: robot.name, newAccount: userCreated },
     });
-  } else if (userCreated) {
+  } else if (userCreated && !(paygateId && amount !== undefined)) {
+    // A paid order from a new customer is reported by the sale event itself.
     events.push({
       type: "user.signup",
       data: { userId: user.id, email, name: user.name, source: "purchase" },
@@ -175,6 +176,7 @@ export async function provisionSubscription(
         email,
         userId: user.id,
         refCode: refCode ?? null,
+        newCustomer: userCreated,
       },
     });
 

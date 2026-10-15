@@ -129,6 +129,8 @@ export type SaleEventData = {
   email: string;
   userId: string;
   refCode: string | null;
+  /** The buyer's account was created by this order, so there is no separate signup event. */
+  newCustomer?: boolean;
 };
 export type SignupEventData = { userId: string; email: string; name: string | null; source: "purchase" | "trial" };
 /** `newAccount`: this trial also created the account, so it is one event, not a signup followed by a trial. */
@@ -173,7 +175,7 @@ export function buildEventBody(event: EventData, id: string = randomUUID(), now:
     case "sale.completed": {
       const d = event.data;
       const free = d.amount <= 0;
-      title = `${free ? "🎁 Free order" : "💰 New sale"} — ${d.robotName} · ${tierLabel(d.tier)}`;
+      title = `${d.newCustomer ? "🆕 New customer · " : ""}${free ? "🎁 Free order" : "💰 New sale"} — ${d.robotName} · ${tierLabel(d.tier)}`;
       message = [
         title,
         free ? `No charge (${d.provider})` : `${money(d.amount, d.currency)} via ${d.provider}`,
@@ -334,9 +336,11 @@ async function pruneOld() {
  */
 export async function emitWebhookEvent(event: EventData): Promise<void> {
   try {
-    // A trial that created the account is sent as one event. Endpoints that only
+    // A trial or order that created the account is sent as one event. Endpoints that only
     // asked for signups still get it, so merging the two never silences one.
-    const alsoSignup = event.type === "trial.started" && event.data.newAccount === true;
+    const alsoSignup =
+      (event.type === "trial.started" && event.data.newAccount === true) ||
+      (event.type === "sale.completed" && event.data.newCustomer === true);
     const endpoints = await prisma.outboundWebhook.findMany({
       where: {
         enabled: true,
