@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -6,6 +5,11 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { buildLoginRedirectPath } from "@/lib/auth-redirects";
 import { noIndexMetadata } from "@/lib/seo";
+import { readingTime, TUTORIAL_ARTICLES, TUTORIAL_CATEGORIES } from "@/lib/tutorial-articles";
+import "@/components/content/content.css";
+import "./tutorials.css";
+import { LEGACY_IDS, legacyCard } from "./legacy";
+import TutorialsBrowser, { type TutorialIndexItem } from "./TutorialsBrowser";
 
 // Members-only (redirects to login), so keep it out of search results.
 export const metadata = noIndexMetadata("Tutorials | GoldBot by AL-ai-FX");
@@ -23,66 +27,38 @@ export default async function Tutorials({
   }
 
   const t = await getTranslations("Tutorials");
-  const tutorials = [
-    {
-      id: 1,
-      title: t("tut1Title"),
-      type: t("typeArticle"),
-      duration: t("tut1Duration"),
-      desc: t("tut1Desc")
-    },
-    {
-      id: 2,
-      title: t("tut2Title"),
-      type: t("typeArticle"),
-      duration: t("tut2Duration"),
-      desc: t("tut2Desc")
-    },
-    {
-      id: 3,
-      title: t("tut3Title"),
-      type: t("typeArticle"),
-      duration: t("tut3Duration"),
-      desc: t("tut3Desc")
-    }
-  ];
+
+  // The three original tutorials are translated. The help articles are
+  // English-only, so (like the FAQ's extra answers) they are listed only on
+  // the English site.
+  const tutorials: TutorialIndexItem[] = LEGACY_IDS.map((id) => ({
+    href: `/tutorials/${id}`,
+    category: "setup",
+    ...legacyCard(id, t),
+  }));
+  const articles: TutorialIndexItem[] =
+    locale === "en"
+      ? TUTORIAL_ARTICLES.map((article) => ({
+          href: `/tutorials/${article.slug}`,
+          category: article.category,
+          title: article.title,
+          summary: article.summary,
+          duration: readingTime(article),
+        }))
+      : [];
+
+  const items = [...tutorials, ...articles];
+  const categories = TUTORIAL_CATEGORIES.filter((c) => items.some((i) => i.category === c.id));
 
   return (
-    <main className="main-content" style={{ maxWidth: '1000px', margin: '0 auto', padding: '6rem 2rem' }}>
-      <Image
-        src="/brand/trading-desk-16x9.jpg"
-        alt=""
-        width={1344}
-        height={768}
-        className="page-banner"
-        priority
+    <main className="main-content ca-shell">
+      <TutorialsBrowser
+        title={t("platformTutorials")}
+        subtitle={t("platformTutorialsSubtitle")}
+        readLabel={t("readArticle")}
+        categories={categories}
+        items={items}
       />
-      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{t("platformTutorials")}</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>{t("platformTutorialsSubtitle")}</p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-        {tutorials.map((tut) => (
-          <div key={tut.id} className="feature-card" style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span className="badge" style={{ position: 'relative', top: '0', left: '0', transform: 'none' }}>
-                {tut.type}
-              </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{tut.duration}</span>
-            </div>
-            <h3 style={{ marginBottom: '1rem' }}>{tut.title}</h3>
-            <p style={{ color: 'var(--text-secondary)', flexGrow: '1', marginBottom: '2rem' }}>{tut.desc}</p>
-            <a
-              href={locale === "en" ? `/tutorials/${tut.id}` : `/${locale}/tutorials/${tut.id}`}
-              className="btn-secondary"
-              style={{ textAlign: 'center' }}
-            >
-              {t("readArticle")}
-            </a>
-          </div>
-        ))}
-      </div>
     </main>
   );
 }
