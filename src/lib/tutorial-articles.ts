@@ -120,6 +120,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
           "Ideally a VPS, so MetaTrader runs 24/5 without interruption.",
         ],
       },
+      { type: "vps" },
       { type: "h2", id: "how-quickly", text: "How quickly is my robot ready?" },
       {
         type: "p",
@@ -298,6 +299,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         type: "p",
         text: "An EA only works while MetaTrader is open and connected. A VPS keeps the terminal running 24/5 with a stable connection, which is the recommended setup. If you run GoldBot on your own computer, start it by 07:00 CET each trading day and leave it running uninterrupted until it has traded.",
       },
+      { type: "vps" },
       {
         type: "p",
         text: "The install steps are in the tutorial “Installing the EA on MetaTrader 5”.",
@@ -351,6 +353,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
           },
         ],
       },
+      { type: "vps" },
       { type: "callout", tone: "warn", title: "Trading risk", text: RISK },
     ],
     links: [{ label: "Prop firm gold EA guide", href: "/prop-firm-gold-ea" }],

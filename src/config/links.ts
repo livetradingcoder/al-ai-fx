@@ -1,0 +1,8 @@
+// Outbound links the site is paid to send people to. Keep them here so every
+// mention points at the same place and carries the same disclosure.
+
+/**
+ * Where to get a VPS to run MetaTrader on 24/5. This is a referral link, so it
+ * is always shown with a "referral link" note and rel="sponsored".
+ */
+export const VPS_REFERRAL_URL = "https://powervps.net/?from=111003";

@@ -256,6 +256,28 @@
   line-height: 1.6;
 }
 
+/* Links inside a callout (the VPS referral). */
+.ca-callout a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ca-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ca-callout a:hover {
+  color: #ffe066;
+}
+
+.ca-callout small {
+  display: block;
+  margin-top: 8px;
+  color: var(--ca-muted);
+  font-size: 0.78rem;
+}
+
 .ca-table-wrap {
   margin: 12px 0 24px;
   border: 1px solid var(--ca-hairline);
