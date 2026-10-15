@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 import { PROP_FIRM } from "@/config/links";
-import { CONTENT_PAGES } from "./content-pages";
 import { EXTRA_EN } from "./faq-content";
-import { TUTORIAL_ARTICLES } from "./tutorial-articles";
 
 test("the prop firm offer is ForRealFunding at 50% off with the GOLDBOT code", () => {
   assert.equal(PROP_FIRM.url, "https://forrealfunding.com/");
@@ -12,11 +12,12 @@ test("the prop firm offer is ForRealFunding at 50% off with the GOLDBOT code", (
   assert.equal(PROP_FIRM.discount, "50%");
 });
 
-test("the prop firm guide and help article both carry the partner offer", () => {
-  const guide = CONTENT_PAGES.find((p) => p.slug === "prop-firm-gold-ea");
-  const article = TUTORIAL_ARTICLES.find((a) => a.slug === "prop-firm");
-  assert.ok(guide?.blocks.some((b) => b.type === "propfirm"), "guide has no propfirm block");
-  assert.ok(article?.blocks.some((b) => b.type === "propfirm"), "article has no propfirm block");
+test("the prop firm callout carries the code, the checkout link and the partner disclosure", () => {
+  const callout = readFileSync(path.join(process.cwd(), "src/components/content/PropFirmCallout.tsx"), "utf8");
+  assert.ok(callout.includes("href={PROP_FIRM.checkoutUrl}") && callout.includes("href={PROP_FIRM.url}"));
+  assert.equal(callout.split('rel="sponsored noopener noreferrer"').length - 1, 2, "both links are sponsored");
+  assert.ok(callout.includes("{PROP_FIRM.code}") && callout.includes("{PROP_FIRM.discount}") && callout.includes("{PROP_FIRM.price}"));
+  assert.match(callout, /Partner offer\./);
 });
 
 test("the checkout link is the firm's own checkout for the 5k one-step challenge", () => {

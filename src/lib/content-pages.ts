@@ -11,10 +11,6 @@ export type Block =
   | { type: "list"; items: string[] }
   | { type: "steps"; items: { title: string; text: string }[] }
   | { type: "callout"; tone: "info" | "warn"; title: string; text: string }
-  /** "Need a VPS?" with the referral link (components/content/VpsCallout). Put one wherever a VPS is advised. */
-  | { type: "vps" }
-  /** "Need a prop firm account?" with the partner offer (components/content/PropFirmCallout). */
-  | { type: "propfirm" }
   | { type: "robots"; filter?: "prop-firm" }
   | { type: "table"; head: [string, string, string]; rows: [string, string, string][] };
 
@@ -89,7 +85,6 @@ export const CONTENT_PAGES: ContentPage[] = [
           "Ideally a VPS, so MetaTrader runs 24/5 without interruption.",
         ],
       },
-      { type: "vps" },
       { type: "h2", id: "get-started", text: "From checkout to a live chart" },
       {
         type: "steps",
@@ -171,8 +166,6 @@ export const CONTENT_PAGES: ContentPage[] = [
           { title: "Move to the new account when you pass", text: "You can change the registered MT5 account from your dashboard up to twice a month." },
         ],
       },
-      { type: "vps" },
-      { type: "propfirm" },
       { type: "callout", tone: "warn", title: "Trading risk", text: RISK },
     ],
     faq: [
@@ -257,7 +250,6 @@ export const CONTENT_PAGES: ContentPage[] = [
         type: "p",
         text: "An EA only works while MetaTrader is open and connected. A VPS keeps the terminal running 24/5 with a stable connection, which is the recommended setup. If you run GoldBot on your own computer, start it by 07:00 CET each trading day and leave it running uninterrupted until it has traded.",
       },
-      { type: "vps" },
       { type: "callout", tone: "warn", title: "Test before going live", text: RISK },
     ],
     faq: [

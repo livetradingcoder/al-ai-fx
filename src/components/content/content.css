@@ -271,6 +271,13 @@
   color: #ffe066;
 }
 
+/* The two partner callouts every article ends with (ArticleOffers). */
+.ca-offers {
+  margin-top: 40px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ca-hairline);
+}
+
 /* Two links side by side (the prop firm checkout and its home page). Each is a
    block of text with the icon trailing its last word, so a long label wraps
    without stranding the icon at the far edge. */

@@ -2,9 +2,8 @@ import { ExternalLink, Handshake } from "lucide-react";
 
 import { PROP_FIRM } from "@/config/links";
 
-// The one place that says where to get a prop firm account. An article adds a
-// { type: "propfirm" } block where it talks about prop firms, which renders
-// this. Styled by the ca-* rules in content.css.
+// The one place that says where to get a prop firm account. ArticleOffers puts
+// it at the end of every article. Styled by the ca-* rules in content.css.
 export default function PropFirmCallout() {
   return (
     <aside className="ca-callout is-info">

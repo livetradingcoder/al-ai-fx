@@ -54,8 +54,6 @@ export function legacyBlocks(id: LegacyId, t: Translate): TutorialBlock[] {
         heading("step4Title", "step-4"),
         paragraph("step4Desc1"),
         paragraph("step4Desc2"),
-        // Step 4 recommends a VPS; the note says where to get one (English).
-        { type: "vps" },
       ];
     case "2":
       return [

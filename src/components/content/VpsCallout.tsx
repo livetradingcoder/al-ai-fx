@@ -2,9 +2,8 @@ import { ExternalLink, Server } from "lucide-react";
 
 import { VPS_REFERRAL_URL } from "@/config/links";
 
-// The one place that says where to get a VPS. Any article that tells people to
-// run the EA on a VPS ends that section with a { type: "vps" } block, which
-// renders this. Styled by the ca-* rules in content.css.
+// The one place that says where to get a VPS. ArticleOffers puts it at the end
+// of every article. Styled by the ca-* rules in content.css.
 export default function VpsCallout() {
   return (
     <aside className="ca-callout is-info">
