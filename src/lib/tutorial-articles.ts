@@ -354,6 +354,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         ],
       },
       { type: "vps" },
+      { type: "propfirm" },
       { type: "callout", tone: "warn", title: "Trading risk", text: RISK },
     ],
     links: [{ label: "Prop firm gold EA guide", href: "/prop-firm-gold-ea" }],

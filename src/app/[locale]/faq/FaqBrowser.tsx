@@ -182,12 +182,24 @@ export default function FaqBrowser({
                             >
                               <div className="fq-answer-inner">
                                 <p>{item.a}</p>
-                                {item.link && (
-                                  <Link href={item.link.href} className="fq-answer-link">
-                                    {item.link.label}
-                                    <ArrowRight size={14} aria-hidden="true" />
-                                  </Link>
-                                )}
+                                {item.link &&
+                                  (/^https?:\/\//.test(item.link.href) ? (
+                                    // Another site: new tab, and flagged as a partner link.
+                                    <a
+                                      href={item.link.href}
+                                      className="fq-answer-link"
+                                      target="_blank"
+                                      rel="sponsored noopener noreferrer"
+                                    >
+                                      {item.link.label}
+                                      <ArrowRight size={14} aria-hidden="true" />
+                                    </a>
+                                  ) : (
+                                    <Link href={item.link.href} className="fq-answer-link">
+                                      {item.link.label}
+                                      <ArrowRight size={14} aria-hidden="true" />
+                                    </Link>
+                                  ))}
                               </div>
                             </motion.div>
                           )}

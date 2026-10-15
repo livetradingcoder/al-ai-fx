@@ -13,6 +13,8 @@ export type Block =
   | { type: "callout"; tone: "info" | "warn"; title: string; text: string }
   /** "Need a VPS?" with the referral link (components/content/VpsCallout). Put one wherever a VPS is advised. */
   | { type: "vps" }
+  /** "Need a prop firm account?" with the partner offer (components/content/PropFirmCallout). */
+  | { type: "propfirm" }
   | { type: "robots"; filter?: "prop-firm" }
   | { type: "table"; head: [string, string, string]; rows: [string, string, string][] };
 
@@ -170,6 +172,7 @@ export const CONTENT_PAGES: ContentPage[] = [
         ],
       },
       { type: "vps" },
+      { type: "propfirm" },
       { type: "callout", tone: "warn", title: "Trading risk", text: RISK },
     ],
     faq: [

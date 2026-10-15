@@ -271,6 +271,17 @@
   color: #ffe066;
 }
 
+.ca-callout code {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(252, 213, 53, 0.12);
+  color: var(--ca-primary);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.88em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .ca-callout small {
   display: block;
   margin-top: 8px;

@@ -1,4 +1,5 @@
 import type { FaqCategory, FaqItem } from "@/app/[locale]/faq/FaqBrowser";
+import { PROP_FIRM } from "@/config/links";
 
 // FAQ content shared by the FAQ page and /llms-full.txt.
 
@@ -70,6 +71,13 @@ export const EXTRA_EN: FaqItem[] = [
     category: "trading",
     q: "Does GoldBot trade on bank holidays?",
     a: "No. UK, US, DE, FR and IT holiday conditions are screened automatically so the EA stays away from thin, distorted sessions.",
+  },
+  {
+    id: "prop-firm-account",
+    category: "trading",
+    q: "Where can I get a prop firm account?",
+    a: `${PROP_FIRM.name} is our partner prop firm: create an account with ${PROP_FIRM.discount} off using the code ${PROP_FIRM.code}. Every prop firm sets its own rules on EAs, so read them before you attach a robot to one of its accounts.`,
+    link: { href: PROP_FIRM.url, label: `Visit ${PROP_FIRM.name}` },
   },
   {
     id: "guarantee",

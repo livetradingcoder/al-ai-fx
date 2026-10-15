@@ -8,6 +8,7 @@ import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import { getContentPage, type Block, type ContentPage } from "@/lib/content-pages";
 import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd, jsonLdScript } from "@/lib/seo";
+import PropFirmCallout from "./PropFirmCallout";
 import VpsCallout from "./VpsCallout";
 import "./content.css";
 
@@ -119,6 +120,8 @@ function renderBlock(block: Block, index: number, robots: Record<string, RobotCa
     }
     case "vps":
       return <VpsCallout key={index} />;
+    case "propfirm":
+      return <PropFirmCallout key={index} />;
     case "table":
       return (
         <div key={index} className="ca-table-wrap">

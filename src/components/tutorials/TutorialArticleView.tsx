@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ArrowRight, BookOpen, ChevronRight, Clock, Info, LifeBuoy, ShieldAlert } from "lucide-react";
 
+import PropFirmCallout from "@/components/content/PropFirmCallout";
 import VpsCallout from "@/components/content/VpsCallout";
 import { Link } from "@/i18n/routing";
 import type { TutorialBlock } from "@/lib/tutorial-articles";
@@ -54,6 +55,8 @@ function renderBlock(block: TutorialBlock, index: number) {
     }
     case "vps":
       return <VpsCallout key={index} />;
+    case "propfirm":
+      return <PropFirmCallout key={index} />;
     case "figure":
       return (
         <figure key={index} className="tu-figure">

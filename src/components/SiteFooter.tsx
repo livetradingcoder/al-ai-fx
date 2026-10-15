@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, ShieldAlert } from "lucide-react";
 import { CookieSettingsButton } from "@/components/marketing/ConsentBanner";
+import { PROP_FIRM } from "@/config/links";
 import { usePathname } from "@/i18n/routing";
 import { usesNewDesign } from "@/lib/redesigned-routes";
 import "./landing-footer.css";
@@ -15,7 +16,9 @@ export default function SiteFooter() {
   return usesNewDesign(pathname) ? <LandingFooter /> : <ClassicFooter />;
 }
 
-const FOOTER_COLUMNS = [
+type FooterLink = { href: string; label: string; external?: boolean };
+
+const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Product",
     links: [
@@ -31,6 +34,8 @@ const FOOTER_COLUMNS = [
       { href: "/guides", label: "Guides" },
       { href: "/gold-ea-mt5", label: "Gold EA for MT5" },
       { href: "/prop-firm-gold-ea", label: "Prop firm gold EA" },
+      // Partner offer: another site, so it opens in a new tab and is flagged.
+      { href: PROP_FIRM.url, label: `${PROP_FIRM.name} (${PROP_FIRM.discount} off)`, external: true },
       { href: "/tutorials", label: "Tutorials" },
       { href: "/faq", label: "FAQ" },
       { href: "/support", label: "Support" },
@@ -83,7 +88,13 @@ function LandingFooter() {
                 <ul>
                   {column.links.map((link) => (
                     <li key={link.href}>
-                      <Link href={link.href}>{link.label}</Link>
+                      {link.external ? (
+                        <a href={link.href} target="_blank" rel="sponsored noopener noreferrer">
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href}>{link.label}</Link>
+                      )}
                     </li>
                   ))}
                   {column.title === "Legal" && (

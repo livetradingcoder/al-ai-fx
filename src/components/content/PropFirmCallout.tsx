@@ -1,0 +1,29 @@
+import { ExternalLink, Handshake } from "lucide-react";
+
+import { PROP_FIRM } from "@/config/links";
+
+// The one place that says where to get a prop firm account. An article adds a
+// { type: "propfirm" } block where it talks about prop firms, which renders
+// this. Styled by the ca-* rules in content.css.
+export default function PropFirmCallout() {
+  return (
+    <aside className="ca-callout is-info">
+      <Handshake size={18} aria-hidden="true" />
+      <div>
+        <strong>Need a prop firm account?</strong>
+        <p>
+          {PROP_FIRM.name}, our partner firm, takes {PROP_FIRM.discount} off a new account with the code{" "}
+          <code>{PROP_FIRM.code}</code>.{" "}
+          <a href={PROP_FIRM.url} target="_blank" rel="sponsored noopener noreferrer">
+            Visit {PROP_FIRM.name}
+            <ExternalLink size={13} aria-hidden="true" />
+          </a>
+        </p>
+        <small>
+          Partner offer. Every prop firm sets its own rules on EAs, so read them before you attach a robot to
+          one of its accounts.
+        </small>
+      </div>
+    </aside>
+  );
+}
