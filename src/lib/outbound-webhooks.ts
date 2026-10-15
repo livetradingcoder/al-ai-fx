@@ -131,7 +131,8 @@ export type SaleEventData = {
   refCode: string | null;
 };
 export type SignupEventData = { userId: string; email: string; name: string | null; source: "purchase" | "trial" };
-export type TrialEventData = { userId: string; email: string; robotSlug: string; robotName: string };
+/** `newAccount`: this trial also created the account, so it is one event, not a signup followed by a trial. */
+export type TrialEventData = { userId: string; email: string; robotSlug: string; robotName: string; newAccount?: boolean };
 
 export type EventData =
   | { type: "sale.completed"; data: SaleEventData }
@@ -194,7 +195,7 @@ export function buildEventBody(event: EventData, id: string = randomUUID(), now:
     }
     case "trial.started": {
       const d = event.data;
-      title = `🧪 Free trial — ${d.robotName}`;
+      title = d.newAccount ? `🆕 New signup · 🧪 free trial — ${d.robotName}` : `🧪 Free trial — ${d.robotName}`;
       message = [title, d.email].join("\n");
       path = "/dashboard/admin/licences";
       break;
@@ -333,8 +334,14 @@ async function pruneOld() {
  */
 export async function emitWebhookEvent(event: EventData): Promise<void> {
   try {
+    // A trial that created the account is sent as one event. Endpoints that only
+    // asked for signups still get it, so merging the two never silences one.
+    const alsoSignup = event.type === "trial.started" && event.data.newAccount === true;
     const endpoints = await prisma.outboundWebhook.findMany({
-      where: { enabled: true, events: { has: event.type } },
+      where: {
+        enabled: true,
+        OR: [{ events: { has: event.type } }, ...(alsoSignup ? [{ events: { has: "user.signup" } }] : [])],
+      },
     });
     if (endpoints.length === 0) return;
     const body = buildEventBody(event);

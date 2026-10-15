@@ -133,16 +133,17 @@ export async function provisionSubscription(
   // purchase is safely recorded, in order, without holding up the caller. A
   // purchase that failed part-way (unknown robot, duplicate) sends none.
   const events: EventData[] = [];
-  if (userCreated) {
-    events.push({
-      type: "user.signup",
-      data: { userId: user.id, email, name: user.name, source: tier === "FREE_TRIAL" ? "trial" : "purchase" },
-    });
-  }
   if (tier === "FREE_TRIAL") {
+    // One event for a trial that also created the account: a signup followed
+    // by a trial is two chat messages about one person.
     events.push({
       type: "trial.started",
-      data: { userId: user.id, email, robotSlug: robot.slug, robotName: robot.name },
+      data: { userId: user.id, email, robotSlug: robot.slug, robotName: robot.name, newAccount: userCreated },
+    });
+  } else if (userCreated) {
+    events.push({
+      type: "user.signup",
+      data: { userId: user.id, email, name: user.name, source: "purchase" },
     });
   }
 

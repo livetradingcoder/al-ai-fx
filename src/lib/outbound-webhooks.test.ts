@@ -120,6 +120,12 @@ test("buildEventBody: signup, trial and test messages", () => {
     buildEventBody({ type: "trial.started", data: { userId: "u", email: "a@b.co", robotSlug: "r", robotName: "R" } }).message,
     "🧪 Free trial — R\na@b.co",
   );
+  const both = buildEventBody({
+    type: "trial.started",
+    data: { userId: "u", email: "a@b.co", robotSlug: "r", robotName: "R", newAccount: true },
+  });
+  assert.equal(both.message, "🆕 New signup · 🧪 free trial — R\na@b.co", "a trial that made the account is one message");
+  assert.equal(both.path, "/dashboard/admin/licences");
   const test_ = buildEventBody({ type: "webhook.test", data: { webhookName: "WhatsApp" } });
   assert.equal(test_.message, '✅ Test event\nWebhook "WhatsApp" is connected to AL-AI-FX.');
   assert.equal(test_.event, "webhook.test");
