@@ -6,6 +6,7 @@
 import { buildUnsubscribeUrl } from "@/lib/marketing-unsubscribe";
 import { buildMt5ReminderContent } from "@/lib/mt5-reminder-email";
 import type { ReminderKind } from "@/lib/mt5-reminder-schedule";
+import { buildResultsRequestContent } from "@/lib/results-request-email";
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
 const MAILGUN_API_BASE = "https://api.mailgun.net/v3";
@@ -99,6 +100,9 @@ function renderEmailTemplate(input: {
   // unsubscribe footer, kept visually separate from detailLines.
   footerHtml?: string;
   footerText?: string;
+  // The "if the button does not work, copy this URL" line. Off for a mailto:
+  // button, where there is nothing to paste into a browser.
+  showUrlFallback?: boolean;
 }) {
   const detailsHtml = input.detailLines
     .map(
@@ -106,6 +110,14 @@ function renderEmailTemplate(input: {
         `<p style="margin:0 0 10px 0;color:#d8d1c3;font-size:15px;line-height:1.7;">${line}</p>`,
     )
     .join("");
+
+  const urlFallback =
+    input.showUrlFallback === false
+      ? ""
+      : `<p style="margin:24px 0 0;color:#9e9079;font-size:13px;line-height:1.7;">
+          If the button does not work, copy and paste this URL into your browser:<br />
+          <span style="color:#fff7e3;word-break:break-all;">${input.buttonUrl}</span>
+        </p>`;
 
   const footerSection = input.footerHtml
     ? `<p style="margin:20px 0 0;color:#9e9079;font-size:12px;line-height:1.6;">${input.footerHtml}</p>`
@@ -123,10 +135,7 @@ function renderEmailTemplate(input: {
             ${input.buttonLabel}
           </a>
         </div>
-        <p style="margin:24px 0 0;color:#9e9079;font-size:13px;line-height:1.7;">
-          If the button does not work, copy and paste this URL into your browser:<br />
-          <span style="color:#fff7e3;word-break:break-all;">${input.buttonUrl}</span>
-        </p>
+        ${urlFallback}
         ${footerSection}
       </div>
     </div>
@@ -619,5 +628,71 @@ export async function sendMt5ReminderEmail(input: Mt5ReminderEmailInput): Promis
     headers,
   });
   console.log(`[Mail] MT5 reminder ${input.kind} #${input.stage} sent`);
+  return true;
+}
+
+export type ResultsRequestEmailInput = {
+  email: string;
+  robotName: string;
+  /** Whole days since the first build was ready. */
+  daysWithRobot: number;
+  /** Stops the optional emails; also offered to mail clients as one-click unsubscribe. */
+  optOutUrl: string;
+};
+
+/** The "how is it going" request as it will be sent, without sending it. */
+export function renderResultsRequestEmail(input: ResultsRequestEmailInput) {
+  const content = buildResultsRequestContent({
+    robotName: input.robotName,
+    daysWithRobot: input.daysWithRobot,
+    replyAddress: sender.email,
+  });
+  const why = "You are getting this because you have an active GoldBot licence.";
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: content.buttonLabel,
+    buttonUrl: content.buttonUrl,
+    showUrlFallback: false,
+    eyebrow: content.eyebrow,
+    intro: content.intro,
+    title: content.title,
+    detailLines: content.detailLines,
+    footerHtml: `${why} <a href="${input.optOutUrl}" style="color:#9e9079;">Stop emails like this</a>.`,
+    footerText: `${why} Stop emails like this: ${input.optOutUrl}`,
+  });
+
+  return {
+    subject: content.subject,
+    html,
+    text,
+    headers: {
+      "List-Unsubscribe": `<${input.optOutUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+  };
+}
+
+/**
+ * "How is it going, share your results". Reports whether anything was sent
+ * (false when mail isn't configured, so the caller doesn't record a send that
+ * never left); throws if the provider refuses the message.
+ */
+export async function sendResultsRequestEmail(input: ResultsRequestEmailInput): Promise<boolean> {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping results request email.");
+    return false;
+  }
+
+  const { subject, html, text, headers } = renderResultsRequestEmail(input);
+  await client.send({
+    from: sender,
+    to: [{ email: input.email }],
+    subject,
+    html,
+    text,
+    category: "ResultsRequest",
+    headers,
+  });
+  console.log("[Mail] Results request sent");
   return true;
 }

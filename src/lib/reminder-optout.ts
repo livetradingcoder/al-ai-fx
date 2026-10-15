@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
 
-// The unsubscribe link in a setup-reminder email. Stateless like
-// marketing-unsubscribe.ts - a NEXTAUTH_SECRET-signed JWT, no token table - but
-// keyed to a user rather than an email address, and with its own purpose so a
-// newsletter unsubscribe token can't be replayed here or the other way round.
-// Long expiry because the link in an old email must still work.
+// The unsubscribe link in our optional emails (setup reminders, the results
+// request). Stateless like marketing-unsubscribe.ts - a NEXTAUTH_SECRET-signed
+// JWT, no token table - but keyed to a user rather than an email address, and
+// with its own purpose so a newsletter unsubscribe token can't be replayed here
+// or the other way round. Long expiry because the link in an old email must
+// still work.
 const TOKEN_PURPOSE = "mt5-reminder-optout";
 const TOKEN_EXPIRY: jwt.SignOptions["expiresIn"] = "5y";
 

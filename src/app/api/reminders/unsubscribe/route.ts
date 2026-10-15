@@ -4,7 +4,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyReminderOptOutToken } from "@/lib/reminder-optout";
 
-// The unsubscribe link in a setup-reminder email.
+// The unsubscribe link in our optional emails (the setup reminders and the
+// "how is it going" request). One opt-out covers them all.
 //
 // GET only shows a confirmation button. Mail scanners and link previewers open
 // every link in a message, so a GET that opted people out would quietly
@@ -48,10 +49,10 @@ export async function GET(req: Request) {
 
   const action = `/api/reminders/unsubscribe?token=${encodeURIComponent(token)}`;
   return page(
-    "Stop setup reminders?",
-    `We will stop emailing you about linking your MT5 account. Emails about your purchases, downloads and account are not affected.
+    "Stop these emails?",
+    `We will stop sending you optional emails like this one, such as setup reminders and requests for your results. Emails about your purchases, downloads and account are not affected.
     <form method="post" action="${action}" style="margin-top:24px;">
-      <button type="submit" style="background:#f4dca2;color:#1a130c;border:0;padding:14px 22px;border-radius:999px;font-weight:700;font-size:15px;cursor:pointer;">Stop these reminders</button>
+      <button type="submit" style="background:#f4dca2;color:#1a130c;border:0;padding:14px 22px;border-radius:999px;font-weight:700;font-size:15px;cursor:pointer;">Stop these emails</button>
     </form>`,
     200,
   );
@@ -72,5 +73,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return page("You are unsubscribed", "You will not receive further setup reminders. Emails about your purchases, downloads and account will still reach you.", 200);
+  return page("You are unsubscribed", "You will not receive further optional emails like these. Emails about your purchases, downloads and account will still reach you.", 200);
 }

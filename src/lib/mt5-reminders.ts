@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 
+import { sendClaimed } from "@/lib/email-campaign";
 import { prisma } from "@/lib/prisma";
 import {
   DAY_MS,
@@ -61,7 +62,6 @@ export type ReminderRunResult = {
 
 const CANDIDATE_LIMIT = 500;
 const EARLIEST_HOURS = Math.min(...Object.values(REMINDER_HOURS).map((hours) => hours[0]));
-const ABORT_AFTER_CONSECUTIVE_FAILURES = 3;
 
 export async function runMt5Reminders(options: {
   deliver: ReminderDelivery;
@@ -101,41 +101,13 @@ export async function runMt5Reminders(options: {
     return result;
   }
 
-  let consecutiveFailures = 0;
-  for (const plan of batch) {
-    if (consecutiveFailures >= ABORT_AFTER_CONSECUTIVE_FAILURES) {
-      result.aborted = true;
-      break;
-    }
-
-    if (!(await claim(plan, now))) {
-      result.skipped += 1;
-      continue;
-    }
-    result.attempted += 1;
-
-    try {
-      const delivered = await options.deliver(plan);
-      if (!delivered) {
-        await release(plan, false);
-        result.skipped += 1;
-        continue;
-      }
-      result.sent += 1;
-      consecutiveFailures = 0;
-    } catch (err) {
-      const recipientProblem = isRecipientProblem(err);
-      await release(plan, recipientProblem);
-      result.failed += 1;
-      // A bad address is that address's problem; anything else (outage, bad
-      // key, rate limit) is likely to hit the next one too.
-      consecutiveFailures = recipientProblem ? 0 : consecutiveFailures + 1;
-      console.error(
-        `[Reminders] send failed sub=${plan.candidate.subscriptionId} stage=${plan.stage}:`,
-        err instanceof Error ? err.message : err,
-      );
-    }
-  }
+  const tally = await sendClaimed(batch, {
+    claim: (plan) => claim(plan, now),
+    release,
+    deliver: options.deliver,
+    describe: (plan) => `reminder sub=${plan.candidate.subscriptionId} stage=${plan.stage}`,
+  });
+  Object.assign(result, tally);
 
   console.log(
     `[Reminders] considered=${result.considered} due=${result.due} attempted=${result.attempted} ` +
@@ -260,16 +232,4 @@ async function release(plan: PlannedReminder, countFailure: boolean): Promise<vo
     // The reminder stays marked as sent: lost, not duplicated.
     console.error(`[Reminders] could not release sub=${subscriptionId}:`, err);
   }
-}
-
-/**
- * True when the provider refused this one recipient (a 4xx that is about the
- * message, not about us). Rate limits, auth and billing problems, outages and
- * network errors are not the recipient's fault and must not use up their tries.
- */
-function isRecipientProblem(err: unknown): boolean {
-  const status = (err as { status?: unknown } | null)?.status;
-  if (typeof status !== "number") return false;
-  if (status < 400 || status >= 500) return false;
-  return ![401, 402, 403, 408, 429].includes(status);
 }

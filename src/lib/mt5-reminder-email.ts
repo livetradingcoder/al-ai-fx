@@ -41,10 +41,16 @@ export function formatUtc(date: Date): string {
   }).format(date)} UTC`;
 }
 
+/**
+ * The name is typed by an admin and ends up inside HTML; none of these
+ * characters belong in a robot's name.
+ */
+export function cleanRobotName(name: string): string {
+  return name.replace(/[<>&"']/g, "").replace(/\s+/g, " ").trim() || "GoldBot";
+}
+
 export function buildMt5ReminderContent(input: Mt5ReminderContentInput): Mt5ReminderContent {
-  // The name is typed by an admin and ends up inside HTML; none of these
-  // characters belong in a robot's name.
-  const robot = input.robotName.replace(/[<>&"']/g, "").replace(/\s+/g, " ").trim() || "GoldBot";
+  const robot = cleanRobotName(input.robotName);
   const expiry = input.expiresAt ? formatUtc(input.expiresAt) : null;
   const access = expiry ? `Your access runs until ${expiry}.` : "Your access does not expire.";
 

@@ -25,6 +25,7 @@ model User {
   affiliate           Affiliate?
   referredBy          Referral?
   reminderOptOut ReminderOptOut?
+  resultsRequest ResultsRequest?
 }
 
 /// One row per sign-in. Auth uses JWTs (stateless), so without this table a
@@ -523,10 +524,25 @@ model Mt5Reminder {
   lastSentAt     DateTime?
 }
 
-/// A person who used the unsubscribe link in a reminder email. Only the
-/// setup reminders stop - account, billing and delivery emails are unaffected.
+/// A person who used the unsubscribe link in one of our optional emails (the
+/// setup reminders, the "how is it going" request). Those stop; account,
+/// billing and delivery emails are unaffected.
 model ReminderOptOut {
   userId    String   @id
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+/// The one "how is it going, share your results" email a person gets (see
+/// src/lib/results-requests.ts). sentAt set means it went out; sentAt null
+/// means an attempt was handed back after a failed send, and `failures` counts
+/// the sends that bounced, after which we stop trying.
+model ResultsRequest {
+  userId         String    @id
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The licence that qualified them.
+  subscriptionId String
+  sentAt         DateTime?
+  failures       Int       @default(0)
+  createdAt      DateTime  @default(now())
 }
