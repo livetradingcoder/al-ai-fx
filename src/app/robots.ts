@@ -42,7 +42,10 @@ const AI_CRAWLERS = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: DISALLOW },
+      // /api/og/ is the one corner of /api/ that must stay open: it serves the
+      // share pictures, and Facebook, X, LinkedIn and Slack read robots.txt
+      // before fetching them. The longer Allow wins over Disallow: /api/.
+      { userAgent: "*", allow: ["/", "/api/og/"], disallow: DISALLOW },
       { userAgent: AI_CRAWLERS, allow: ["/", "/llms.txt", "/llms-full.txt"], disallow: DISALLOW },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

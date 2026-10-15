@@ -1,13 +1,22 @@
 import type { Metadata, MetadataRoute } from "next";
 
 import { routing } from "@/i18n/routing";
+import { isOgPageKey, ogImagePath, type OgSpec } from "@/lib/og-spec";
 
 export const SITE_URL = "https://www.al-ai-fx.xyz";
 const SITE_NAME = "GoldBot by AL-ai-FX";
 // The hero, not a stock robot render: the share card should look like the page
 // it links to. New filename rather than overwriting the old one, because
 // WhatsApp/Facebook cache previews by image URL and would keep the robot.
+// This is the home page's card and the fallback; every other page has one drawn
+// for it by /api/og (see lib/og-spec.ts and ogImageUrl below).
 const OG_IMAGE_URL = `${SITE_URL}/og/goldbot-share-1200x630.jpg`;
+const OG_CARD_PREFIX = `${SITE_URL}/api/og/`;
+
+/** Absolute address of the share card drawn for a page, e.g. a robot, the catalog, a guide. */
+export function ogImageUrl(spec: OgSpec): string {
+  return `${SITE_URL}${ogImagePath(spec)}`;
+}
 // Bump when public page content changes materially; search engines use it to
 // decide what to recrawl.
 const LAST_MODIFIED = new Date("2026-09-29T00:00:00.000Z");
@@ -417,6 +426,8 @@ export function getPageMetadata(page: PublicPageKey, locale: string): Metadata {
   const pathname = getPathname(page);
   const canonical = buildLocalizedUrl(locale, pathname);
   const shouldIndex = page !== "checkout";
+  // Home keeps the hero picture; the other pages that have a card get their own.
+  const shareImage = page !== "home" && isOgPageKey(page) ? ogImageUrl({ type: "page", key: page }) : OG_IMAGE_URL;
 
   return {
     title,
@@ -433,7 +444,7 @@ export function getPageMetadata(page: PublicPageKey, locale: string): Metadata {
       type: page === "home" ? "website" : "article",
       images: [
         {
-          url: OG_IMAGE_URL,
+          url: shareImage,
           width: 1200,
           height: 630,
           alt: SITE_NAME,
@@ -444,7 +455,7 @@ export function getPageMetadata(page: PublicPageKey, locale: string): Metadata {
       card: "summary_large_image",
       title,
       description,
-      images: [OG_IMAGE_URL],
+      images: [shareImage],
     },
     robots: {
       index: shouldIndex,
@@ -513,10 +524,12 @@ export function buildMetadata({
 }): Metadata {
   const canonical = buildLocalizedUrl(englishOnly ? routing.defaultLocale : locale, path);
   const imageUrl = image ? absoluteUrl(image) : OG_IMAGE_URL;
+  // Our own cards are always 1200 x 630; any other picture's size is unknown.
+  const isCard = imageUrl === OG_IMAGE_URL || imageUrl.startsWith(OG_CARD_PREFIX);
   const images = [
-    image
-      ? { url: imageUrl, alt: imageAlt ?? title }
-      : { url: imageUrl, width: 1200, height: 630, alt: SITE_NAME },
+    isCard
+      ? { url: imageUrl, width: 1200, height: 630, alt: image ? (imageAlt ?? title) : SITE_NAME }
+      : { url: imageUrl, alt: imageAlt ?? title },
   ];
 
   return {

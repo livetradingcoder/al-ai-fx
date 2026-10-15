@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
-import { breadcrumbJsonLd, buildMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildMetadata, jsonLdScript, ogImageUrl } from "@/lib/seo";
+import { CATALOG_FILTER_IDS } from "@/lib/catalog-filter";
+import { OG_CATALOG_COPY } from "@/lib/og-copy";
 import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import CatalogGrid, { type CatalogRobot } from "./CatalogGrid";
@@ -13,17 +15,36 @@ import "./catalog.css";
 // English copy — still with its own canonical and hreflang set.
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return buildMetadata({
+  // /catalog?filter=multirange opens on that tab, so a link to it should
+  // preview as that tab. Only the share card changes; the page's own title,
+  // description and canonical stay the catalog's.
+  const raw = (await searchParams).filter;
+  const wanted = (Array.isArray(raw) ? raw[0] : raw ?? "").trim().toLowerCase();
+  const filter = CATALOG_FILTER_IDS.find((id) => id === wanted) ?? "all";
+
+  const metadata = buildMetadata({
     locale,
     path: "/catalog",
     title: "MT5 gold trading robots catalog | GoldBot by AL-ai-FX",
     description:
       "Compare GoldBot's MetaTrader 5 gold robots — MultiRange and Breakout expert advisors for XAUUSD, each delivered as an account-locked build minutes after checkout. Free trial available.",
+    image: ogImageUrl({ type: "catalog", filter }),
   });
+  if (filter === "all") return metadata;
+
+  const title = `${OG_CATALOG_COPY[filter].title} | GoldBot by AL-ai-FX`;
+  const description = OG_CATALOG_COPY[filter].subtitle;
+  return {
+    ...metadata,
+    openGraph: { ...metadata.openGraph, title, description },
+    twitter: { ...metadata.twitter, title, description } as Metadata["twitter"],
+  };
 }
 
 // Robots without an artworkUrl fall back to a bundled /robots/<slug>.jpg when

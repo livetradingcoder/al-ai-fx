@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, ogImageUrl } from "@/lib/seo";
 
 // The page itself is a client component, so its metadata lives here.
 export async function generateMetadata({
@@ -14,6 +14,7 @@ export async function generateMetadata({
     title: "Lifetime & source-code licensing | GoldBot by AL-ai-FX",
     description:
       "Lifetime access, source-code licences and private deals for GoldBot MT5 gold robots — arranged directly with the AL-ai-FX team.",
+    image: ogImageUrl({ type: "page", key: "licensing" }),
   });
 }
 

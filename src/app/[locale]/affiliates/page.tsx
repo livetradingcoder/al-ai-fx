@@ -17,7 +17,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettings, getTiers } from "@/lib/affiliate";
 import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, ogImageUrl } from "@/lib/seo";
 import EarningsCalculator, { type CalcPlan } from "./EarningsCalculator";
 import AffiliateFaq from "./AffiliateFaq";
 import "./affiliates.css";
@@ -40,6 +40,7 @@ export async function generateMetadata({
     description:
       `Share one link and earn up to ${top}% of every order your referrals place — first purchase and ` +
       "every renewal. Your audience gets a discount on their first GoldBot licence.",
+    image: ogImageUrl({ type: "page", key: "affiliates" }),
   });
 }
 

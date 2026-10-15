@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
 
 import { CONTENT_PAGES, GUIDES } from "@/lib/content-pages";
-import { breadcrumbJsonLd, buildMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildMetadata, jsonLdScript, ogImageUrl } from "@/lib/seo";
 import "@/components/content/content.css";
 
 export async function generateMetadata({
@@ -18,6 +18,7 @@ export async function generateMetadata({
     title: "Gold trading EA guides for MetaTrader 5 | GoldBot",
     description:
       "Practical guides to automated gold trading on MT5: installing an EA, the session breakout strategy, hedging vs martingale, and choosing an EA for a prop firm account.",
+    image: ogImageUrl({ type: "page", key: "guides" }),
     englishOnly: true,
   });
 }

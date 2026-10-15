@@ -7,7 +7,7 @@ import { RETIRED_ROBOTS } from "@/config/pricing";
 import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG, formatUsd } from "@/lib/catalog-tiers";
 import type { PricingTier } from "@prisma/client";
-import { breadcrumbJsonLd, buildMetadata, jsonLdScript, robotProductJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, buildMetadata, jsonLdScript, ogImageUrl, robotProductJsonLd } from "@/lib/seo";
 import TrackViewContent from "@/components/marketing/TrackViewContent";
 
 // English-only page (like /catalog): copy comes from DB Robot fields, which are
@@ -39,7 +39,8 @@ export async function generateMetadata(props: {
     path: `/robots/${robot.slug}`,
     title: `${robot.name} — MT5 gold trading robot | GoldBot by AL-ai-FX`,
     description: robot.shortDescription,
-    image: robot.artworkUrl ?? (existsSync(bundledArtwork(robot.slug)) ? `/robots/${robot.slug}.jpg` : null),
+    // A card with the robot's picture, name and price, not the bare picture.
+    image: ogImageUrl({ type: "robot", slug: robot.slug }),
     imageAlt: robot.name,
   });
 }

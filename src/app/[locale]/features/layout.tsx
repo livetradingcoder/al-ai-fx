@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, ogImageUrl } from "@/lib/seo";
 
 // The page itself is a client component, so its metadata lives here.
 export async function generateMetadata({
@@ -14,6 +14,7 @@ export async function generateMetadata({
     title: "GoldBot features | Adaptive recovery, liquidity guard & account-locked MT5 builds",
     description:
       "How GoldBot trades gold on MT5: session breakouts with structured hedging, bank-holiday liquidity filters, and a private build compiled for your MT5 account in under 15 seconds.",
+    image: ogImageUrl({ type: "page", key: "features" }),
   });
 }
 

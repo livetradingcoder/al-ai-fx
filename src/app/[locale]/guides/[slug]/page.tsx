@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import ContentArticle from "@/components/content/ContentArticle";
 import { getContentPage } from "@/lib/content-pages";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, ogImageUrl } from "@/lib/seo";
 
 // Rendered per request like every other page: the root layout reads the
 // session and request headers, so pre-rendering these at build time fails at
@@ -27,6 +27,7 @@ export async function generateMetadata({
     path: page.path,
     title: page.title,
     description: page.description,
+    image: ogImageUrl({ type: "guide", slug: page.slug }),
     type: "article",
     englishOnly: true,
   });
