@@ -11,7 +11,12 @@ import { FLAGSHIP_ROBOT, PRICING_TIERS } from "@/config/pricing";
 import type { Block } from "@/lib/content-pages";
 
 /** A content block, plus the screenshots the older step-by-step tutorials use. */
-export type TutorialBlock = Block | { type: "figure"; src: string; alt: string; caption: string };
+export type TutorialBlock =
+  | Block
+  | { type: "figure"; src: string; alt: string; caption: string }
+  // A self-hosted clip under /public (so the CSP's default-src 'self' covers it).
+  // The page leaves the block out until the file exists.
+  | { type: "video"; src: string; caption: string };
 
 export type TutorialCategoryId = "start" | "setup" | "billing" | "trading";
 
@@ -82,6 +87,56 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
     ],
     links: [{ label: "Browse the robots", href: "/catalog" }],
     related: ["pricing", "before-you-buy"],
+  },
+  {
+    slug: "link-mt5-account",
+    category: "setup",
+    title: "How do I link my MT5 account?",
+    summary: "A short video and the steps to link your MT5 account and get your GoldBot build.",
+    blocks: [
+      {
+        type: "p",
+        text: "Your GoldBot build is made for one MT5 account, so the first thing to do after signing up is to tell us which account it is. It takes about a minute.",
+      },
+      {
+        type: "video",
+        src: "/tutorials/link-mt5.mp4",
+        caption: "Linking your MT5 account, start to finish.",
+      },
+      { type: "h2", id: "steps", text: "The steps" },
+      {
+        type: "steps",
+        items: [
+          {
+            title: "Find your MT5 account number",
+            text: "In MetaTrader 5, open the Navigator panel and expand Accounts. The number in front of your broker's name is your account number.",
+          },
+          {
+            title: "Open the setup page",
+            text: "Sign in to your dashboard and open Guided setup. The sign-in link in your email takes you there.",
+          },
+          {
+            title: "Enter the number and save",
+            text: "Type the account number and choose Save & Lock. The build is made for that account, so check the number before you save.",
+          },
+          {
+            title: "Download your build",
+            text: "It is ready in under 15 seconds. Download the .ex5 file when the dashboard says it is done.",
+          },
+          {
+            title: "Install it in MT5",
+            text: "Copy the file into MQL5/Experts, refresh the Navigator, and drag the robot onto a gold chart.",
+          },
+        ],
+      },
+      { type: "h2", id: "stuck", text: "Stuck on a step?" },
+      {
+        type: "p",
+        text: "Reply to any email from us and tell us which step you are on and what you see. We will walk you through it. A free trial can only be linked to an MT5 account that has never been used with a GoldBot licence before.",
+      },
+    ],
+    links: [{ label: "Open guided setup", href: "/dashboard/onboarding" }],
+    related: ["free-trial", "before-you-buy"],
   },
   {
     slug: "what-is-goldbot",

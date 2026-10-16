@@ -10,6 +10,7 @@ import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
 import ConsentBanner from "@/components/marketing/ConsentBanner";
+import GiveawayPopup from "@/components/marketing/GiveawayPopup";
 import SiteFooter from "@/components/SiteFooter";
 import GtmHeadScript from "@/components/marketing/GtmHeadScript";
 import GtmNoScript from "@/components/marketing/GtmNoScript";
@@ -83,6 +84,7 @@ export default async function RootLayout({
           {children}
           <SiteFooter />
           <ConsentBanner />
+          <GiveawayPopup />
           </NextIntlClientProvider>
         </AuthSessionProvider>
       </body>

@@ -58,6 +58,8 @@ export default async function AdminDashboard() {
     commissionsDue,
     latestCustomers,
     latestOrders,
+    proofsWaiting,
+    sharesWaiting,
   ] = await Promise.all([
     prisma.user.count({ where: customerWhere }),
     prisma.user.count({ where: { ...customerWhere, createdAt: { gte: weekAgo } } }),
@@ -102,6 +104,9 @@ export default async function AdminDashboard() {
       take: 8,
       include: { user: { select: { email: true } } },
     }),
+    // Counted defensively: these tables arrive with a migration, and the admin home must load without them.
+    prisma.resultProof.count({ where: { status: "PENDING" } }).catch(() => 0),
+    prisma.shareProof.count({ where: { status: "PENDING" } }).catch(() => 0),
   ]);
 
   const totalRevenue = revenue._sum.amount ?? 0;
@@ -139,6 +144,14 @@ export default async function AdminDashboard() {
       tone: "soon",
       text: `${plural(requested, "affiliate payout request")} waiting — $${money(payoutRequests._sum.amount ?? 0)} to send.`,
       href: "/dashboard/admin/affiliates",
+    });
+  }
+  if (proofsWaiting + sharesWaiting > 0) {
+    attention.push({
+      key: "proofs",
+      tone: "soon",
+      text: `${plural(proofsWaiting, "results screenshot")} and ${plural(sharesWaiting, "shared post")} waiting for review.`,
+      href: "/dashboard/admin/proofs",
     });
   }
   if (commissionsDue > 0) {

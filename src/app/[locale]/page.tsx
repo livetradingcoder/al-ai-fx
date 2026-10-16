@@ -323,6 +323,10 @@ export default function Home() {
           Want the full breakdown — features, setup, and how GoldBot compares?{" "}
           <Link href="/features">See how GoldBot works</Link>
         </p>
+        <p className="landing-breakdown-link">
+          Traders send in their own MT5 results, checked by our team before they appear.{" "}
+          <Link href="/results">See results shared by traders</Link>
+        </p>
       </div>
 
       <section id="pricing" className="landing-section pc-section">

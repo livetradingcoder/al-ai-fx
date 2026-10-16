@@ -19,7 +19,10 @@ export type NavIcon =
   | "orders"
   | "robots"
   | "coupons"
-  | "webhooks";
+  | "webhooks"
+  | "rewards"
+  | "proofs"
+  | "giveaways";
 
 export type NavItem = { href: string; icon: NavIcon; label: string };
 export type NavGroup = { label: string; items: NavItem[] };
@@ -33,6 +36,7 @@ export const ACCOUNT_NAV: NavGroup[] = [
       { href: "/dashboard/onboarding", icon: "setup", label: "guidedSetup" },
       { href: "/dashboard/downloads", icon: "downloads", label: "downloads" },
       { href: "/dashboard/affiliate", icon: "affiliate", label: "affiliate" },
+      { href: "/dashboard/rewards", icon: "rewards", label: "rewards" },
     ],
   },
   {
@@ -56,6 +60,8 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/dashboard/admin/robots", icon: "robots", label: "manageRobots" },
       { href: "/dashboard/admin/affiliates", icon: "affiliate", label: "manageAffiliates" },
       { href: "/dashboard/admin/coupons", icon: "coupons", label: "manageCoupons" },
+      { href: "/dashboard/admin/proofs", icon: "proofs", label: "manageProofs" },
+      { href: "/dashboard/admin/giveaways", icon: "giveaways", label: "manageGiveaways" },
       { href: "/dashboard/admin/webhooks", icon: "webhooks", label: "manageWebhooks" },
     ],
   },

@@ -68,6 +68,9 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
   const urlTier = (searchParams?.get("tier") || "1-month") as TierId;
   const urlRobot = searchParams?.get("robot") || "";
   const robotNameParam = searchParams?.get("name") || "your robot";
+  // A reward link carries ?coupon=CODE. It only fills the box and opens it: the
+  // code belongs to one email address, so it is applied once they have typed theirs.
+  const urlCoupon = (searchParams?.get("coupon") || "").trim().toUpperCase().slice(0, 40);
 
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,7 +79,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
 
   // Coupon state. The preview here is cosmetic — create-session re-validates
   // and re-prices, so nothing typed in this box can change what is charged.
-  const [couponCode, setCouponCode] = useState("");
+  const [couponCode, setCouponCode] = useState(urlCoupon);
   const [couponChecking, setCouponChecking] = useState(false);
   const [coupon, setCoupon] = useState<{
     code: string;
@@ -85,7 +88,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
     free: boolean;
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
-  const [showCoupon, setShowCoupon] = useState(false);
+  const [showCoupon, setShowCoupon] = useState(urlCoupon !== "");
 
   // Robot + plan selection live in checkout so buyers can switch here.
   // Display prices come from the DB (per robot); the charge amount stays

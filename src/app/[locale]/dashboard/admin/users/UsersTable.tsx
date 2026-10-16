@@ -18,6 +18,7 @@ interface Subscription {
   tier: string;
   status: string;
   mt5AccountNumber: string | null;
+  expiresAt: Date | null;
 }
 
 interface UserData {
@@ -36,7 +37,22 @@ type Notice = { kind: "ok" | "error"; text: string };
 const activeCount = (u: UserData) =>
   u.isDeleted ? 0 : u.subscriptions.filter((s) => s.status === "ACTIVE").length;
 
+const PAID_TIERS = ["TEN_DAYS", "ONE_MONTH", "SIX_MONTHS", "ONE_YEAR", "LIFETIME", "LIFETIME_SOURCE"];
+const hasTrial = (u: UserData) => !u.isDeleted && u.subscriptions.some((s) => s.tier === "FREE_TRIAL");
+const isLinked = (u: UserData) =>
+  u.subscriptions.some((s) => !!s.mt5AccountNumber?.trim() && !PAID_TIERS.includes(s.tier));
+const trialEnded = (u: UserData) => {
+  const ends = u.subscriptions
+    .filter((s) => s.tier === "FREE_TRIAL" && s.expiresAt)
+    .map((s) => +new Date(s.expiresAt as Date));
+  return ends.length > 0 && Math.max(...ends) <= Date.now();
+};
+
 const FILTERS: FilterDef<UserData>[] = [
+  { key: "trial-linked", label: "Trial: MT5 linked", test: (u) => hasTrial(u) && isLinked(u) },
+  { key: "trial-not-linked", label: "Trial: MT5 not linked", test: (u) => hasTrial(u) && !isLinked(u) },
+  { key: "trial-running", label: "Trial running", test: (u) => hasTrial(u) && !trialEnded(u) },
+  { key: "trial-ended", label: "Trial ended", test: (u) => hasTrial(u) && trialEnded(u) },
   { key: "customers", label: "With a licence", test: (u) => activeCount(u) > 0 },
   { key: "none", label: "No licence", test: (u) => activeCount(u) === 0 && !u.isDeleted },
   { key: "admins", label: "Admins", test: (u) => u.role === "ADMIN" },

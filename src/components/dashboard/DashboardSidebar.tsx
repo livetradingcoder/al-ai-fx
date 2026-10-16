@@ -98,6 +98,21 @@ const Icon = {
       <path d="M14.6 9.4l3-3M6.4 17.6l3-3M14.6 14.6l3 3M6.4 6.4l3 3" />
     </svg>
   ),
+  rewards: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z" />
+    </svg>
+  ),
+  proofs: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2.5" /><circle cx="9" cy="10" r="1.8" /><path d="M21 16l-5-4-8 8" />
+    </svg>
+  ),
+  giveaways: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7M12 8C10 8 7.5 7 7.5 5.2 7.5 3.9 8.7 3.2 9.8 3.8 11.2 4.6 12 8 12 8zM12 8c2 0 4.5-1 4.5-2.8 0-1.3-1.2-2-2.3-1.4C12.8 4.6 12 8 12 8z" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h11" />
