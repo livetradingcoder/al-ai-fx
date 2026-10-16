@@ -6,19 +6,17 @@ to preview them all). Rebuild them with `node marketing-assets/email-campaigns/b
 
 ## Before the first send (all required)
 
-1. **Put your business postal address** into the `address` tag in `build.mjs` (or in
-   Sequenzy's footer). Marketing email needs one (CAN-SPAM, GDPR, most countries).
+1. **Add your postal address** in Sequenzy when you set up each marketing email (the templates leave it out on purpose).
 2. **Check the merge-tag spelling.** Sequenzy's public docs do not show its merge-tag
    syntax. The templates use `{{first_name}}`, `{{setup_link}}`, `{{tutorial_link}}`,
-   `{{portal_link}}`, `{{coupon_code}}`, `{{unsubscribe_url}}`, `{{company_address}}`.
+   `{{portal_link}}`, `{{coupon_code}}`, `{{unsubscribe_url}}`.
    If Sequenzy spells them differently, edit the `TAGS` block at the top of `build.mjs`
    and run it again: every email updates. Send yourself one test first.
 3. **Map the CSV columns to Sequenzy custom attributes** when you import:
    `first_name`, `setup_link`, `tutorial_link`, `portal_link`, `country`, `days_left`,
    `mt5_linked`, `promo_eligible`.
-4. **Upload the video** to `public/tutorials/link-mt5.mp4` (under 20 MB, H.264) and deploy.
-   Until it exists the tutorial page simply hides the player. Email 01's button opens that
-   tutorial after a one-click sign-in.
+4. **The setup video** is an unlisted YouTube video embedded on the tutorial page
+   `/tutorials/link-mt5-account`. Email 01's button opens that page after a one-click sign-in.
 5. **Send from your own domain** with SPF, DKIM and DMARC set up in Sequenzy, and run the
    first send through mail-tester.com (same as you did for news.forrealfunding.com).
 
@@ -62,8 +60,9 @@ export is the safe way to avoid emailing someone about a step they already did.
 
 - **`promo_eligible = no` people never get 04a, 05, or any discount/giveaway message.**
   They are in a country where promotions are not offered. 04b has no reward. Admin →
-  Users shows the country; the setting is `PROMO_BLOCKED_COUNTRIES` in Coolify (default
-  covers Pakistan, India, Bangladesh and the Gulf/North Africa markets; empty turns it off).
+  Users shows the country. The country gate is currently **off** (nothing is blocked), so
+  `promo_eligible` is "yes" for everyone except people browsing the Arabic, Hindi, Bengali or
+  Urdu site. To block countries again set `PROMO_BLOCKED_COUNTRIES` (for example `PK,IN`) in Coolify.
 - **Never add earnings figures or promises** to a template. Every template that talks about
   results carries the risk line. Keep it.
 - **Social posts must disclose the reward.** The caption in the results portal includes

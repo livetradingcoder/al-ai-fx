@@ -27,7 +27,6 @@ const TAGS = {
   portalLink: "{{portal_link}}", // their private results link (CSV column portal_link)
   couponCode: "{{coupon_code}}", // only for the backup "code delivered" email
   unsubscribe: "{{unsubscribe_url}}", // Sequenzy's own unsubscribe link
-  address: "{{company_address}}", // your business postal address: required in marketing email
 };
 
 const C = {
@@ -136,8 +135,7 @@ function render(mail) {
         </tr>
         <tr>
           <td style="padding:18px 8px 0 8px;font-family:Arial,Helvetica,sans-serif;color:${C.muted};font-size:12px;line-height:1.6;" align="left">
-            <p style="margin:0 0 8px 0;">${mail.footer}</p>
-            <p style="margin:0;">AL-ai-FX &middot; ${TAGS.address}</p>
+            <p style="margin:0;">${mail.footer}</p>
           </td>
         </tr>
       </table>
