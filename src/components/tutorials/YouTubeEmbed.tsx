@@ -8,8 +8,17 @@ import { useState } from "react";
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 
-export default function YouTubeEmbed({ id, title }: { id: string; title: string }) {
-  const [playing, setPlaying] = useState(false);
+export default function YouTubeEmbed({
+  id,
+  title,
+  autoStart = false,
+}: {
+  id: string;
+  title: string;
+  /** Start playing at once (for a video opened on purpose, such as from a pop-up). */
+  autoStart?: boolean;
+}) {
+  const [playing, setPlaying] = useState(autoStart);
   if (!VIDEO_ID.test(id)) return null;
 
   const frame: React.CSSProperties = {

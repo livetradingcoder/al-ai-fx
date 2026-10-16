@@ -9,6 +9,7 @@ import {notFound} from 'next/navigation';
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
+import AnnouncementBar from "@/components/marketing/AnnouncementBar";
 import ConsentBanner from "@/components/marketing/ConsentBanner";
 import GiveawayPopup from "@/components/marketing/GiveawayPopup";
 import RewardsPopup from "@/components/marketing/RewardsPopup";
@@ -81,6 +82,7 @@ export default async function RootLayout({
             <MarketingScripts />
             <MarketingPageTracker />
             <NdeskWidget />
+            <AnnouncementBar />
             <Navbar />
           {children}
           <SiteFooter />

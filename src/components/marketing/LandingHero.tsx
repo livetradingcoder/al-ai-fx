@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type MouseEvent } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -13,10 +13,14 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { GoldGlyph } from "@/components/GoldGlyph";
+import VideoModal from "@/components/marketing/VideoModal";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+// The unlisted setup video shown from the hero button.
+const HERO_VIDEO_ID = "AC5MUEfv7eI";
 
 const HERO_POINTS = ["Holiday liquidity protection", "Account-locked cloud builds"];
 
@@ -39,6 +43,7 @@ export default function LandingHero() {
   const t = useTranslations("Landing");
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   // Scroll parallax: artwork drifts down slower than the page while the
   // copy lifts and fades, so leaving the hero feels layered, not flat.
@@ -142,9 +147,10 @@ export default function LandingHero() {
               {t("getAccess")}
               <ArrowRight size={18} />
             </Link>
-            <Link href="/tutorials" className="btn-secondary large">
+            <button type="button" className="btn-secondary large" onClick={() => setVideoOpen(true)}>
+              <Play size={16} aria-hidden="true" style={{ marginRight: 8 }} />
               {t("watchTutorials")}
-            </Link>
+            </button>
           </motion.div>
 
           <motion.ul
@@ -199,6 +205,13 @@ export default function LandingHero() {
       <div className="hero-robot-scroll" aria-hidden="true">
         <span />
       </div>
+      {videoOpen && (
+        <VideoModal
+          videoId={HERO_VIDEO_ID}
+          title="How GoldBot sets up on your MT5 account"
+          onClose={() => setVideoOpen(false)}
+        />
+      )}
     </div>
   );
 }

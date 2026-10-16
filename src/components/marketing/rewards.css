@@ -721,3 +721,160 @@ textarea.rw-input {
   .rw-popup--won,
   .rw-code--glow { animation: none; }
 }
+
+/* ---------- Top announcement bar (giveaway) ---------- */
+.rw-announce {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 40px 0 12px;
+  background: linear-gradient(90deg, #1a1505, #2d2308 50%, #1a1505);
+  border-bottom: 1px solid rgba(252, 213, 53, 0.4);
+  color: var(--rw-body);
+  font-size: 0.86rem;
+}
+
+.rw-announce-inner {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.rw-announce-tag {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: 99px;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rw-announce-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rw-announce-text strong {
+  color: #fff;
+}
+
+.rw-announce-time {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.rw-announce-label {
+  color: var(--rw-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rw-announce-time b {
+  color: #fff;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-announce-btn {
+  flex: none;
+  padding: 4px 14px;
+  border-radius: 99px;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rw-announce-btn:hover {
+  filter: brightness(1.07);
+}
+
+.rw-announce-x {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--rw-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rw-announce-x:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.rw-announce-btn:focus-visible,
+.rw-announce-x:focus-visible {
+  outline: 2px solid var(--rw-primary);
+  outline-offset: 2px;
+}
+
+/* While the bar shows, the page and the fixed navbars sit below it. */
+html.has-announce {
+  --announce-h: 40px;
+}
+
+html.has-announce body {
+  padding-top: var(--announce-h);
+}
+
+html.has-announce .lnav,
+html.has-announce .navbar {
+  top: var(--announce-h);
+}
+
+html.has-announce .lnav-sheet {
+  inset: calc(58px + var(--announce-h)) 0 0;
+}
+
+@media (max-width: 640px) {
+  .rw-announce { height: 38px; padding-left: 8px; font-size: 0.8rem; }
+  .rw-announce-inner { gap: 8px; justify-content: flex-start; }
+  .rw-announce-label { display: none; }
+  html.has-announce { --announce-h: 38px; }
+}
+
+@media (max-width: 420px) {
+  .rw-announce-tag { display: none; }
+}
+
+/* ---------- Video pop-up ---------- */
+.rw-video {
+  position: relative;
+  width: min(960px, 100%);
+  padding: 44px 14px 14px;
+  border: 1px solid var(--rw-hairline);
+  border-radius: 16px;
+  background: #0b0e11;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  animation: rw-rise 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-video { animation: none; }
+}
