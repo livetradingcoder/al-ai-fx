@@ -7054,3 +7054,48 @@ textarea.enroll-input {
     display: none;
   }
 }
+
+/* ---------- Collapsible card (a <details> that starts closed) ---------- */
+.fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fold > summary::after {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.7;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.fold[open] > summary::after {
+  transform: rotate(-135deg);
+}
+
+.fold > summary:focus-visible {
+  outline: 2px solid var(--accent-primary, #d7b56d);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+.fold-body {
+  margin-top: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold > summary::after { transition: none; }
+}

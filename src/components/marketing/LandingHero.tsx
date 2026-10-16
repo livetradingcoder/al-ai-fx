@@ -21,6 +21,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 // The unlisted setup video shown from the hero button.
 const HERO_VIDEO_ID = "AC5MUEfv7eI";
+const HERO_VIDEO_URL = `https://youtu.be/${HERO_VIDEO_ID}`;
 
 const HERO_POINTS = ["Holiday liquidity protection", "Account-locked cloud builds"];
 
@@ -44,6 +45,8 @@ export default function LandingHero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoOpen, setVideoOpen] = useState(false);
+  // Touch screens cannot hover, so a tap opens the two choices instead.
+  const [watchOpen, setWatchOpen] = useState(false);
 
   // Scroll parallax: artwork drifts down slower than the page while the
   // copy lifts and fades, so leaving the hero feels layered, not flat.
@@ -147,10 +150,50 @@ export default function LandingHero() {
               {t("getAccess")}
               <ArrowRight size={18} />
             </Link>
-            <button type="button" className="btn-secondary large" onClick={() => setVideoOpen(true)}>
-              <Play size={16} aria-hidden="true" style={{ marginRight: 8 }} />
-              {t("watchTutorials")}
-            </button>
+            <div
+              className={`hero-watch${watchOpen ? " is-open" : ""}`}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setWatchOpen(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setWatchOpen(false);
+              }}
+            >
+              <button
+                type="button"
+                className="btn-secondary large"
+                aria-expanded={watchOpen}
+                onClick={() => {
+                  // With a mouse, hovering already shows the choices, so a click plays the video.
+                  if (window.matchMedia("(hover: hover)").matches) setVideoOpen(true);
+                  else setWatchOpen((open) => !open);
+                }}
+              >
+                <Play size={16} aria-hidden="true" style={{ marginRight: 8 }} />
+                {t("watchTutorials")}
+              </button>
+              <span className="hero-watch-opts">
+                <button
+                  type="button"
+                  className="hero-watch-opt"
+                  onClick={() => {
+                    setWatchOpen(false);
+                    setVideoOpen(true);
+                  }}
+                >
+                  Play here
+                </button>
+                <a
+                  className="hero-watch-opt"
+                  href={HERO_VIDEO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setWatchOpen(false)}
+                >
+                  Open on YouTube ↗
+                </a>
+              </span>
+            </div>
           </motion.div>
 
           <motion.ul

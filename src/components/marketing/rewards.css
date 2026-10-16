@@ -945,3 +945,61 @@ html.has-announce .lnav-sheet {
 @media (prefers-reduced-motion: reduce) {
   .rw-video { animation: none; }
 }
+
+/* ---------- Hero "Watch Tutorials": two choices on hover ---------- */
+.hero-watch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-watch-opts {
+  display: inline-flex;
+  gap: 8px;
+  max-width: 0;
+  padding: 3px;
+  opacity: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+  transition: max-width 0.3s ease, opacity 0.2s ease, visibility 0s linear 0.3s;
+}
+
+.hero-watch:hover .hero-watch-opts,
+.hero-watch:focus-within .hero-watch-opts,
+.hero-watch.is-open .hero-watch-opts {
+  max-width: 480px;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.hero-watch-opt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 1px solid rgba(252, 213, 53, 0.55);
+  border-radius: 999px;
+  background: rgba(252, 213, 53, 0.1);
+  color: #fcd535;
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hero-watch-opt:hover {
+  background: rgba(252, 213, 53, 0.2);
+}
+
+.hero-watch-opt:focus-visible {
+  outline: 2px solid #fcd535;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-watch-opts { transition: none; }
+}

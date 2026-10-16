@@ -78,42 +78,54 @@ export default async function AdminUsersPage({
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="admin-container">
         <h1 style={{ fontSize: '2.1rem', marginBottom: '1.75rem' }}>User Management</h1>
-        <section className="card" style={{ marginBottom: '20px' }} aria-label="Email lists">
-          <p className="card-label">Email lists</p>
-          <h2 style={{ fontSize: '1.15rem', margin: '6px 0 6px' }}>Download a list for your email tool</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '72ch', marginBottom: '16px' }}>
-            Each CSV has a one-click sign-in link and a results link for every person, so the email can send
-            them straight where they need to go. Staff, blocked people, anyone who opted out, people who
-            already bought and test addresses are left out. The links are private: do not share the files.
-          </p>
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr><th>List</th><th>People</th><th style={{ textAlign: 'right' }}>Download</th></tr>
-              </thead>
-              <tbody>
-                {TRIAL_SEGMENTS.map((key) => (
-                  <tr key={key}>
-                    <td data-label="List">{SEGMENT_LABELS[key]}</td>
-                    <td data-label="People">{counts.get(key) ?? 0}</td>
+        {/* Collapsed by default: it is a tool you reach for now and then, not the page. */}
+        <details className="card fold" style={{ marginBottom: '20px' }}>
+          <summary>
+            <span>
+              <span className="card-label">Email lists</span>
+              <span style={{ display: 'block', fontSize: '1.05rem', fontWeight: 600, margin: '4px 0 2px' }}>
+                Download a list for your email tool
+              </span>
+              <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                {TRIAL_SEGMENTS.length + 1} lists · open to see who is on each and download the CSV
+              </span>
+            </span>
+          </summary>
+          <div className="fold-body">
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '72ch', marginBottom: '16px' }}>
+              Each CSV has a one-click sign-in link and a results link for every person, so the email can send
+              them straight where they need to go. Staff, blocked people, anyone who opted out, people who
+              already bought and test addresses are left out. The links are private: do not share the files.
+            </p>
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr><th>List</th><th>People</th><th style={{ textAlign: 'right' }}>Download</th></tr>
+                </thead>
+                <tbody>
+                  {TRIAL_SEGMENTS.map((key) => (
+                    <tr key={key}>
+                      <td data-label="List">{SEGMENT_LABELS[key]}</td>
+                      <td data-label="People">{counts.get(key) ?? 0}</td>
+                      <td data-label="Download" style={{ textAlign: 'right' }}>
+                        {/* A file download, not a page: a plain anchor is right. */}
+                        <a className="btn-mini" href={`/api/admin/segments/${key}`}>CSV</a>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td data-label="List">{SEGMENT_LABELS['giveaway-subscribers']}</td>
+                    <td data-label="People">{optedInGiveaway}</td>
                     <td data-label="Download" style={{ textAlign: 'right' }}>
-                      {/* A file download, not a page: a plain anchor is right. */}
-                      <a className="btn-mini" href={`/api/admin/segments/${key}`}>CSV</a>
+                      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                      <a className="btn-mini" href="/api/admin/segments/giveaway-subscribers">CSV</a>
                     </td>
                   </tr>
-                ))}
-                <tr>
-                  <td data-label="List">{SEGMENT_LABELS['giveaway-subscribers']}</td>
-                  <td data-label="People">{optedInGiveaway}</td>
-                  <td data-label="Download" style={{ textAlign: 'right' }}>
-                    {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                    <a className="btn-mini" href="/api/admin/segments/giveaway-subscribers">CSV</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </section>
+        </details>
         <UsersTable users={rows} currentUserId={session.user.id} defaultAdding={addOnArrival} />
       </div>
     </div>
