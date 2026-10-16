@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { couponLabel, couponShowable, safeSitePath } from "./promo-banner";
+import { couponLabel, couponShowable, safeSitePath, suggestedBannerMessage } from "./promo-banner";
 
 const NOW = new Date("2026-10-18T12:00:00Z");
 const ok = {
@@ -46,4 +46,9 @@ test("link targets must stay on this site", () => {
   for (const bad of ["https://evil.example", "//evil.example", "javascript:alert(1)", "catalog", "/a\\b", "", null, undefined, "/" + "a".repeat(250)]) {
     assert.equal(safeSitePath(bad as string | null | undefined, "/x"), "/x", String(bad));
   }
+});
+
+test("a one-click banner message reads naturally, with or without a label", () => {
+  assert.equal(suggestedBannerMessage("30% off"), "30% off at checkout");
+  assert.equal(suggestedBannerMessage(""), "Discount code");
 });

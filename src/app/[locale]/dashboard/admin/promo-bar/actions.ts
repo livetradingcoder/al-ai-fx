@@ -7,7 +7,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { authOptions } from "@/lib/auth";
 import { normalizeCode } from "@/lib/coupons";
 import { prisma } from "@/lib/prisma";
-import { couponShowable, safeSitePath } from "@/lib/promo-banner";
+import { couponLabel, couponShowable, safeSitePath, suggestedBannerMessage } from "@/lib/promo-banner";
 
 async function requireAdmin(): Promise<ActionResult | null> {
   const session = await getServerSession(authOptions);
@@ -62,6 +62,31 @@ export async function createBanner(input: {
   await prisma.promoBanner.create({ data: { message, couponCode, ctaLabel, ctaHref, endsAt } });
   refresh();
   return { ok: true, message: "Added. It shows in the top bar straight away." };
+}
+
+/** One click: put an existing public coupon in the bar with a sensible message. */
+export async function addCouponToBar(input: { code: string }): Promise<ActionResult> {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
+  const code = normalizeCode(input.code);
+  const coupon = await prisma.coupon.findUnique({ where: { code } });
+  if (!coupon) return { ok: false, error: `No coupon called ${code}` };
+  if (!couponShowable(coupon)) {
+    return { ok: false, error: "That code cannot be shown publicly (free, tied to one person, off, expired or used up)" };
+  }
+
+  const already = await prisma.promoBanner.findFirst({
+    where: { couponCode: code, active: true, OR: [{ endsAt: null }, { endsAt: { gt: new Date() } }] },
+    select: { id: true },
+  });
+  if (already) return { ok: false, error: `${code} is already in the bar` };
+
+  await prisma.promoBanner.create({
+    data: { message: suggestedBannerMessage(couponLabel(coupon.kind, coupon.value)), couponCode: code },
+  });
+  refresh();
+  return { ok: true, message: `${code} is now in the top bar and the leaving pop-up.` };
 }
 
 export async function setBannerActive(input: { id: string; active: boolean }): Promise<ActionResult> {

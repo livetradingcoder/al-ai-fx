@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import Dialog from "@/components/dashboard/Dialog";
 import type { ActionResult } from "@/lib/action-result";
 import { formatDate } from "@/lib/format-date";
-import { createBanner, deleteBanner, setBannerActive } from "./actions";
+import { addCouponToBar, createBanner, deleteBanner, setBannerActive } from "./actions";
 
 export type BannerRow = {
   id: string;
@@ -21,7 +21,16 @@ export type CouponOption = { code: string; label: string };
 
 type Notice = { kind: "ok" | "error"; text: string } | null;
 
-export default function PromoBarAdmin({ banners, coupons }: { banners: BannerRow[]; coupons: CouponOption[] }) {
+export default function PromoBarAdmin({
+  banners,
+  coupons,
+  suggestions,
+}: {
+  banners: BannerRow[];
+  coupons: CouponOption[];
+  /** Public-safe coupons that are not in the bar yet. */
+  suggestions: CouponOption[];
+}) {
   const [notice, setNotice] = useState<Notice>(null);
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -59,6 +68,39 @@ export default function PromoBarAdmin({ banners, coupons }: { banners: BannerRow
     });
 
   return (
+    <>
+    {suggestions.length > 0 && (
+      <section className="card" style={{ marginBottom: "20px" }}>
+        <p className="card-label">One click</p>
+        <h2 style={{ fontSize: "1.15rem", margin: "6px 0 6px" }}>Active coupons not in the bar yet</h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", maxWidth: "70ch", marginBottom: "14px" }}>
+          These codes are live and safe to show publicly. Add one and it appears in the top bar with a copy
+          button, and in the pop-up people see when they are about to leave.
+        </p>
+        {notice && <p className={`admin-notice is-${notice.kind}`}>{notice.text}</p>}
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr><th>Code</th><th>Discount</th><th style={{ textAlign: "right" }}>Action</th></tr>
+            </thead>
+            <tbody>
+              {suggestions.map((c) => (
+                <tr key={c.code}>
+                  <td data-label="Code"><code>{c.code}</code></td>
+                  <td data-label="Discount">{c.label}</td>
+                  <td data-label="Action" style={{ textAlign: "right" }}>
+                    <button type="button" className="btn-mini is-go" disabled={pending} onClick={() => run(() => addCouponToBar({ code: c.code }))}>
+                      Show in bar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
+
     <section className="card">
       <div className="admin-table-head">
         <div>
@@ -148,7 +190,7 @@ export default function PromoBarAdmin({ banners, coupons }: { banners: BannerRow
         </div>
       </Dialog>
 
-      {notice && <p className={`admin-notice is-${notice.kind}`}>{notice.text}</p>}
+      {notice && suggestions.length === 0 && <p className={`admin-notice is-${notice.kind}`}>{notice.text}</p>}
 
       <div className="table-wrap">
         <table className="data-table is-wide">
@@ -209,5 +251,6 @@ export default function PromoBarAdmin({ banners, coupons }: { banners: BannerRow
         </table>
       </div>
     </section>
+    </>
   );
 }

@@ -36,6 +36,12 @@ export default async function AdminPromoBarPage() {
     .filter((c) => couponShowable(c, now))
     .map((c) => ({ code: c.code, label: couponLabel(c.kind, c.value) }));
 
+  // Public-safe codes that are not in the bar yet: one click away.
+  const inBar = new Set(
+    banners.filter((b) => b.active && (!b.endsAt || b.endsAt > now) && b.couponCode).map((b) => b.couponCode as string),
+  );
+  const suggestions: CouponOption[] = options.filter((o) => !inBar.has(o.code));
+
   const rows: BannerRow[] = banners.map((b) => ({
     id: b.id,
     message: b.message,
@@ -53,11 +59,12 @@ export default async function AdminPromoBarPage() {
         <p style={{ color: "var(--text-secondary)", maxWidth: "72ch" }}>
           The strip across the top of the public site. It rotates between the live giveaway, the messages
           below (each can carry a public coupon code people can copy) and the share-your-results reward.
+          The same codes are offered in the pop-up people see when they are about to leave.
           Create the coupon under Coupons first, then add it here. Free-licence codes and codes tied to
           one person cannot be shown. A message disappears by itself when its code expires or runs out.
         </p>
       </header>
-      <PromoBarAdmin banners={rows} coupons={options} />
+      <PromoBarAdmin banners={rows} coupons={options} suggestions={suggestions} />
     </>
   );
 }

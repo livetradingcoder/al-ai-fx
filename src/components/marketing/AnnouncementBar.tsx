@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/routing";
 import type { PublicBanner } from "@/lib/promo-banner";
+import { usePromoOffers, type PromoGiveaway } from "./usePromoOffers";
 import "./rewards.css";
 
 // The strip across the top of the public pages. It rotates between whatever is
@@ -19,13 +20,7 @@ const HIDDEN_PATHS = ["/dashboard", "/checkout", "/login", "/forgot-password", "
 const DISMISS_KEY = "gb_announce_dismissed_v2";
 const ROTATE_MS = 6500;
 
-type Giveaway = { slug: string; title: string; prize: string; endsAt: string };
-type Api = {
-  eligible: boolean;
-  rewardPercent?: number;
-  giveaway: Giveaway | null;
-  banners?: PublicBanner[];
-};
+type Giveaway = PromoGiveaway;
 
 type Item =
   | { kind: "giveaway"; id: string; giveaway: Giveaway }
@@ -55,7 +50,7 @@ export default function AnnouncementBar() {
   const locale = useLocale();
   const pathname = usePathname();
   const { status } = useSession();
-  const [data, setData] = useState<Api | null>(null);
+  const data = usePromoOffers(locale);
   const [dismissed, setDismissed] = useState(() => {
     try {
       return typeof window !== "undefined" && window.sessionStorage.getItem(DISMISS_KEY) === "1";
@@ -74,22 +69,6 @@ export default function AnnouncementBar() {
   const [copied, setCopied] = useState<string | null>(null);
 
   const hiddenHere = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/promo/eligible?locale=${encodeURIComponent(locale)}`, { cache: "no-store" });
-        const json = (await res.json()) as Api;
-        if (!cancelled && res.ok && json.eligible) setData(json);
-      } catch {
-        /* no bar: nothing to announce */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [locale]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);

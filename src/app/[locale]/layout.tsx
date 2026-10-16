@@ -11,7 +11,7 @@ import MarketingPageTracker from "@/components/marketing/MarketingPageTracker";
 import MarketingScripts from "@/components/marketing/MarketingScripts";
 import AnnouncementBar from "@/components/marketing/AnnouncementBar";
 import ConsentBanner from "@/components/marketing/ConsentBanner";
-import GiveawayPopup from "@/components/marketing/GiveawayPopup";
+import ExitIntentPopup from "@/components/marketing/ExitIntentPopup";
 import RewardsPopup from "@/components/marketing/RewardsPopup";
 import SiteFooter from "@/components/SiteFooter";
 import GtmHeadScript from "@/components/marketing/GtmHeadScript";
@@ -87,7 +87,7 @@ export default async function RootLayout({
           {children}
           <SiteFooter />
           <ConsentBanner />
-          <GiveawayPopup />
+          <ExitIntentPopup />
           <RewardsPopup />
           </NextIntlClientProvider>
         </AuthSessionProvider>

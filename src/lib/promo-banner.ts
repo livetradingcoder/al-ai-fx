@@ -32,6 +32,11 @@ type CouponFacts = {
   restrictedEmail: string | null;
 };
 
+/** The message put in the bar for a code when the admin adds it in one click. */
+export function suggestedBannerMessage(label: string): string {
+  return label ? `${label} at checkout` : "Discount code";
+}
+
 /** True when a coupon is safe and sensible to show to the whole public. */
 export function couponShowable(c: CouponFacts, now: Date = new Date()): boolean {
   if (!c.active) return false;

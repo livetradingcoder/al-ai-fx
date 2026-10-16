@@ -14,12 +14,15 @@ export default function GiveawayForm({
   locale,
   source,
   onDone,
+  defaultEmail = "",
 }: {
   locale: string;
   source: "page" | "exit-intent";
   onDone?: () => void;
+  /** Filled in for people who are signed in. */
+  defaultEmail?: string;
 }) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail);
   const [rules, setRules] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [website, setWebsite] = useState("");
