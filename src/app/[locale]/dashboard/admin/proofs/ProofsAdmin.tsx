@@ -11,7 +11,7 @@ import {
 } from "@/components/dashboard/table-view";
 import type { ActionResult } from "@/lib/action-result";
 import { reviewResultProof, reviewShareProof, setProofPublished } from "./actions";
-import { formatDate, formatDateTime } from "@/lib/format-date";
+import { formatDateTime } from "@/lib/format-date";
 
 type Status = "PENDING" | "APPROVED" | "REJECTED";
 

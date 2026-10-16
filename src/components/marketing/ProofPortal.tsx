@@ -6,7 +6,7 @@ import { Link } from "@/i18n/routing";
 
 import type { PortalSnapshot } from "@/lib/proof-portal";
 import "./rewards.css";
-import { formatDate, formatDateTime } from "@/lib/format-date";
+import { formatDate } from "@/lib/format-date";
 
 // The three steps a trial user works through: send results, share them, collect
 // the reward. Used on the secret-link page (token from the email) and on the
@@ -36,10 +36,13 @@ export default function ProofPortal({
   token,
   locale,
   initial,
+  compact = false,
 }: {
   token: string;
   locale: string;
   initial: PortalSnapshot | null;
+  /** Inside the pop-up, where a summary of the steps is already showing: skip the step that is done. */
+  compact?: boolean;
 }) {
   const [snap, setSnap] = useState<PortalSnapshot | null>(initial);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -156,6 +159,7 @@ export default function ProofPortal({
     <div className="rw-scope">
       <ol className="rw-steps">
         {/* 1 · link */}
+        {!(compact && snap.linked) && (
         <li className="rw-step" data-state={state1}>
           <span className="rw-step-num" aria-hidden="true">{snap.linked ? "✓" : "1"}</span>
           <div className="rw-step-body">
@@ -177,6 +181,7 @@ export default function ProofPortal({
             )}
           </div>
         </li>
+        )}
 
         {/* 2 · results */}
         <li className="rw-step" data-state={state2}>

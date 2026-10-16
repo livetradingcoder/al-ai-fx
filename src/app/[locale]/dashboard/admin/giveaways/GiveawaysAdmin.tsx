@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import Dialog from "@/components/dashboard/Dialog";
 import type { ActionResult } from "@/lib/action-result";
 import { drawGiveawayWinner, saveGiveaway, setGiveawayLive } from "./actions";
-import { formatDate, formatDateTime } from "@/lib/format-date";
+import { formatDate } from "@/lib/format-date";
 
 export type GiveawayRow = {
   id: string;

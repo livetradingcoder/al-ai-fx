@@ -17,6 +17,14 @@ export function cleanDisplayName(raw: unknown): string | null {
   return name;
 }
 
+/**
+ * The licence the rewards are for, from a person's licences (newest first):
+ * one with an MT5 account linked if there is one, otherwise the newest.
+ */
+export function pickRewardSubscription<T extends { mt5AccountNumber: string | null }>(subscriptions: T[]): T | null {
+  return subscriptions.find((s) => !!s.mt5AccountNumber?.trim()) ?? subscriptions[0] ?? null;
+}
+
 export type PortalContext = {
   userId: string;
   email: string;
@@ -123,4 +131,16 @@ export async function portalSnapshot(ctx: PortalContext, promoEligible: boolean)
       ? { title: giveaway.title, prize: giveaway.prize, endsAt: giveaway.endsAt.toISOString(), slug: giveaway.slug, chances }
       : null,
   };
+}
+
+/** How far along the reward path someone is: link, send results, and (where offered) share. */
+export function rewardProgress(snapshot: Pick<PortalSnapshot, "linked" | "proofs" | "share" | "promoEligible">): {
+  done: number;
+  total: number;
+  percent: number;
+} {
+  const steps = [snapshot.linked, snapshot.proofs.some((p) => p.status !== "REJECTED")];
+  if (snapshot.promoEligible) steps.push(!!snapshot.share?.coupon);
+  const done = steps.filter(Boolean).length;
+  return { done, total: steps.length, percent: Math.round((done / steps.length) * 100) };
 }

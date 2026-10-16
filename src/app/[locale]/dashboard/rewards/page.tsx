@@ -6,7 +6,7 @@ import ProofPortal from "@/components/marketing/ProofPortal";
 import "@/components/marketing/rewards.css";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { loadPortalContext, portalSnapshot } from "@/lib/proof-portal";
+import { loadPortalContext, pickRewardSubscription, portalSnapshot, rewardProgress } from "@/lib/proof-portal";
 import { createProofToken } from "@/lib/proof-token";
 import { promoEligibilityForRequest } from "@/lib/promo-eligibility";
 import { buildLoginRedirectPath } from "@/lib/auth-redirects";
@@ -29,7 +29,7 @@ export default async function RewardsPage({ params }: { params: Promise<{ locale
     orderBy: { createdAt: "desc" },
     select: { id: true, mt5AccountNumber: true },
   });
-  const subscription = subscriptions.find((s) => !!s.mt5AccountNumber?.trim()) ?? subscriptions[0];
+  const subscription = pickRewardSubscription(subscriptions);
 
   if (!subscription) {
     return (
@@ -54,12 +54,7 @@ export default async function RewardsPage({ params }: { params: Promise<{ locale
   const eligibility = await promoEligibilityForRequest(req, locale);
   const snapshot = ctx ? await portalSnapshot(ctx, eligibility.eligible) : null;
 
-  // Progress: link, send results, share (the three things that earn the reward).
-  const done = snapshot
-    ? [snapshot.linked, snapshot.proofs.some((p) => p.status !== "REJECTED"), !!snapshot.share?.coupon].filter(Boolean).length
-    : 0;
-  const total = snapshot?.promoEligible ? 3 : 2;
-  const progress = snapshot ? Math.round((Math.min(done, total) / total) * 100) : 0;
+  const progress = snapshot ? rewardProgress(snapshot).percent : 0;
 
   return (
     <div className="rw-scope">
