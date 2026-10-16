@@ -1,0 +1,90 @@
+<!doctype html><meta charset="utf-8"><title>Campaign emails</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;margin:32px;color:#111}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}th{background:#f5f5f5}a{color:#06c}</style>
+<h1>Campaign emails</h1>
+<p>Open each to preview. Merge tags such as {{first_name}} are replaced by Sequenzy when it sends.</p>
+<table><tr><th>File</th><th>Who gets it</th><th>When</th><th>Subject</th></tr>
+<tr>
+  <td><a href="01-not-linked-whats-blocking.html">01-not-linked-whats-blocking</a></td>
+  <td>not-linked-active</td>
+  <td>Day 1 of the trial (about 24 hours after signup)</td>
+  <td>Quick question about your GoldBot trial</td>
+</tr>
+<tr>
+  <td><a href="02-not-linked-trial-ending.html">02-not-linked-trial-ending</a></td>
+  <td>not-linked-active (days_left is 1 or less)</td>
+  <td>About 12 hours before the trial ends</td>
+  <td>Your GoldBot trial ends soon, and it has not started</td>
+</tr>
+<tr>
+  <td><a href="03-not-linked-expired.html">03-not-linked-expired</a></td>
+  <td>not-linked-expired</td>
+  <td>2 to 3 days after the trial ended</td>
+  <td>Your GoldBot trial ended before you got started</td>
+</tr>
+<tr>
+  <td><a href="04a-linked-send-results-reward.html">04a-linked-send-results-reward</a></td>
+  <td>linked-no-proof where promo_eligible = yes</td>
+  <td>Day 2 of the trial (about 36 hours after linking)</td>
+  <td>How is GoldBot going? Send your results, get a reward</td>
+</tr>
+<tr>
+  <td><a href="04b-linked-send-results-feedback.html">04b-linked-send-results-feedback</a></td>
+  <td>linked-no-proof where promo_eligible = no</td>
+  <td>Day 2 of the trial (about 36 hours after linking)</td>
+  <td>How is GoldBot going?</td>
+</tr>
+<tr>
+  <td><a href="05-results-approved-share.html">05-results-approved-share</a></td>
+  <td>proof-approved-no-share where promo_eligible = yes</td>
+  <td>Right after you approve a screenshot (or the next morning)</td>
+  <td>Your results are approved. Share them, get 25% off</td>
+</tr>
+<tr>
+  <td><a href="06-reward-code-delivered.html">06-reward-code-delivered</a></td>
+  <td>Backup only: the app emails this code automatically when you approve a post</td>
+  <td>Only if the automatic email did not go out</td>
+  <td>Your 25% discount code</td>
+</tr>
+<tr>
+  <td><a href="07-trial-ended-keep-going.html">07-trial-ended-keep-going</a></td>
+  <td>linked-expired</td>
+  <td>The day after the trial ended</td>
+  <td>Your GoldBot trial has ended</td>
+</tr>
+<tr>
+  <td><a href="08-giveaway-welcome.html">08-giveaway-welcome</a></td>
+  <td>giveaway-subscribers</td>
+  <td>Day 0 (the app already sends a plain entry confirmation)</td>
+  <td>You're in the giveaway. Here is what GoldBot is</td>
+</tr>
+<tr>
+  <td><a href="09-giveaway-nurture-1-how-it-works.html">09-giveaway-nurture-1-how-it-works</a></td>
+  <td>giveaway-subscribers</td>
+  <td>Day 2</td>
+  <td>How GoldBot actually works (in plain English)</td>
+</tr>
+<tr>
+  <td><a href="10-giveaway-nurture-2-results.html">10-giveaway-nurture-2-results</a></td>
+  <td>giveaway-subscribers</td>
+  <td>Day 5</td>
+  <td>What real traders send us (and how we check it)</td>
+</tr>
+<tr>
+  <td><a href="11-giveaway-nurture-3-trial-reminder.html">11-giveaway-nurture-3-trial-reminder</a></td>
+  <td>giveaway-subscribers</td>
+  <td>Day 9</td>
+  <td>Your free GoldBot trial is still waiting</td>
+</tr>
+<tr>
+  <td><a href="12-giveaway-winner.html">12-giveaway-winner</a></td>
+  <td>Send by hand to the winner only</td>
+  <td>Right after the draw</td>
+  <td>You won the giveaway!</td>
+</tr>
+<tr>
+  <td><a href="13-giveaway-not-selected.html">13-giveaway-not-selected</a></td>
+  <td>giveaway-subscribers (everyone except the winner)</td>
+  <td>A day after the draw</td>
+  <td>The giveaway draw is done</td>
+</tr>
+</table>
