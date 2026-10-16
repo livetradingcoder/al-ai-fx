@@ -507,6 +507,101 @@ export async function sendAdminCompilerAlertEmail(payload: AdminAlertKind) {
 }
 
 /**
+ * The reward code, sent when an admin approves a shared post. Transactional:
+ * the person earned it, so there is no marketing footer. No-op safe like the
+ * other senders.
+ */
+export async function sendRewardCouponEmail(input: {
+  email: string;
+  code: string;
+  percent: number;
+  expiresAt: Date;
+  checkoutUrl: string;
+}) {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping reward coupon email.");
+    return;
+  }
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Use my code",
+    buttonUrl: input.checkoutUrl,
+    eyebrow: "Your reward",
+    title: `${input.percent}% off, thanks for sharing`,
+    intro: "We checked your post and your discount code is ready. It works once, on this email address only.",
+    detailLines: [
+      `Code: ${input.code}`,
+      `Valid until: ${input.expiresAt.toLocaleDateString("en-GB")}`,
+      "The button opens checkout with the code already applied.",
+    ],
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email: input.email }],
+    subject: `Your ${input.percent}% discount code`,
+    html,
+    text,
+    category: "Reward",
+  });
+  console.log("[Mail] Reward coupon email sent");
+}
+
+/**
+ * Confirms a giveaway entry. Sent once per new entry; carries the unsubscribe
+ * link only when the person also opted in to marketing emails.
+ */
+export async function sendGiveawayEntryEmail(input: {
+  email: string;
+  title: string;
+  prize: string;
+  endsAt: Date;
+  rulesUrl: string;
+  marketingOptIn: boolean;
+}) {
+  if (!client) {
+    console.warn("[Mail] Mail client not initialized. Skipping giveaway entry email.");
+    return;
+  }
+
+  let footerHtml: string | undefined;
+  let footerText: string | undefined;
+  if (input.marketingOptIn) {
+    try {
+      const unsubscribeUrl = buildUnsubscribeUrl(input.email);
+      footerHtml = `You asked for updates by email. <a href="${unsubscribeUrl}" style="color:#9e9079;">Unsubscribe</a> at any time.`;
+      footerText = `You asked for updates by email. Unsubscribe: ${unsubscribeUrl}`;
+    } catch (err) {
+      console.error("[Mail] Failed to build unsubscribe link:", err);
+    }
+  }
+
+  const { html, text } = renderEmailTemplate({
+    buttonLabel: "Read the rules",
+    buttonUrl: input.rulesUrl,
+    eyebrow: "Giveaway",
+    title: "You're in the draw",
+    intro: `You are entered in ${input.title}. The prize is ${input.prize}.`,
+    detailLines: [
+      `The draw closes on ${input.endsAt.toLocaleDateString("en-GB")}. We contact the winner by email.`,
+      "No purchase is needed to enter or to win.",
+    ],
+    footerHtml,
+    footerText,
+  });
+
+  await client.send({
+    from: sender,
+    to: [{ email: input.email }],
+    subject: "You're entered in the giveaway",
+    html,
+    text,
+    category: "Giveaway",
+  });
+  console.log("[Mail] Giveaway entry email sent");
+}
+
+/**
  * Welcome email for education-site (algotradingschool.com) subscribers.
  * No-op-safe like every other sender — the subscribe route calls this
  * best-effort and must never fail the request over email problems.

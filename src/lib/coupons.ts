@@ -18,6 +18,13 @@ export function normalizeCode(raw: string) {
   return raw.trim().toUpperCase().slice(0, 40);
 }
 
+/** True when a code is reserved for one email and this isn't it (or no email was given). */
+export function emailBlockedByRestriction(restrictedEmail: string | null, given: string | null | undefined) {
+  if (!restrictedEmail) return false;
+  const email = given?.trim().toLowerCase();
+  return !email || email !== restrictedEmail.trim().toLowerCase();
+}
+
 function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
@@ -60,6 +67,11 @@ export async function validateCoupon(input: {
   }
   if (coupon.robot && coupon.robot.slug !== input.robotSlug) {
     return { ok: false, reason: `That code only works on ${coupon.robot.name}.` };
+  }
+  // A code earned by one person (the share reward) is theirs alone. With no
+  // email to compare it fails closed rather than working for anyone.
+  if (emailBlockedByRestriction(coupon.restrictedEmail, input.email)) {
+    return { ok: false, reason: "That code belongs to a different email address." };
   }
 
   // Price resolution is fail-closed: an unknown robot/tier throws rather than

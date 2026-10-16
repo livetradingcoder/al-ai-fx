@@ -82,3 +82,18 @@ export async function checkWebhookRateLimit(identifier: string): Promise<{ succe
   // 1000 requests per minute
   return rateLimiter.limit(identifier, 1000, 60 * 1000);
 }
+
+export async function checkProofUploadRateLimit(identifier: string): Promise<{ success: boolean }> {
+  // 10 screenshot uploads per hour per person: enough for retries, not enough to fill the bucket.
+  return rateLimiter.limit(`proof-upload:${identifier}`, 10, 60 * 60 * 1000);
+}
+
+export async function checkProofActionRateLimit(identifier: string): Promise<{ success: boolean }> {
+  // Status polls and share submissions from the results portal.
+  return rateLimiter.limit(`proof-action:${identifier}`, 60, 60 * 1000);
+}
+
+export async function checkGiveawayRateLimit(identifier: string): Promise<{ success: boolean }> {
+  // 6 giveaway entries per hour per address: shared networks get room, scripts do not.
+  return rateLimiter.limit(`giveaway:${identifier}`, 6, 60 * 60 * 1000);
+}

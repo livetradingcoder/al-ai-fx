@@ -9,24 +9,26 @@ datasource db {
 }
 
 model User {
-  id                  String         @id @default(cuid())
-  email               String         @unique
+  id                  String          @id @default(cuid())
+  email               String          @unique
   passwordHash        String?
   name                String?
-  role                UserRole       @default(USER)
-  shouldResetPassword Boolean        @default(false)
-  isBlocked           Boolean        @default(false)
-  isDeleted           Boolean        @default(false)
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  role                UserRole        @default(USER)
+  shouldResetPassword Boolean         @default(false)
+  isBlocked           Boolean         @default(false)
+  isDeleted           Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
   subscriptions       Subscription[]
   orders              Order[]
   sessions            UserSession[]
   affiliate           Affiliate?
   referredBy          Referral?
-  reminderOptOut ReminderOptOut?
-  resultsRequest ResultsRequest?
-  ips            UserIp[]
+  reminderOptOut      ReminderOptOut?
+  resultsRequest      ResultsRequest?
+  ips                 UserIp[]
+  resultProofs        ResultProof[]
+  shareProof          ShareProof?
 }
 
 /// One row per sign-in. Auth uses JWTs (stateless), so without this table a
@@ -285,16 +287,16 @@ model AffiliateTier {
 
 /// Singleton (id = "default"). Everything an admin can tune without a deploy.
 model AffiliateSettings {
-  id               String    @id @default("default")
-  cookieDays       Int       @default(30)
-  tierBasis        TierBasis @default(VOLUME)
-  defaultRate      Float     @default(15) // used when no tier matches
-  referredDiscount Float     @default(15) // percent off a referred user's FIRST order
-  minPayout        Float     @default(50)
-  holdDays         Int       @default(14) // matches the refund window
-  lifetimeScope    Boolean   @default(true) // earn on every order, not just the first
-  blockSelfReferral Boolean  @default(true)
-  updatedAt        DateTime  @updatedAt
+  id                String    @id @default("default")
+  cookieDays        Int       @default(30)
+  tierBasis         TierBasis @default(VOLUME)
+  defaultRate       Float     @default(15) // used when no tier matches
+  referredDiscount  Float     @default(15) // percent off a referred user's FIRST order
+  minPayout         Float     @default(50)
+  holdDays          Int       @default(14) // matches the refund window
+  lifetimeScope     Boolean   @default(true) // earn on every order, not just the first
+  blockSelfReferral Boolean   @default(true)
+  updatedAt         DateTime  @updatedAt
 }
 
 enum TierBasis {
@@ -407,23 +409,26 @@ enum PayoutStatus {
 // ===========================================================================
 
 model Coupon {
-  id             String      @id @default(cuid())
-  code           String      @unique // stored uppercase; compared uppercase
-  kind           CouponKind  @default(PERCENT)
-  value          Float       @default(100) // percent for PERCENT, dollars for FIXED, ignored for FREE
-  robotId        String? // null = any robot
-  robot          Robot?      @relation(fields: [robotId], references: [id], onDelete: Cascade)
-  tier           PricingTier? // null = any tier
-  maxRedemptions Int? // null = unlimited
-  redeemedCount  Int         @default(0)
-  oncePerEmail   Boolean     @default(true)
-  expiresAt      DateTime?
-  active         Boolean     @default(true)
-  note           String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id              String       @id @default(cuid())
+  code            String       @unique // stored uppercase; compared uppercase
+  kind            CouponKind   @default(PERCENT)
+  value           Float        @default(100) // percent for PERCENT, dollars for FIXED, ignored for FREE
+  robotId         String? // null = any robot
+  robot           Robot?       @relation(fields: [robotId], references: [id], onDelete: Cascade)
+  tier            PricingTier? // null = any tier
+  maxRedemptions  Int? // null = unlimited
+  redeemedCount   Int          @default(0)
+  oncePerEmail    Boolean      @default(true)
+  /// When set, only this email can use the code (single-person reward codes).
+  restrictedEmail String?
+  expiresAt       DateTime?
+  active          Boolean      @default(true)
+  note            String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   redemptions CouponRedemption[]
+  shareProof  ShareProof?
 
   @@index([active])
 }
@@ -586,4 +591,112 @@ model UserIp {
   @@unique([userId, ip])
   @@index([ip])
   @@index([lastSeenAt])
+}
+
+// ===========================================================================
+// Results proofs, share-for-discount and giveaways
+//
+// A trial user submits a screenshot of their MT5 results through a signed
+// secret link (see src/lib/proof-token.ts). Nothing is public until an admin
+// approves it AND it is published. A user who shares the result on social media
+// and submits the post link earns a single-use discount code once an admin
+// approves the link. Giveaway entries feed EmailSubscriber for the email list.
+// ===========================================================================
+
+enum ProofStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum GiveawayStatus {
+  DRAFT
+  LIVE
+  DRAWN
+}
+
+/// A results screenshot. The image lives in the private object bucket under
+/// imageKey and is only ever served through /api/proofs/[id]/image.
+model ResultProof {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId String
+  imageKey       String
+  contentType    String
+  sizeBytes      Int
+  /// SHA-256 of the processed image, to refuse the same file twice.
+  sha256         String
+  /// Name shown on the public wall (optional; never the account number).
+  displayName    String?
+  /// The user agreed to public display. Without it the image is never published.
+  publishConsent Boolean     @default(false)
+  status         ProofStatus @default(PENDING)
+  adminNote      String?
+  reviewedAt     DateTime?
+  /// Set when an admin puts an approved proof on the public wall.
+  publishedAt    DateTime?
+  createdAt      DateTime    @default(now())
+
+  @@unique([sha256])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([publishedAt])
+}
+
+/// A link to a social post sharing a result. One per person: one reward each.
+model ShareProof {
+  id            String      @id @default(cuid())
+  userId        String      @unique
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resultProofId String?
+  platform      String
+  url           String
+  status        ProofStatus @default(PENDING)
+  /// The reward code, created when an admin approves the link.
+  couponId      String?     @unique
+  coupon        Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  adminNote     String?
+  reviewedAt    DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([status, createdAt])
+}
+
+model Giveaway {
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  title         String
+  prize         String
+  rulesText     String
+  startsAt      DateTime
+  endsAt        DateTime
+  status        GiveawayStatus  @default(DRAFT)
+  winnerEntryId String?
+  drawnAt       DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  entries       GiveawayEntry[]
+
+  @@index([status, endsAt])
+}
+
+model GiveawayEntry {
+  id             String   @id @default(cuid())
+  giveawayId     String
+  giveaway       Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  email          String
+  userId         String?
+  /// exit-intent | page | proof | share
+  source         String
+  /// Extra chances earned (an approved proof and an approved share add one each).
+  bonusEntries   Int      @default(0)
+  /// Agreed to receive marketing emails (a separate choice from entering).
+  marketingOptIn Boolean  @default(false)
+  country        String?
+  locale         String?
+  createdAt      DateTime @default(now())
+
+  @@unique([giveawayId, email])
+  @@index([giveawayId, createdAt])
 }
