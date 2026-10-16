@@ -22,7 +22,8 @@ export type NavIcon =
   | "webhooks"
   | "rewards"
   | "proofs"
-  | "giveaways";
+  | "giveaways"
+  | "promobar";
 
 export type NavItem = { href: string; icon: NavIcon; label: string };
 export type NavGroup = { label: string; items: NavItem[] };
@@ -62,6 +63,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/dashboard/admin/coupons", icon: "coupons", label: "manageCoupons" },
       { href: "/dashboard/admin/proofs", icon: "proofs", label: "manageProofs" },
       { href: "/dashboard/admin/giveaways", icon: "giveaways", label: "manageGiveaways" },
+      { href: "/dashboard/admin/promo-bar", icon: "promobar", label: "managePromoBar" },
       { href: "/dashboard/admin/webhooks", icon: "webhooks", label: "manageWebhooks" },
     ],
   },

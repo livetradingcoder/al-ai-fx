@@ -700,3 +700,22 @@ model GiveawayEntry {
   @@unique([giveawayId, email])
   @@index([giveawayId, createdAt])
 }
+
+/// A message in the top bar of the public site, optionally with a coupon code
+/// people can copy (see src/lib/promo-banner.ts). The code is referenced by
+/// text, not by a foreign key: if the coupon is switched off, used up or
+/// expired, the bar simply stops showing it.
+model PromoBanner {
+  id         String    @id @default(cuid())
+  message    String
+  couponCode String?
+  ctaLabel   String?
+  /// A path on this site (starts with "/"), never an outside link.
+  ctaHref    String?
+  /// When the countdown ends and the message disappears; null falls back to the coupon's own expiry.
+  endsAt     DateTime?
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+
+  @@index([active, endsAt])
+}

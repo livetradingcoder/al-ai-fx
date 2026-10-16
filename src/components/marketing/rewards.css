@@ -738,6 +738,7 @@ textarea.rw-input {
 }
 
 .rw-announce-inner {
+  animation: rw-fade 0.35s ease;
   display: flex;
   flex: 1;
   align-items: center;
@@ -803,6 +804,65 @@ textarea.rw-input {
   white-space: nowrap;
 }
 
+.rw-announce-code {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 2px 10px;
+  border: 1px dashed rgba(252, 213, 53, 0.7);
+  border-radius: 8px;
+  background: rgba(252, 213, 53, 0.08);
+  color: var(--rw-primary);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.rw-announce-code small {
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
+  font-family: "Inter", sans-serif;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rw-announce-code:hover {
+  background: rgba(252, 213, 53, 0.16);
+}
+
+.rw-announce-dots {
+  display: flex;
+  gap: 6px;
+  margin-right: 6px;
+}
+
+.rw-announce-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+}
+
+.rw-announce-dot[aria-current="true"] {
+  background: var(--rw-primary);
+}
+
+.rw-announce-dot:focus-visible,
+.rw-announce-code:focus-visible {
+  outline: 2px solid var(--rw-primary);
+  outline-offset: 2px;
+}
+
 .rw-announce-btn:hover {
   filter: brightness(1.07);
 }
@@ -853,6 +913,8 @@ html.has-announce .lnav-sheet {
 }
 
 @media (max-width: 640px) {
+  .rw-announce-dots { display: none; }
+  .rw-announce-code small { display: none; }
   .rw-announce { height: 38px; padding-left: 8px; font-size: 0.8rem; }
   .rw-announce-inner { gap: 8px; justify-content: flex-start; }
   .rw-announce-label { display: none; }
@@ -861,6 +923,11 @@ html.has-announce .lnav-sheet {
 
 @media (max-width: 420px) {
   .rw-announce-tag { display: none; }
+  .rw-announce-time { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-announce-inner { animation: none; }
 }
 
 /* ---------- Video pop-up ---------- */

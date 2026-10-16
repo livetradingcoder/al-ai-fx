@@ -113,6 +113,11 @@ const Icon = {
       <rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7M12 8C10 8 7.5 7 7.5 5.2 7.5 3.9 8.7 3.2 9.8 3.8 11.2 4.6 12 8 12 8zM12 8c2 0 4.5-1 4.5-2.8 0-1.3-1.2-2-2.3-1.4C12.8 4.6 12 8 12 8z" />
     </svg>
   ),
+  promobar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 14V9a1 1 0 011-1h2l7-4v16l-7-4H5a1 1 0 01-1-1z" /><path d="M18 9a4 4 0 010 6" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h11" />

@@ -1,52 +1,77 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/routing";
+import type { PublicBanner } from "@/lib/promo-banner";
 import "./rewards.css";
 
-// A slim bar across the top of the public pages while a giveaway is running:
-// the prize, a live countdown and a button. It is the always-visible way in,
-// next to the exit-intent pop-up, and it shows to everyone including signed-in
-// people. Hidden where it would get in the way (checkout, sign-in, the
+// The strip across the top of the public pages. It rotates between whatever is
+// on: the live giveaway, the admin's promo-bar messages (some carry a coupon
+// code to copy) and the share-your-results reward. Everyone sees it, signed in
+// or not. Hidden where it would get in the way (checkout, sign-in, the
 // dashboard, the giveaway page itself) and wherever the server says promotions
 // are not offered. Closing it hides it for the rest of the browser session.
 
 const HIDDEN_PATHS = ["/dashboard", "/checkout", "/login", "/forgot-password", "/magic-login", "/results/submit", "/giveaway"];
-const DISMISS_KEY = "gb_announce_dismissed_v1";
+const DISMISS_KEY = "gb_announce_dismissed_v2";
+const ROTATE_MS = 6500;
 
-type Offer = { slug: string; title: string; prize: string; endsAt: string };
+type Giveaway = { slug: string; title: string; prize: string; endsAt: string };
+type Api = {
+  eligible: boolean;
+  rewardPercent?: number;
+  giveaway: Giveaway | null;
+  banners?: PublicBanner[];
+};
 
-function dismissedSlug(): string | null {
-  try {
-    return window.sessionStorage.getItem(DISMISS_KEY);
-  } catch {
-    return null;
-  }
-}
+type Item =
+  | { kind: "giveaway"; id: string; giveaway: Giveaway }
+  | { kind: "banner"; id: string; banner: PublicBanner }
+  | { kind: "game"; id: string; percent: number };
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function remaining(ms: number) {
+function countdown(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
-  return {
-    days: Math.floor(total / 86400),
-    hours: Math.floor((total % 86400) / 3600),
-    minutes: Math.floor((total % 3600) / 60),
-    seconds: total % 60,
-    done: total <= 0,
-  };
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return `${days > 0 ? `${pad(days)}d ` : ""}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+function endsOf(item: Item): string | null {
+  if (item.kind === "giveaway") return item.giveaway.endsAt;
+  if (item.kind === "banner") return item.banner.endsAt;
+  return null;
 }
 
 export default function AnnouncementBar() {
   const locale = useLocale();
   const pathname = usePathname();
-  const [offer, setOffer] = useState<Offer | null>(null);
-  const [dismissed, setDismissed] = useState(false);
-  const [left, setLeft] = useState<number | null>(null);
+  const { status } = useSession();
+  const [data, setData] = useState<Api | null>(null);
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return typeof window !== "undefined" && window.sessionStorage.getItem(DISMISS_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  // Read on the client only. Nothing renders until the offers have loaded, so none of
+  // this can appear in the server HTML and mismatch it.
+  const [now, setNow] = useState<number>(() => Date.now());
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduceMotion] = useState(
+    () => typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false),
+  );
+  const [copied, setCopied] = useState<string | null>(null);
 
   const hiddenHere = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
@@ -55,10 +80,8 @@ export default function AnnouncementBar() {
     (async () => {
       try {
         const res = await fetch(`/api/promo/eligible?locale=${encodeURIComponent(locale)}`, { cache: "no-store" });
-        const data = (await res.json()) as { eligible: boolean; giveaway: Offer | null };
-        if (cancelled || !res.ok || !data.eligible || !data.giveaway) return;
-        setOffer(data.giveaway);
-        setDismissed(dismissedSlug() === data.giveaway.slug);
+        const json = (await res.json()) as Api;
+        if (!cancelled && res.ok && json.eligible) setData(json);
       } catch {
         /* no bar: nothing to announce */
       }
@@ -69,15 +92,26 @@ export default function AnnouncementBar() {
   }, [locale]);
 
   useEffect(() => {
-    if (!offer) return;
-    const end = new Date(offer.endsAt).getTime();
-    const tick = () => setLeft(end - Date.now());
-    tick();
-    const id = setInterval(tick, 1000);
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [offer]);
+  }, []);
 
-  const visible = !!offer && !dismissed && !hiddenHere && left !== null && left > 0;
+  // What is on right now. Order: the giveaway, the admin's messages, the reward game.
+  const items: Item[] = useMemo(() => {
+    if (!data) return [];
+    const live = (iso: string | null) => iso === null || new Date(iso).getTime() > now;
+    const out: Item[] = [];
+    if (data.giveaway && live(data.giveaway.endsAt)) {
+      out.push({ kind: "giveaway", id: `g:${data.giveaway.slug}`, giveaway: data.giveaway });
+    }
+    for (const banner of data.banners ?? []) {
+      if (live(banner.endsAt)) out.push({ kind: "banner", id: `b:${banner.id}`, banner });
+    }
+    if (data.rewardPercent) out.push({ kind: "game", id: "game", percent: data.rewardPercent });
+    return out;
+  }, [data, now]);
+
+  const visible = items.length > 0 && !dismissed && !hiddenHere;
 
   // Make room: the fixed navbar and the page move down by the bar's height.
   useEffect(() => {
@@ -86,37 +120,123 @@ export default function AnnouncementBar() {
     return () => document.documentElement.classList.remove("has-announce");
   }, [visible]);
 
+  // Rotate while there is more than one message, unless the pointer or focus is on the bar.
+  useEffect(() => {
+    if (!visible || items.length < 2 || paused || reduceMotion) return;
+    const id = setInterval(() => setIndex((i) => i + 1), ROTATE_MS);
+    return () => clearInterval(id);
+  }, [visible, items.length, paused, reduceMotion]);
+
   const close = useCallback(() => {
     try {
-      if (offer) window.sessionStorage.setItem(DISMISS_KEY, offer.slug);
+      window.sessionStorage.setItem(DISMISS_KEY, "1");
     } catch {
       /* storage blocked: it just returns on the next page */
     }
     setDismissed(true);
-  }, [offer]);
+  }, []);
 
-  if (!visible || !offer || left === null) return null;
-  const t = remaining(left);
+  async function copy(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(code);
+      setTimeout(() => setCopied((c) => (c === code ? null : c)), 2000);
+    } catch {
+      /* clipboard blocked: the code is on screen to copy by hand */
+    }
+  }
+
+  if (!visible) return null;
+
+  const current = items[index % items.length];
+  const ends = endsOf(current);
+  const left = ends ? new Date(ends).getTime() - now : null;
 
   return (
-    <div className="rw-scope rw-announce" role="region" aria-label="Giveaway">
-      <div className="rw-announce-inner">
-        <span className="rw-announce-tag">Giveaway</span>
-        <span className="rw-announce-text">
-          Win <strong>{offer.prize}</strong>
-        </span>
-        <span className="rw-announce-time" role="timer" aria-label={`${t.days} days ${t.hours} hours left`}>
-          <span className="rw-announce-label">Ends in</span>
-          <b>
-            {t.days > 0 ? `${pad(t.days)}d ` : ""}
-            {pad(t.hours)}:{pad(t.minutes)}:{pad(t.seconds)}
-          </b>
-        </span>
-        <Link className="rw-announce-btn" href="/giveaway">
-          Enter free →
-        </Link>
+    <div
+      className="rw-scope rw-announce"
+      role="region"
+      aria-label="Offers"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <div className="rw-announce-inner" key={current.id} aria-live="off">
+        {current.kind === "giveaway" && (
+          <>
+            <span className="rw-announce-tag">Giveaway</span>
+            <span className="rw-announce-text">
+              {current.giveaway.title}: win <strong>{current.giveaway.prize}</strong>
+            </span>
+          </>
+        )}
+        {current.kind === "banner" && (
+          <>
+            <span className="rw-announce-tag">{current.banner.label ?? "Offer"}</span>
+            <span className="rw-announce-text">{current.banner.message}</span>
+            {current.banner.code && (
+              <button
+                type="button"
+                className="rw-announce-code"
+                onClick={() => void copy(current.banner.code as string)}
+                aria-label={`Copy code ${current.banner.code}`}
+              >
+                <span>{current.banner.code}</span>
+                <small>{copied === current.banner.code ? "Copied" : "Copy"}</small>
+              </button>
+            )}
+          </>
+        )}
+        {current.kind === "game" && (
+          <>
+            <span className="rw-announce-tag">Rewards game</span>
+            <span className="rw-announce-text">
+              Share your results, get <strong>{current.percent}% off</strong>
+            </span>
+          </>
+        )}
+
+        {left !== null && left > 0 && (
+          <span className="rw-announce-time" role="timer">
+            <span className="rw-announce-label">Ends in</span>
+            <b>{countdown(left)}</b>
+          </span>
+        )}
+
+        {current.kind === "giveaway" && (
+          <Link className="rw-announce-btn" href="/giveaway">
+            Enter free →
+          </Link>
+        )}
+        {current.kind === "banner" && (
+          <Link className="rw-announce-btn" href={current.banner.ctaHref}>
+            {current.banner.ctaLabel} →
+          </Link>
+        )}
+        {current.kind === "game" && (
+          <Link className="rw-announce-btn" href={status === "authenticated" ? "/dashboard/rewards" : "/catalog"}>
+            {status === "authenticated" ? "Play now →" : "Try free →"}
+          </Link>
+        )}
       </div>
-      <button type="button" className="rw-announce-x" onClick={close} aria-label="Close giveaway banner">
+
+      {items.length > 1 && (
+        <div className="rw-announce-dots" role="group" aria-label="Choose an offer">
+          {items.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              className="rw-announce-dot"
+              aria-label={`Show offer ${i + 1} of ${items.length}`}
+              aria-current={i === index % items.length}
+              onClick={() => setIndex(i)}
+            />
+          ))}
+        </div>
+      )}
+
+      <button type="button" className="rw-announce-x" onClick={close} aria-label="Close offers bar">
         ×
       </button>
     </div>

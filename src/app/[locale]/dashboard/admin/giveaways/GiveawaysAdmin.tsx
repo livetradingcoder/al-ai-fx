@@ -165,7 +165,7 @@ export default function GiveawaysAdmin({ giveaways, optedIn }: { giveaways: Give
             </label>
             <label>
               <span className="card-label">Prize</span>
-              <input className="enroll-input" style={{ marginTop: "8px" }} value={form.prize} onChange={(e) => setForm({ ...form, prize: e.target.value })} placeholder="3 months of GoldBot" />
+              <input className="enroll-input" style={{ marginTop: "8px" }} value={form.prize} onChange={(e) => setForm({ ...form, prize: e.target.value })} placeholder="3 weeks of GoldBot, free" />
             </label>
             <label>
               <span className="card-label">Starts</span>
