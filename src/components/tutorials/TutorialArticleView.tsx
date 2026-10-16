@@ -1,11 +1,10 @@
-import { existsSync } from "node:fs";
-import path from "node:path";
 import Image from "next/image";
 import { ArrowRight, BookOpen, ChevronRight, Clock, Info, LifeBuoy, ShieldAlert } from "lucide-react";
 
 import ArticleOffers from "@/components/content/ArticleOffers";
 import { Link } from "@/i18n/routing";
 import type { TutorialBlock } from "@/lib/tutorial-articles";
+import YouTubeEmbed from "./YouTubeEmbed";
 
 // One tutorial or help article, in the same layout as the guides (ca-* styles
 // from components/content/content.css). The page imports that stylesheet.
@@ -61,20 +60,13 @@ function renderBlock(block: TutorialBlock, index: number) {
           <figcaption>{block.caption}</figcaption>
         </figure>
       );
-    case "video": {
-      // Left out until the clip has been uploaded, so a missing file never
-      // shows as a broken player.
-      const file = path.join(process.cwd(), "public", block.src.replace(/^\/+/, ""));
-      if (!existsSync(file)) return null;
+    case "youtube":
       return (
         <figure key={index} className="tu-figure">
-          <video controls preload="metadata" playsInline style={{ width: "100%", borderRadius: 12 }}>
-            <source src={block.src} type="video/mp4" />
-          </video>
+          <YouTubeEmbed id={block.id} title={block.title} />
           <figcaption>{block.caption}</figcaption>
         </figure>
       );
-    }
     default:
       return null;
   }

@@ -14,9 +14,8 @@ import type { Block } from "@/lib/content-pages";
 export type TutorialBlock =
   | Block
   | { type: "figure"; src: string; alt: string; caption: string }
-  // A self-hosted clip under /public (so the CSP's default-src 'self' covers it).
-  // The page leaves the block out until the file exists.
-  | { type: "video"; src: string; caption: string };
+  // An unlisted YouTube video, shown click-to-load (see YouTubeEmbed).
+  | { type: "youtube"; id: string; title: string; caption: string };
 
 export type TutorialCategoryId = "start" | "setup" | "billing" | "trading";
 
@@ -99,8 +98,9 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         text: "Your GoldBot build is made for one MT5 account, so the first thing to do after signing up is to tell us which account it is. It takes about a minute.",
       },
       {
-        type: "video",
-        src: "/tutorials/link-mt5.mp4",
+        type: "youtube",
+        id: "AC5MUEfv7eI",
+        title: "How to link your MT5 account to GoldBot",
         caption: "Linking your MT5 account, start to finish.",
       },
       { type: "h2", id: "steps", text: "The steps" },

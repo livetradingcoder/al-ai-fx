@@ -62,8 +62,9 @@ const nextConfig: NextConfig = {
             // The Meta pixel loads fbevents.js from connect.facebook.net
             // (script-src), reports through www.facebook.com — an image request
             // normally, a beacon or fetch when the payload is larger, which is
-            // what connect-src is for — and uses a facebook.com frame.
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://cdn.ndesk.chat; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.ndesk.chat; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.ndesk.chat; connect-src 'self' https://api.paygate.to https://checkout.paygate.to https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com https://*.ndesk.chat wss://*.ndesk.chat; frame-src 'self' https://www.googletagmanager.com https://checkout.paygate.to https://www.facebook.com https://*.ndesk.chat;"
+            // what connect-src is for — and uses a facebook.com frame. The tutorial
+            // video is a click-to-load youtube-nocookie.com embed (frame-src).
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://cdn.ndesk.chat; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.ndesk.chat; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.ndesk.chat; connect-src 'self' https://api.paygate.to https://checkout.paygate.to https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://connect.facebook.net https://www.facebook.com https://*.ndesk.chat wss://*.ndesk.chat; frame-src 'self' https://www.googletagmanager.com https://checkout.paygate.to https://www.facebook.com https://*.ndesk.chat https://www.youtube-nocookie.com;"
           }
         ]
       }
