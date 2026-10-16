@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import type { PortalSnapshot } from "@/lib/proof-portal";
 import "./rewards.css";
 import { formatDate } from "@/lib/format-date";
+import { rewardCheckoutPath } from "@/lib/reward-links";
 
 // The three steps a trial user works through: send results, share them, collect
 // the reward. Used on the secret-link page (token from the email) and on the
@@ -280,7 +281,7 @@ export default function ProofPortal({
                   <button type="button" className="rw-btn rw-btn--ghost rw-btn--small" onClick={() => doCopy("code", coupon.code)}>
                     {copied === "code" ? "Copied" : "Copy"}
                   </button>
-                  <Link className="rw-btn rw-btn--small" href={`/checkout?robot=goldbot&tier=1-month&coupon=${encodeURIComponent(coupon.code)}`}>
+                  <Link className="rw-btn rw-btn--small" href={rewardCheckoutPath(coupon.code)}>
                     Use my code
                   </Link>
                 </div>

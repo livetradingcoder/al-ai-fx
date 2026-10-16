@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/routing";
 import { formatDate } from "@/lib/format-date";
+import { rewardCheckoutPath } from "@/lib/reward-links";
 import type { RewardsOffer } from "@/lib/rewards-offer";
 import ProofPortal from "./ProofPortal";
 import { useModal } from "./useModal";
@@ -179,7 +180,7 @@ export function RewardsDialog({
             <div className="rw-row">
               <Link
                 className="rw-btn"
-                href={`/checkout?robot=goldbot&tier=1-month&coupon=${encodeURIComponent(coupon.code)}`}
+                href={rewardCheckoutPath(coupon.code)}
                 onClick={onClose}
               >
                 Use my code

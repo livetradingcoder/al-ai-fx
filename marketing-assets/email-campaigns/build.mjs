@@ -294,7 +294,7 @@ const MAILS = [
       `Your one-time code is **${TAGS.couponCode}**. It takes 25% off your first plan, works on this email address only, and expires 30 days after we approved your post.`,
       "The button opens checkout. Enter this email address, then press Apply next to the code.",
     ],
-    cta: { label: "Use my code", url: `${SITE}/checkout?robot=goldbot&tier=1-month&coupon=${TAGS.couponCode}` },
+    cta: { label: "Use my code", url: `${SITE}/checkout?coupon=${TAGS.couponCode}` },
     footer: FOOTERS.trial(TRIAL_WHY),
   },
   {

@@ -9,6 +9,7 @@ import { grantBonusEntry } from "@/lib/giveaway";
 import { sendRewardCouponEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { createShareRewardCoupon, SHARE_REWARD_PERCENT } from "@/lib/rewards";
+import { rewardCheckoutPath } from "@/lib/reward-links";
 
 /** Null for an admin, otherwise the failure to hand straight back. */
 async function requireAdmin(): Promise<ActionResult | null> {
@@ -165,7 +166,7 @@ export async function reviewShareProof(input: {
       code: coupon.code,
       percent: SHARE_REWARD_PERCENT,
       expiresAt: coupon.expiresAt ?? new Date(),
-      checkoutUrl: `${origin}/checkout?robot=goldbot&tier=1-month&coupon=${encodeURIComponent(coupon.code)}`,
+      checkoutUrl: `${origin}${rewardCheckoutPath(coupon.code)}`,
     });
     emailed = true;
   } catch (err) {
