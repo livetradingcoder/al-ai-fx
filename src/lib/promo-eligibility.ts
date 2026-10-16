@@ -7,13 +7,11 @@ import { countryOfIp } from "@/lib/geo-country";
 // endpoint - hiding a button is not a gate.
 //
 // Countries come from PROMO_BLOCKED_COUNTRIES (comma separated ISO codes). The
-// default is the restricted-markets list from the project's compliance notes.
-// Set the variable to an empty string to switch country gating off.
+// country gate is OFF by default: nothing is blocked unless that variable lists
+// countries (for example PROMO_BLOCKED_COUNTRIES=PK,IN). The language gate below
+// is separate and always on.
 
-export const DEFAULT_BLOCKED_COUNTRIES = [
-  "PK", "IN", "BD",
-  "AE", "SA", "EG", "QA", "KW", "OM", "BH", "JO", "LB", "IQ", "DZ", "MA", "TN",
-] as const;
+export const DEFAULT_BLOCKED_COUNTRIES: readonly string[] = [];
 
 /** Languages whose audiences are the restricted markets; mirrors the school's ROBOT_SAFE_LOCALES inverse. */
 export const BLOCKED_LOCALES = ["ar", "hi", "ur", "bn"] as const;

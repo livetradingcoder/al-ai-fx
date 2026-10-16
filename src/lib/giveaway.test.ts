@@ -35,18 +35,42 @@ test("every entry can win, in proportion to its weight", () => {
   assert.deepEqual(wins, { a: 1, b: 4 });
 });
 
-test("drawable entries weigh 1 plus bonus and drop restricted countries", () => {
-  const out = drawableEntries([
-    { id: "ng", bonusEntries: 0, country: "NG" },
-    { id: "ke", bonusEntries: 2, country: "KE" },
-    { id: "pk", bonusEntries: 2, country: "PK" },
-    { id: "none", bonusEntries: 0, country: null },
-    { id: "neg", bonusEntries: -3, country: "DE" },
-  ]);
-  assert.deepEqual(out, [
-    { id: "ng", weight: 1 },
-    { id: "ke", weight: 3 },
-    { id: "none", weight: 1 },
-    { id: "neg", weight: 1 },
-  ]);
+test("drawable entries weigh 1 plus bonus and drop countries on the block list", () => {
+  const saved = process.env.PROMO_BLOCKED_COUNTRIES;
+  process.env.PROMO_BLOCKED_COUNTRIES = "PK";
+  try {
+    const out = drawableEntries([
+      { id: "ng", bonusEntries: 0, country: "NG" },
+      { id: "ke", bonusEntries: 2, country: "KE" },
+      { id: "pk", bonusEntries: 2, country: "PK" },
+      { id: "none", bonusEntries: 0, country: null },
+      { id: "neg", bonusEntries: -3, country: "DE" },
+    ]);
+    assert.deepEqual(out, [
+      { id: "ng", weight: 1 },
+      { id: "ke", weight: 3 },
+      { id: "none", weight: 1 },
+      { id: "neg", weight: 1 },
+    ]);
+  } finally {
+    if (saved === undefined) delete process.env.PROMO_BLOCKED_COUNTRIES;
+    else process.env.PROMO_BLOCKED_COUNTRIES = saved;
+  }
+});
+
+test("with the country gate off (the default) nobody is dropped for their country", () => {
+  const saved = process.env.PROMO_BLOCKED_COUNTRIES;
+  delete process.env.PROMO_BLOCKED_COUNTRIES;
+  try {
+    const out = drawableEntries([
+      { id: "pk", bonusEntries: 1, country: "PK" },
+      { id: "in", bonusEntries: 0, country: "IN" },
+    ]);
+    assert.deepEqual(out, [
+      { id: "pk", weight: 2 },
+      { id: "in", weight: 1 },
+    ]);
+  } finally {
+    if (saved !== undefined) process.env.PROMO_BLOCKED_COUNTRIES = saved;
+  }
 });

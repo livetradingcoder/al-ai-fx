@@ -8,13 +8,21 @@ import {
   promoEligibilityForRequest,
 } from "./promo-eligibility";
 
-test("the default list blocks the restricted markets and nothing else we care about", () => {
+test("the country gate is off unless the env var lists countries", () => {
   const blocked = blockedCountries(undefined);
-  for (const c of ["PK", "IN", "BD", "AE", "SA", "EG"]) assert.equal(isPromoBlockedCountry(c, blocked), true, c);
-  for (const c of ["NG", "KE", "ZA", "DE", "ES", "NL", "UG", "US"]) assert.equal(isPromoBlockedCountry(c, blocked), false, c);
+  assert.equal(blocked.size, 0);
+  for (const c of ["PK", "IN", "BD", "NG", "KE", "ZA", "DE", "ES", "US"]) {
+    assert.equal(isPromoBlockedCountry(c, blocked), false, c);
+  }
 });
 
-test("the env var overrides the default, and empty switches the gate off", () => {
+test("the env var turns the country gate on for the countries it lists", () => {
+  const listed = blockedCountries("PK,IN");
+  assert.equal(isPromoBlockedCountry("PK", listed), true);
+  assert.equal(isPromoBlockedCountry("NG", listed), false);
+});
+
+test("the env var parses codes loosely, and empty means off", () => {
   const custom = blockedCountries("ng, ke ,x1,,toolong");
   assert.deepEqual([...custom].sort(), ["KE", "NG"]);
   assert.equal(blockedCountries("").size, 0);
@@ -22,7 +30,7 @@ test("the env var overrides the default, and empty switches the gate off", () =>
 });
 
 test("country matching is case-insensitive and tolerates missing values", () => {
-  const blocked = blockedCountries(undefined);
+  const blocked = blockedCountries("PK");
   assert.equal(isPromoBlockedCountry("pk", blocked), true);
   assert.equal(isPromoBlockedCountry(null, blocked), false);
   assert.equal(isPromoBlockedCountry(undefined, blocked), false);
