@@ -83,3 +83,63 @@ export is the safe way to avoid emailing someone about a step they already did.
    person in; `portal_link` opens their private results page.
 4. Schedule or send. Check opens/replies after a day. Replies to 01 and 03 tell you why
    people do not link: read them, they are the best product feedback you will get.
+
+---
+
+# Prop firm campaign: get prop firm traders to try and buy the robot
+
+Seven emails (`html/20-` to `html/26-`) aimed at people who trade with a prop firm, such as
+ForRealFunding's customers. The pitch is the one the site already documents at
+`/prop-firm-gold-ea`: a **fixed stop loss on every trade, a hedge capped at 5× the first lot,
+no grid and no martingale**. It never promises that a challenge will be passed (the site says
+no EA can), and every email tells the reader to check their own firm's EA policy.
+
+## The list comes from the firm, not from this app
+
+These people are not in the GoldBot database, so there is no CSV button for them. Export them
+from the firm's own list and give Sequenzy these columns:
+
+| Column | Used for |
+|---|---|
+| `email` | sending |
+| `first_name` | `{{first_name}}` (falls back to "there" if you set a default in Sequenzy) |
+| `firm_name` | `{{firm_name}}` and the "why you are getting this" line, e.g. ForRealFunding |
+| `status` | which variant: `active`, `breached`, `funded` |
+
+## Who gets what
+
+| # | Email | Who | When |
+|---|---|---|---|
+| 20 | prop-1-built-for-the-rules | everyone on the list | Day 0 |
+| 21 | prop-2-see-it-first | everyone | Day 2 |
+| 22 | prop-3-set-it-up-the-prop-firm-way | everyone | Day 4 |
+| 23 | prop-4-what-we-wont-promise | everyone | Day 6 |
+| 24 | prop-5-offer | everyone who has not bought | Day 9 |
+| 25 | prop-variant-failed-challenge | `status = breached`, **instead of 20** | 3 to 7 days after the breach, then 21 to 24 |
+| 26 | prop-variant-passed-funded | `status = funded`, **instead of 20** | a few days after they pass, then 22 to 24 |
+
+Stop the sequence for anyone who buys. Email 23 links to the results wall: send it only after at
+least three results are published on `/results`, otherwise delete that line first.
+
+## Set up the offer (email 24)
+
+1. Admin → **Coupons** → create a code for this audience (for example `PROP20`: Percent, 20,
+   any robot, any plan, an expiry about a week out, one use per email).
+2. In Sequenzy set the merge values for that send: `coupon_code` = the code, `coupon_discount`
+   = `20%`, `coupon_end_date` = the date you set. The button opens checkout with the code filled in.
+3. Optional: Admin → **Promo bar** → add the same code so it also shows in the site's top bar and
+   the leaving pop-up.
+
+## Before you send (read this)
+
+- **Only email people who agreed to marketing email from the firm,** and honour every
+  unsubscribe. Every email says why the person is receiving it (they have an account with the
+  firm, a GoldBot partner) and carries an unsubscribe link.
+- **Send from a verified sending domain,** warmed up and mail-tester checked, not from the main
+  domain customers rely on for account email. A big first send to a cold list can hurt delivery.
+- **Do not add claims.** No "pass your challenge", no profit figures, no "safe". The templates say
+  "defined risk" because that is what the site documents.
+- **Check the firm's own EA rules before you promote this to its customers.** Prop firms differ on
+  expert advisors, hedging and news trading, and the emails tell readers to read their firm's
+  policy: make sure that policy actually allows what you are selling.
+- The free trial in email 21 is **PrecisionTrader**, not MultiRange. The emails say so on purpose.

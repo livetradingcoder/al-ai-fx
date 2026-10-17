@@ -27,6 +27,10 @@ const TAGS = {
   portalLink: "{{portal_link}}", // their private results link (CSV column portal_link)
   couponCode: "{{coupon_code}}", // only for the backup "code delivered" email
   unsubscribe: "{{unsubscribe_url}}", // Sequenzy's own unsubscribe link
+  // Prop firm campaign (the list comes from the firm, not from this app):
+  firmName: "{{firm_name}}", // the prop firm the person trades with
+  couponDiscount: "{{coupon_discount}}", // e.g. "20%"
+  couponEnd: "{{coupon_end_date}}", // e.g. "24 October"
 };
 
 const C = {
@@ -56,6 +60,7 @@ function inline(text) {
 const FOOTERS = {
   trial: (reason) =>
     `${reason} <a href="${TAGS.unsubscribe}" style="color:${C.muted};text-decoration:underline;">Unsubscribe</a>.`,
+  firm: `You are getting this because you have an account with ${TAGS.firmName}, a GoldBot partner. <a href="${TAGS.unsubscribe}" style="color:${C.muted};text-decoration:underline;">Unsubscribe</a>.`,
   list: `You asked for updates when you entered the giveaway. <a href="${TAGS.unsubscribe}" style="color:${C.muted};text-decoration:underline;">Unsubscribe</a> at any time.`,
 };
 
@@ -163,7 +168,7 @@ const MAILS = [
       "These are the three things people get stuck on:",
       {
         list: [
-          "**I do not have an MT5 account.** Any broker that offers MetaTrader 5 works. A demo account is fine for the trial.",
+          "**I do not have an MT5 account.** You need a MetaTrader 5 account with your broker. GoldBot works on MT5 only, not MT4 or the phone app.",
           "**I cannot find my account number.** In MT5, open the Navigator panel and expand Accounts. The number in front of your broker's name is it.",
           "**It says the account was already used.** A free trial only links to an account that has never had a GoldBot licence. Use a different account, or reply and tell us.",
         ],
@@ -429,6 +434,177 @@ const MAILS = [
     footer: FOOTERS.list,
   },
 ];
+
+const PROP_PAGE = `${SITE}/prop-firm-gold-ea`;
+const RULES_LINE = `Prop firms set their own rules on expert advisors and change them. Read ${TAGS.firmName}'s current EA policy before you attach any robot to a challenge or funded account.`;
+
+const PROP_MAILS = [
+  {
+    file: "20-prop-1-built-for-the-rules",
+    segment: "Prop firm traders: everyone on the firm's marketing list",
+    timing: "Day 0",
+    subject: "The EA design that can end a challenge in one session",
+    preview: "Grid and martingale EAs look smooth until one bad session.",
+    eyebrow: "Prop firm traders",
+    title: `${TAGS.firstName}, a challenge can end on one bad day`,
+    paragraphs: [
+      "A prop firm account gives you no time to recover from one bad session. A daily-loss or maximum-drawdown limit is hit once and the challenge is over.",
+      "A lot of automated gold trading fails in the same way: a grid or martingale EA keeps adding bigger positions against the move, with no stop. It looks smooth right up until one strong trend arrives.",
+      "GoldBot's MultiRange robots are built the other way round:",
+      {
+        list: [
+          "**A fixed stop loss on every trade.**",
+          "**The hedge is capped at 5× the first lot,** so it cannot keep scaling.",
+          "**No grid and no martingale lot doubling.**",
+          "Fixed-lot or risk-percent sizing, and any session range can be switched off.",
+          "Major US, UK and EU bank holidays are skipped automatically.",
+        ],
+      },
+      "That does not make it safe, and no EA can promise to pass a challenge. It means the risk of each trade is defined before it opens, which is what a funded account needs.",
+    ],
+    cta: { label: "See how it works on a prop firm account", url: PROP_PAGE },
+    secondary: RULES_LINE,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "21-prop-2-see-it-first",
+    segment: "Prop firm traders: everyone on the list",
+    timing: "Day 2",
+    subject: "See it trade before you pay",
+    preview: "A 3-day free trial, no card. Then a 10-day plan if you want more.",
+    eyebrow: "Try it first",
+    title: `${TAGS.firstName}, watch it trade before you trust it`,
+    paragraphs: [
+      "You should see an EA open, hedge and close trades before you put a challenge fee near it.",
+      "GoldBot has a **3-day free trial** of PrecisionTrader (one session range a day, hedged, fixed lot). It needs no card. The MultiRange robots built with prop firm rules in mind are paid plans, and the shortest plan is 10 days, so you do not have to commit to months.",
+      "To be clear about what the trial is: a look at how the engine behaves on an MT5 account of your own. It is not a promise of what MultiRange will do on yours.",
+      {
+        steps: [
+          "Start the trial with your email.",
+          "Link your MT5 account. A short video shows how.",
+          "Watch it for the three days, then decide.",
+        ],
+      },
+    ],
+    cta: { label: "Start the 3-day free trial", url: `${SITE}/catalog` },
+    secondary: `New to installing an EA? [Read the five-step guide](${SITE}/guides/install-ea-on-mt5).`,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "22-prop-3-set-it-up-the-prop-firm-way",
+    segment: "Prop firm traders: everyone on the list",
+    timing: "Day 4",
+    subject: "Set it up for a funded account in four steps",
+    preview: "Register the right account, size conservatively, use a VPS.",
+    eyebrow: "Setup",
+    title: `${TAGS.firstName}, how to set it up on a prop firm account`,
+    paragraphs: [
+      {
+        steps: [
+          "**Register the challenge account's MT5 number.** Your build is compiled for that exact account, so use the number of the account you will trade.",
+          "**Size conservatively.** Use risk-percent sizing, and switch off the session ranges you do not want running so fewer positions can be open at once.",
+          "**Run it on a VPS.** It keeps MetaTrader connected 24/5, so a trade is never left without the EA managing it.",
+          "**Move to the funded account when you pass.** You can change the registered MT5 account from your dashboard up to twice a month.",
+        ],
+      },
+      RULES_LINE,
+    ],
+    cta: { label: "Read the full prop firm guide", url: PROP_PAGE },
+    secondary: `Want the mechanics first? [How hedging differs from martingale](${SITE}/guides/hedging-vs-martingale).`,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "23-prop-4-what-we-wont-promise",
+    segment: "Prop firm traders: everyone on the list",
+    timing: "Day 6. Remove the results line if fewer than three results are published on /results.",
+    subject: "What we will not promise (and what we will)",
+    preview: "No EA can promise to pass your challenge. Here is the honest version.",
+    eyebrow: "Straight talk",
+    title: "Will it pass my challenge?",
+    paragraphs: [
+      "No. No EA can guarantee that, and anyone who says otherwise is selling something. Results depend on market conditions, how you size, and your firm's rules.",
+      "What we can say plainly:",
+      {
+        list: [
+          "Every trade has a fixed stop, and the hedge is capped, so the risk of a trade is defined before it opens.",
+          "Each build is locked to one MT5 account, and you can move it to a new account up to twice a month.",
+          "You can read our refund policy before you buy, not after.",
+        ],
+      },
+      "People who run GoldBot can send us a screenshot of their own results. We check each one before it is shown and hide account numbers, so read them as examples of what real accounts did, not as a promise about yours.",
+    ],
+    cta: { label: "Read the prop firm FAQ", url: PROP_PAGE },
+    secondary: `If you would rather judge it on other traders' results, [see the ones they have shared](${SITE}/results). Or [read the refund policy](${SITE}/refund-policy).`,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "24-prop-5-offer",
+    segment: "Prop firm traders: everyone on the list who has not bought",
+    timing: "Day 9",
+    subject: `${TAGS.couponDiscount} off any GoldBot plan, until ${TAGS.couponEnd}`,
+    preview: "Your code is inside. The shortest plan is 10 days.",
+    eyebrow: "Your code",
+    title: `${TAGS.firstName}, your code: ${TAGS.couponCode}`,
+    paragraphs: [
+      `If you have been thinking about running GoldBot on a challenge or funded account, here is a code for **${TAGS.couponDiscount} off any plan**, valid until ${TAGS.couponEnd}.`,
+      "The shortest plan is 10 days, so you can see how it runs on your own account without a long commitment.",
+      `Before you buy: read ${TAGS.firmName}'s EA policy, size conservatively, and remember that no EA can guarantee you pass.`,
+    ],
+    cta: { label: `Use code ${TAGS.couponCode}`, url: `${SITE}/checkout?coupon=${TAGS.couponCode}` },
+    secondary: `Not ready? [Start the 3-day free trial](${SITE}/catalog) instead.`,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "25-prop-variant-failed-challenge",
+    segment: "Variant: traders whose challenge was breached. Use instead of 01 for them.",
+    timing: "3 to 7 days after the breach",
+    subject: "Hit the daily loss limit? One thing to change",
+    preview: "A breach is information. Here is a way to define risk before the next try.",
+    eyebrow: "Next attempt",
+    title: `${TAGS.firstName}, a breach is information`,
+    paragraphs: [
+      "If your challenge ended on one bad session, you know how fast it happens: the account had no room left, and one move decided it.",
+      "GoldBot's MultiRange robots put a fixed stop loss on every trade and cap the hedge at 5× the first lot. There is no grid and no martingale doubling. It will not make a challenge safe, and no EA can promise to pass one. It does mean the risk of each trade is defined before it opens.",
+      "Before the next attempt: size conservatively, run on a VPS, and read the firm's EA policy again.",
+      "You can also watch it for three days first. The free trial is PrecisionTrader, and it needs no card.",
+    ],
+    cta: { label: "See the prop firm setup", url: PROP_PAGE },
+    secondary: `Or [start the 3-day free trial](${SITE}/catalog).`,
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+  {
+    file: "26-prop-variant-passed-funded",
+    segment: "Variant: traders who passed and are funded. Use instead of 01 for them.",
+    timing: "A few days after they pass",
+    subject: "You passed. Now keep the account.",
+    preview: "The funded account can end on one bad session too.",
+    eyebrow: "Funded",
+    title: `${TAGS.firstName}, congratulations on passing`,
+    paragraphs: [
+      "Passing is one thing. Keeping the funded account is the longer game, and one bad session can end it just as it can end a challenge.",
+      "If you run GoldBot, or are thinking about it, two things matter now:",
+      {
+        list: [
+          "**Move the licence to the funded account's MT5 number** from your dashboard. You can change the registered account up to twice a month.",
+          "**Check whether your firm's EA rules for funded accounts differ** from the challenge rules. Read the current policy before you attach any robot.",
+        ],
+      },
+      "The MultiRange robots put a fixed stop loss on every trade and cap the hedge at 5× the first lot. That defines the risk of each trade. It is not a guarantee of results.",
+    ],
+    cta: { label: "See the prop firm setup", url: PROP_PAGE },
+    risk: true,
+    footer: FOOTERS.firm,
+  },
+];
+
+MAILS.push(...PROP_MAILS);
+
 
 mkdirSync(OUT, { recursive: true });
 
