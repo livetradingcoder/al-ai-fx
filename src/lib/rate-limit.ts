@@ -97,3 +97,8 @@ export async function checkGiveawayRateLimit(identifier: string): Promise<{ succ
   // 6 giveaway entries per hour per address: shared networks get room, scripts do not.
   return rateLimiter.limit(`giveaway:${identifier}`, 6, 60 * 60 * 1000);
 }
+
+export async function checkMcpRateLimit(identifier: string): Promise<{ success: boolean }> {
+  // The assistant's MCP endpoint: a few calls per prompt. 60 a minute leaves room and stops floods.
+  return rateLimiter.limit(`mcp:${identifier}`, 60, 60 * 1000);
+}

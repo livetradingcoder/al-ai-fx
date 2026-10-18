@@ -42,7 +42,8 @@ export const SEGMENT_LABELS: Record<SegmentKey, string> = {
 };
 
 const PAID_OR_INTERNAL = new Set(["TEN_DAYS", "ONE_MONTH", "SIX_MONTHS", "ONE_YEAR", "LIFETIME", "LIFETIME_SOURCE", "SECRET_TEST_TIER"]);
-const PAID = new Set(["TEN_DAYS", "ONE_MONTH", "SIX_MONTHS", "ONE_YEAR", "LIFETIME", "LIFETIME_SOURCE"]);
+export const PAID_TIERS = ["TEN_DAYS", "ONE_MONTH", "SIX_MONTHS", "ONE_YEAR", "LIFETIME", "LIFETIME_SOURCE"] as const;
+const PAID = new Set<string>(PAID_TIERS);
 
 /** Addresses used for testing: plus-tagged "test" addresses and the reserved example domains. */
 export function isTestEmail(email: string): boolean {
@@ -140,50 +141,21 @@ function isoDate(d: Date | null) {
   return d ? d.toISOString().slice(0, 10) : "";
 }
 
-export type SegmentCsv = { filename: string; csv: string; count: number };
+/** The one-click links in a trial row. Sign-in links open the account for 7 days, so they are opt-in outside the CSV. */
+export const LINK_COLUMNS = ["setup_link", "tutorial_link", "portal_link"] as const;
 
-export async function buildSegmentCsv(
-  segment: SegmentKey,
-  options: { giveawayId?: string | null } = {},
-): Promise<SegmentCsv> {
-  const stamp = new Date().toISOString().slice(0, 10);
-  const filename = `${segment}-${stamp}.csv`;
+export type TrialProspect = {
+  userId: string;
+  email: string;
+  name: string | null;
+  createdAt: Date;
+  trialId: string;
+  country: string | null;
+  cls: TrialUserClass;
+};
 
-  if (segment === "giveaway-subscribers") {
-    const subs = await prisma.emailSubscriber.findMany({
-      where: { source: { startsWith: "giveaway:" }, unsubscribedAt: null },
-      orderBy: { createdAt: "desc" },
-      select: { email: true, source: true, locale: true, createdAt: true },
-    });
-    const rows = subs
-      .filter((s) => !isTestEmail(s.email))
-      .map((s) => ({ email: s.email, source: s.source, locale: s.locale ?? "", signup_date: isoDate(s.createdAt) }));
-    return { filename, csv: toCsv(["email", "source", "locale", "signup_date"], rows), count: rows.length };
-  }
-
-  if (segment === "giveaway-entries") {
-    const entries = await prisma.giveawayEntry.findMany({
-      where: options.giveawayId ? { giveawayId: options.giveawayId } : {},
-      orderBy: { createdAt: "asc" },
-      select: { email: true, source: true, bonusEntries: true, marketingOptIn: true, country: true, locale: true, createdAt: true },
-    });
-    const rows = entries.map((e) => ({
-      email: e.email,
-      source: e.source,
-      chances: 1 + e.bonusEntries,
-      marketing_opt_in: e.marketingOptIn ? "yes" : "no",
-      country: e.country ?? "",
-      locale: e.locale ?? "",
-      entered_at: e.createdAt.toISOString(),
-    }));
-    return {
-      filename,
-      csv: toCsv(["email", "source", "chances", "marketing_opt_in", "country", "locale", "entered_at"], rows),
-      count: rows.length,
-    };
-  }
-
-  const now = new Date();
+/** Everyone on a free trial who may be emailed, classified once. Same rules as every list and count. */
+export async function loadTrialProspects(now: Date = new Date()): Promise<TrialProspect[]> {
   const users = await prisma.user.findMany({
     where: {
       role: "USER",
@@ -205,7 +177,7 @@ export async function buildSegmentCsv(
     },
   });
 
-  const rows: Record<string, unknown>[] = [];
+  const out: TrialProspect[] = [];
   for (const u of users) {
     if (isTestEmail(u.email)) continue;
     const cls = classifyTrialUser(
@@ -216,32 +188,122 @@ export async function buildSegmentCsv(
       },
       now,
     );
-    if (!cls.segments.includes(segment as TrialSegment)) continue;
-
-    const trial = u.subscriptions.find((s) => s.tier === "FREE_TRIAL")!;
-    const country = u.ips[0]?.country ?? null;
-    const daysLeft = cls.expiresAt ? Math.ceil((cls.expiresAt.getTime() - now.getTime()) / 86_400_000) : "";
-    rows.push({
+    if (!cls.prospect) continue;
+    out.push({
+      userId: u.id,
       email: u.email,
-      first_name: firstName(u.name, u.email),
-      country: country ?? "",
-      signup_date: isoDate(u.createdAt),
+      name: u.name,
+      createdAt: u.createdAt,
+      trialId: u.subscriptions.find((s) => s.tier === "FREE_TRIAL")!.id,
+      country: u.ips[0]?.country ?? null,
+      cls,
+    });
+  }
+  return out;
+}
+
+export type SegmentRows = { columns: string[]; rows: Record<string, unknown>[] };
+
+/**
+ * The people on one list, as rows. The CSV download always includes the links;
+ * other callers leave them out unless an email actually needs them.
+ */
+export async function buildSegmentRows(
+  segment: SegmentKey,
+  options: { giveawayId?: string | null; includeLinks?: boolean } = {},
+): Promise<SegmentRows> {
+  if (segment === "giveaway-subscribers") {
+    const subs = await prisma.emailSubscriber.findMany({
+      where: { source: { startsWith: "giveaway:" }, unsubscribedAt: null },
+      orderBy: { createdAt: "desc" },
+      select: { email: true, source: true, locale: true, createdAt: true },
+    });
+    const rows = subs
+      .filter((s) => !isTestEmail(s.email))
+      .map((s) => ({ email: s.email, source: s.source, locale: s.locale ?? "", signup_date: isoDate(s.createdAt) }));
+    return { columns: ["email", "source", "locale", "signup_date"], rows };
+  }
+
+  if (segment === "giveaway-entries") {
+    const entries = await prisma.giveawayEntry.findMany({
+      where: options.giveawayId ? { giveawayId: options.giveawayId } : {},
+      orderBy: { createdAt: "asc" },
+      select: { email: true, source: true, bonusEntries: true, marketingOptIn: true, country: true, locale: true, createdAt: true },
+    });
+    const rows = entries.map((e) => ({
+      email: e.email,
+      source: e.source,
+      chances: 1 + e.bonusEntries,
+      marketing_opt_in: e.marketingOptIn ? "yes" : "no",
+      country: e.country ?? "",
+      locale: e.locale ?? "",
+      entered_at: e.createdAt.toISOString(),
+    }));
+    return { columns: ["email", "source", "chances", "marketing_opt_in", "country", "locale", "entered_at"], rows };
+  }
+
+  const now = new Date();
+  const includeLinks = options.includeLinks ?? false;
+  const rows: Record<string, unknown>[] = [];
+  for (const p of await loadTrialProspects(now)) {
+    if (!p.cls.segments.includes(segment)) continue;
+    const { cls } = p;
+    const daysLeft = cls.expiresAt ? Math.ceil((cls.expiresAt.getTime() - now.getTime()) / 86_400_000) : "";
+    const row: Record<string, unknown> = {
+      email: p.email,
+      first_name: firstName(p.name, p.email),
+      country: p.country ?? "",
+      signup_date: isoDate(p.createdAt),
       trial_expires_at: cls.expiresAt ? cls.expiresAt.toISOString() : "",
       days_left: typeof daysLeft === "number" ? Math.max(0, daysLeft) : "",
       mt5_linked: cls.linked ? "yes" : "no",
-      setup_link: buildDashboardMagicLink(
-        { email: u.email, userId: u.id },
+      promo_eligible: isPromoBlockedCountry(p.country) ? "no" : "yes",
+    };
+    if (includeLinks) {
+      row.setup_link = buildDashboardMagicLink(
+        { email: p.email, userId: p.userId },
         { expiresIn: "7d", callbackUrl: "/dashboard/onboarding" },
-      ),
+      );
       // Signs them in and opens the "link your MT5 account" video tutorial.
-      tutorial_link: buildDashboardMagicLink(
-        { email: u.email, userId: u.id },
+      row.tutorial_link = buildDashboardMagicLink(
+        { email: p.email, userId: p.userId },
         { expiresIn: "7d", callbackUrl: "/tutorials/link-mt5-account" },
-      ),
-      portal_link: buildProofPortalUrl({ userId: u.id, subscriptionId: trial.id }),
-      promo_eligible: isPromoBlockedCountry(country) ? "no" : "yes",
-    });
+      );
+      row.portal_link = buildProofPortalUrl({ userId: p.userId, subscriptionId: p.trialId });
+    }
+    rows.push(row);
   }
 
-  return { filename, csv: toCsv(TRIAL_COLUMNS, rows), count: rows.length };
+  const columns = includeLinks
+    ? TRIAL_COLUMNS
+    : TRIAL_COLUMNS.filter((c) => !(LINK_COLUMNS as readonly string[]).includes(c));
+  return { columns, rows };
+}
+
+export type SegmentCsv = { filename: string; csv: string; count: number };
+
+export async function buildSegmentCsv(
+  segment: SegmentKey,
+  options: { giveawayId?: string | null } = {},
+): Promise<SegmentCsv> {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const { columns, rows } = await buildSegmentRows(segment, { ...options, includeLinks: true });
+  return { filename: `${segment}-${stamp}.csv`, csv: toCsv(columns, rows), count: rows.length };
+}
+
+/** How many people each list holds right now, by the same rules as the rows. */
+export async function countSegments(now: Date = new Date()): Promise<Record<SegmentKey, number>> {
+  const [prospects, subscribers, entries] = await Promise.all([
+    loadTrialProspects(now),
+    prisma.emailSubscriber.findMany({
+      where: { source: { startsWith: "giveaway:" }, unsubscribedAt: null },
+      select: { email: true },
+    }),
+    prisma.giveawayEntry.count(),
+  ]);
+  const counts = Object.fromEntries([...TRIAL_SEGMENTS, ...LIST_SEGMENTS].map((k) => [k, 0])) as Record<SegmentKey, number>;
+  for (const p of prospects) for (const key of p.cls.segments) counts[key] += 1;
+  counts["giveaway-subscribers"] = subscribers.filter((s) => !isTestEmail(s.email)).length;
+  counts["giveaway-entries"] = entries;
+  return counts;
 }
