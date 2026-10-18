@@ -11,8 +11,9 @@ import { createProofToken } from "@/lib/proof-token";
 
 // What the reward pop-up shows a signed-in visitor: their progress on the
 // "send results, share them, get a discount" path. Only people still on their
-// free trial are offered it: someone who has already bought has no use for a
-// first-plan discount, and anyone without a trial has nothing to report on.
+// trial (free or paid) are offered it: someone who has already bought a plan
+// has no use for a first-plan discount, and anyone without a trial has nothing
+// to report on. A trial fee is not a purchase of a plan, so it never counts as one.
 
 const PAID_TIERS = ["TEN_DAYS", "ONE_MONTH", "SIX_MONTHS", "ONE_YEAR", "LIFETIME", "LIFETIME_SOURCE"];
 

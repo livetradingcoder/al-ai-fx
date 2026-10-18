@@ -1,14 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { PRICING_TIERS } from "@/config/pricing";
+import { PricingTier } from "@prisma/client";
+
+import { buildPricingCatalog } from "@/lib/pricing-catalog";
+import { buildPricingFacts } from "@/lib/pricing-facts";
+import { FIXTURE_FACTS, FIXTURE_ROWS, NO_CATALOG_FACTS } from "@/lib/pricing-test-fixtures";
 import { usesNewDesign } from "@/lib/redesigned-routes";
 import {
+  buildTutorialArticles,
   getTutorialArticle,
   readingTime,
-  TUTORIAL_ARTICLES,
   TUTORIAL_CATEGORIES,
 } from "./tutorial-articles";
+
+const TUTORIAL_ARTICLES = buildTutorialArticles(FIXTURE_FACTS);
 
 test("slugs are unique, URL-safe, and never collide with the numbered tutorials", () => {
   const slugs = TUTORIAL_ARTICLES.map((a) => a.slug);
@@ -47,7 +53,7 @@ test("headings have unique anchors and no block is empty", () => {
 test("related articles exist, never point at themselves, and links stay on the site", () => {
   for (const a of TUTORIAL_ARTICLES) {
     for (const slug of a.related ?? []) {
-      assert.ok(getTutorialArticle(slug), `${a.slug} -> ${slug} does not exist`);
+      assert.ok(getTutorialArticle(slug, FIXTURE_FACTS), `${a.slug} -> ${slug} does not exist`);
       assert.notEqual(slug, a.slug);
     }
     for (const link of a.links ?? []) {
@@ -58,13 +64,34 @@ test("related articles exist, never point at themselves, and links stay on the s
   }
 });
 
-test("the pricing article quotes the same prices as the home page config", () => {
-  const pricing = getTutorialArticle("pricing");
-  assert.ok(pricing);
-  const text = JSON.stringify(pricing.blocks);
-  for (const tier of ["10-days", "1-month", "6-months", "1-year"] as const) {
-    assert.ok(text.includes(PRICING_TIERS[tier].priceString), `missing ${tier} price`);
-  }
+test("the pricing article quotes the flagship's prices from the catalog, not from numbers typed into it", () => {
+  const text = JSON.stringify(getTutorialArticle("pricing", FIXTURE_FACTS)!.blocks);
+  for (const price of ["$39", "$99", "$449", "$799"]) assert.ok(text.includes(price), `missing ${price}`);
+
+  // Change the database prices and the article follows.
+  const repriced = FIXTURE_ROWS.map((row) =>
+    row.slug === "gold-multirange-4"
+      ? { ...row, prices: row.prices.map((p) => (p.tier === PricingTier.TEN_DAYS ? { ...p, amount: 41 } : p)) }
+      : row,
+  );
+  const next = JSON.stringify(
+    getTutorialArticle("pricing", buildPricingFacts(buildPricingCatalog(repriced, "gold-multirange-4")))!.blocks,
+  );
+  assert.ok(next.includes("$41") && !next.includes("$39"));
+});
+
+test("the trial articles say what each robot's trial costs and how long it runs", () => {
+  const text = JSON.stringify(getTutorialArticle("free-trial", FIXTURE_FACTS)!.blocks);
+  assert.match(text, /PrecisionTrader has a 3-day trial for \$0\.99/);
+  assert.match(text, /Gold MultiRange 4 has a 7-day trial for \$1\.99/);
+  assert.match(text, /GoldBot Double Range has a 3-day free trial/);
+});
+
+test("when the catalog can't be read the articles quote no price at all", () => {
+  const text = JSON.stringify(buildTutorialArticles(NO_CATALOG_FACTS));
+  const pricing = JSON.stringify(getTutorialArticle("pricing", NO_CATALOG_FACTS)!.blocks);
+  assert.ok(!/\$\d/.test(pricing), "no dollar figure in the pricing article");
+  assert.ok(text.length > 0);
 });
 
 test("reading time is at least a minute and worded like the other tutorials", () => {

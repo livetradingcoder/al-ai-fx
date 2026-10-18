@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadEncryptedSource } from "@/lib/source-storage";
 import { Prisma, PricingTier } from "@prisma/client";
+import { ladderInversions } from "@/lib/pricing-catalog";
 import { TIER_METADATA } from "@/lib/pricing-tiers";
 import type { ActionResult } from "@/lib/action-result";
 
@@ -158,7 +159,19 @@ export async function getRobotPrices(robotId: string) {
   return prisma.robotPrice.findMany({ where: { robotId } });
 }
 
-// Accepts a list of per-tier prices for one robot and upserts each RobotPrice row.
+const PLAN_SLUGS = ["10-days", "1-month", "6-months", "1-year"] as const;
+const PLAN_NAME: Record<(typeof PLAN_SLUGS)[number], string> = {
+  "10-days": "10 Days",
+  "1-month": "Monthly",
+  "6-months": "Biannual",
+  "1-year": "1 Year",
+};
+
+// Accepts a list of per-tier prices for one robot and upserts each RobotPrice
+// row. A price sent as inactive takes that plan off sale but never creates a row
+// for it. Returns a warning when the plans that are on sale don't get cheaper
+// per day as they get longer: the page shows what is saved, so an upside-down
+// ladder would be sold exactly as entered.
 export async function updateRobotPrices(
   robotId: string,
   prices: { tier: string; amount: number; active?: boolean }[],
@@ -184,6 +197,11 @@ export async function updateRobotPrices(
     }
     const active = row.active ?? true;
 
+    if (!active) {
+      await prisma.robotPrice.updateMany({ where: { robotId, tier }, data: { active: false } });
+      continue;
+    }
+
     await prisma.robotPrice.upsert({
       where: { robotId_tier: { robotId, tier } },
       update: { amount, active },
@@ -194,5 +212,18 @@ export async function updateRobotPrices(
   // Deploy-free price change (PRIC-04): refresh admin AND public catalog.
   revalidatePath("/dashboard/admin/robots");
   revalidatePath("/catalog");
-  return { ok: true, message: "Prices saved" };
+
+  const onSale = PLAN_SLUGS.flatMap((slug) => {
+    const sent = prices.find((p) => p.tier === slug && (p.active ?? true) && Number(p.amount) > 0);
+    const days = TIER_METADATA[slug].durationDays;
+    return sent && typeof days === "number" ? [{ tier: slug, amount: Number(sent.amount), days }] : [];
+  });
+  const warnings = ladderInversions(onSale).map(
+    (i) =>
+      `${PLAN_NAME[i.longer]} ($${i.longerPerDay.toFixed(2)}/day) costs as much or more per day than ${PLAN_NAME[i.shorter]} ($${i.shorterPerDay.toFixed(2)}/day)`,
+  );
+  return {
+    ok: true,
+    message: warnings.length ? `Prices saved. Check the order of the plans: ${warnings.join("; ")}.` : "Prices saved",
+  };
 }

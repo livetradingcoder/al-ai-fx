@@ -140,3 +140,26 @@ test("buildEventBody: signup, trial and test messages", () => {
   assert.equal(test_.message, '✅ Test event\nWebhook "WhatsApp" is connected to AL-AI-FX.');
   assert.equal(test_.event, "webhook.test");
 });
+
+test("buildEventBody: a trial the robot charges for says so, and its sale is labelled as a trial", () => {
+  const started = (extra: object) =>
+    buildEventBody({
+      type: "trial.started",
+      data: { userId: "u", email: "a@b.co", robotSlug: "r", robotName: "R", ...extra },
+    }).message;
+
+  assert.equal(started({ paid: true, days: 7 }), "🧪 7-day trial — R\na@b.co");
+  assert.equal(started({ paid: true, days: 3, newAccount: true }), "🆕 New signup · 🧪 3-day trial — R\na@b.co");
+  assert.equal(started({ paid: true }), "🧪 Trial — R\na@b.co", "a paid trial of unknown length still isn't called free");
+  assert.equal(started({ paid: false, days: 3 }), "🧪 Free trial — R\na@b.co");
+
+  const sale = buildEventBody({
+    type: "sale.completed",
+    data: {
+      orderId: "o", orderRef: "POLAR-1", provider: "Polar", amount: 0.99, currency: "USD", tier: "FREE_TRIAL",
+      robotSlug: "r", robotName: "R", email: "a@b.co", userId: "u", refCode: null, trialDays: 3,
+    },
+  });
+  assert.equal(sale.title, "💰 New sale — R · 3-Day Trial");
+  assert.match(sale.message, /\$0\.99 via Polar/);
+});

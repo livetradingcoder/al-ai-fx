@@ -5,7 +5,8 @@ import path from "node:path";
 
 import { PROP_FIRM, VPS_REFERRAL_URL } from "@/config/links";
 import { CONTENT_PAGES } from "./content-pages";
-import { TUTORIAL_ARTICLES } from "./tutorial-articles";
+import { NO_CATALOG_FACTS } from "./pricing-test-fixtures";
+import { buildTutorialArticles } from "./tutorial-articles";
 
 // Run from the repo root, like every test here.
 const source = (file: string) => readFileSync(path.join(process.cwd(), file), "utf8");
@@ -44,7 +45,7 @@ test("the guides and the tutorials both end every article with the shared offers
 });
 
 test("no article hardcodes a partner link; they all come from the shared offers", () => {
-  const text = JSON.stringify([CONTENT_PAGES, TUTORIAL_ARTICLES]);
+  const text = JSON.stringify([CONTENT_PAGES, buildTutorialArticles(NO_CATALOG_FACTS)]);
   assert.ok(!text.includes(new URL(VPS_REFERRAL_URL).hostname), "an article links to the VPS vendor itself");
   assert.ok(!text.includes(new URL(PROP_FIRM.url).hostname), "an article links to the prop firm itself");
 });

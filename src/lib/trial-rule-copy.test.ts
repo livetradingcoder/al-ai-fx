@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { EXTRA_EN } from "./faq-content";
+import { buildExtraFaq } from "./faq-content";
+import { FIXTURE_FACTS } from "./pricing-test-fixtures";
 import { SESSION_RETENTION_DAYS, USER_IP_RETENTION_DAYS } from "./retention";
 import { getTutorialArticle } from "./tutorial-articles";
 
@@ -51,9 +52,9 @@ test("the terms ask for one trial per person and per account", () => {
 });
 
 test("the FAQ and the help article tell people what the error means", () => {
-  const faq = EXTRA_EN.find((item) => item.id === "trial");
+  const faq = buildExtraFaq(FIXTURE_FACTS).find((item) => item.id === "trial");
   assert.ok(faq && /never been used with a GoldBot licence, free or paid/.test(faq.a));
-  const article = getTutorialArticle("free-trial");
+  const article = getTutorialArticle("free-trial", FIXTURE_FACTS);
   assert.ok(article);
   const text = JSON.stringify(article.blocks);
   assert.match(text, /This MT5 account has already been used with a GoldBot licence/);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createRobot, updateRobot, getRobotPrices, updateRobotPrices } from "./actions";
-import { TIER_METADATA } from "@/lib/pricing-tiers";
+import { LONG_TRIAL_DAYS, SHORT_TRIAL_DAYS, TIER_METADATA } from "@/lib/pricing-tiers";
 import type { ActionResult } from "@/lib/action-result";
 import type { RobotRow } from "./RobotsTable";
 
@@ -57,7 +57,8 @@ export default function RobotForm({
       const seeded: Record<string, string> = {};
       for (const tierId of tierIds) {
         const existing = rows.find((r) => r.tier === TIER_METADATA[tierId].enum);
-        seeded[tierId] = existing ? String(existing.amount) : "0";
+        // A plan that isn't on sale shows empty, not 0: saving a 0 must never switch a plan on.
+        seeded[tierId] = existing?.active ? String(existing.amount) : "";
       }
       setPrices(seeded);
       setPricesLoaded(true);
@@ -72,7 +73,13 @@ export default function RobotForm({
     if (!robot) return;
     startPriceTransition(async () => {
       try {
-        const rows = tierIds.map((tierId) => ({ tier: tierId, amount: Number(prices[tierId] ?? 0) }));
+        const rows = tierIds.map((tierId) => {
+          const raw = (prices[tierId] ?? "").trim();
+          const amount = raw === "" ? 0 : Number(raw);
+          // Empty means "not for sale". 0 is only a real price for the trial (a free trial).
+          const onSale = raw !== "" && (amount > 0 || tierId === "free-trial");
+          return { tier: tierId, amount, active: onSale };
+        });
         const res = await updateRobotPrices(robot.id, rows);
         alert(res.ok ? res.message : res.error);
       } catch {
@@ -215,6 +222,11 @@ export default function RobotForm({
           {!isCreate && (
             <div style={{ border: "1px solid var(--border-color)", borderRadius: "8px", padding: "1rem" }}>
               <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem" }}>Per-robot pricing</h3>
+              <p style={{ marginBottom: "0.75rem", fontSize: "0.78rem", lineHeight: 1.5, color: "var(--text-muted)" }}>
+                Leave a price empty to stop selling that plan. The free-trial price is the trial: 0 is a free {SHORT_TRIAL_DAYS}-day
+                trial, 0.99 a paid {SHORT_TRIAL_DAYS}-day trial, 1.99 or more a paid {LONG_TRIAL_DAYS}-day trial. A longer plan
+                should cost less per day than a shorter one; saving warns you when it doesn&apos;t.
+              </p>
               {!pricesLoaded ? (
                 <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Loading prices…</p>
               ) : (
@@ -229,6 +241,7 @@ export default function RobotForm({
                         type="number"
                         min={0}
                         step="0.01"
+                        placeholder="not for sale"
                         value={prices[tierId] ?? ""}
                         onChange={(e) => setPrices((p) => ({ ...p, [tierId]: e.target.value }))}
                         style={{ ...inputStyle, width: "140px" }}

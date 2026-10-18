@@ -1,6 +1,6 @@
 # Outbound webhooks
 
-AL-AI-FX posts an event to every enabled webhook after each **signup**, **free trial** and **sale**.
+AL-AI-FX posts an event to every enabled webhook after each **signup**, **trial** and **sale**.
 Manage endpoints and watch deliveries at **Dashboard → Admin → Webhooks**
 (`/dashboard/admin/webhooks`, admins only).
 
@@ -52,10 +52,10 @@ Body:
   "created_at": "2026-10-15T12:00:00.000Z",
   "site": "AL-AI-FX",
   "title": "💰 New sale — Gold MultiRange 4 · Ten Days",
-  "message": "💰 New sale — Gold MultiRange 4 · Ten Days\n$29.00 via Polar\nbuyer@example.com\nReferral: ABC123\nOrder POLAR-co_1",
+  "message": "💰 New sale — Gold MultiRange 4 · Ten Days\n$39.00 via Polar\nbuyer@example.com\nReferral: ABC123\nOrder POLAR-co_1",
   "path": "/dashboard/admin/orders",
   "url": "https://www.al-ai-fx.xyz/dashboard/admin/orders",
-  "data": { "orderRef": "POLAR-co_1", "provider": "Polar", "amount": 29, "currency": "USD", "…": "…" }
+  "data": { "orderRef": "POLAR-co_1", "provider": "Polar", "amount": 39, "currency": "USD", "…": "…" }
 }
 ```
 
@@ -88,9 +88,14 @@ Hash the **raw** bytes, not a re-serialised object.
 
 | Event | Fires when |
 | --- | --- |
-| `user.signup` | An account is created (by a purchase or a free trial). Not for existing customers buying again. |
-| `trial.started` | A free trial licence is issued. |
+| `user.signup` | An account is created (by a purchase or a trial). Not for existing customers buying again. |
+| `trial.started` | A trial licence is issued. `data.paid` is true when the robot charges for its trial, and `data.days` is how long it runs. |
 | `sale.completed` | An order is recorded — Polar, OxaPay, Whop, Paygate, a 100% coupon (shows as a free order). |
+
+A trial the robot charges for is announced twice, in this order: `trial.started` (with `paid: true`, and the
+signup folded in when it made the account) and then `sale.completed` for the fee, whose title says
+`3-Day Trial` or `7-Day Trial` and whose `data.trialDays` carries the length. Its `tier` is `FREE_TRIAL`
+either way: the amount is what tells a free trial from a paid one.
 | `webhook.test` | **Send test** in the admin. Never sent automatically. |
 
 Redelivered provider callbacks (the same payment notified twice) emit nothing the second time.

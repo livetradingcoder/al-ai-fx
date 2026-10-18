@@ -5,8 +5,9 @@ import { notFound, redirect } from "next/navigation";
 
 import TutorialArticleView from "@/components/tutorials/TutorialArticleView";
 import { authOptions } from "@/lib/auth";
-import { buildLoginRedirectPath } from "@/lib/auth-redirects";
-import { noIndexMetadata } from "@/lib/seo";
+import { buildMetadata, noIndexMetadata } from "@/lib/seo";
+import { loadPricingFacts } from "@/lib/pricing-facts";
+import { tutorialGate, tutorialLoginPath } from "@/lib/tutorial-access";
 import {
   getTutorialArticle,
   readingTime,
@@ -14,16 +15,27 @@ import {
 } from "@/lib/tutorial-articles";
 import "@/components/content/content.css";
 import "../tutorials.css";
-import { isLegacyId, LEGACY_IDS, legacyBlocks, legacyCard } from "../legacy";
+import { isLegacyId, LEGACY_ACCESS, LEGACY_IDS, legacyBlocks, legacyCard } from "../legacy";
 
-// Members-only (redirects to login), so keep it out of search results.
+// A public article is indexed under its English URL (the text is English-only);
+// everything else here is members-only and stays out of search results.
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const article = getTutorialArticle(id);
+  const { id, locale } = await params;
+  const article = getTutorialArticle(id, await loadPricingFacts());
+  if (article?.access === "public") {
+    return buildMetadata({
+      locale,
+      path: `/tutorials/${article.slug}`,
+      title: `${article.title} | GoldBot by AL-ai-FX`,
+      description: article.summary,
+      type: "article",
+      englishOnly: true,
+    });
+  }
   return noIndexMetadata(`${article ? article.title : "Tutorial"} | GoldBot by AL-ai-FX`);
 }
 
@@ -32,25 +44,29 @@ const categoryLabel = (id: string) => TUTORIAL_CATEGORIES.find((c) => c.id === i
 export default async function TutorialDetail({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id, locale } = await params;
   const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    redirect(
-      buildLoginRedirectPath(
-        locale,
-        locale === "en" ? `/tutorials/${id}` : `/${locale}/tutorials/${id}`,
-      ),
-    );
-  }
+  const signedIn = Boolean(session?.user?.id);
 
   const t = await getTranslations("Tutorials");
 
-  // A help article (English text).
-  const article = getTutorialArticle(id);
+  // A help article (English text). Its prices come from the live catalog.
+  const facts = await loadPricingFacts();
+  const article = getTutorialArticle(id, facts);
+
+  const gate = tutorialGate(article ? article.access : isLegacyId(id) ? LEGACY_ACCESS : undefined, signedIn);
+  if (gate === "not-found") notFound();
+  if (gate === "login") redirect(tutorialLoginPath(locale, id));
+
   if (article) {
+    // Members-only neighbours are still offered to a signed-out reader, marked
+    // and pointing at the login.
     const related = (article.related ?? [])
-      .map(getTutorialArticle)
+      .map((slug) => getTutorialArticle(slug, facts))
       .filter((a): a is NonNullable<typeof a> => Boolean(a))
-      .map((a) => ({ href: `/tutorials/${a.slug}`, title: a.title }));
+      .map((a) =>
+        tutorialGate(a.access, signedIn) === "login"
+          ? { href: tutorialLoginPath(locale, a.slug), title: a.title, locked: true }
+          : { href: `/tutorials/${a.slug}`, title: a.title },
+      );
 
     return (
       <TutorialArticleView
@@ -63,11 +79,14 @@ export default async function TutorialDetail({ params }: { params: Promise<{ id:
         related={related}
         lang={locale === "en" ? undefined : "en"}
         readLabel={t("readArticle")}
+        membersLabel={t("membersBadge")}
+        signInLabel={t("signInToRead")}
       />
     );
   }
 
-  // One of the three original, translated tutorials.
+  // One of the three original, translated tutorials (members-only, so only
+  // reached signed in).
   if (isLegacyId(id)) {
     const card = legacyCard(id, t);
     return (

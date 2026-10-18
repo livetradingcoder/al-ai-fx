@@ -1,6 +1,6 @@
 import type { FaqCategory, FaqItem } from "@/app/[locale]/faq/FaqBrowser";
 import { PROP_FIRM } from "@/config/links";
-import { TRIALS_SENTENCE, TRIAL_FEE_NOTE } from "@/lib/trial-copy";
+import type { PricingFacts } from "@/lib/pricing-facts";
 
 // FAQ content shared by the FAQ page and /llms-full.txt.
 
@@ -15,7 +15,21 @@ export const CATEGORIES: FaqCategory[] = [
 // says (landing, checkout, catalog, refund policy, disclaimer) — nothing here
 // is a new promise. Other locales show only the translated questions until
 // these are added to the message files.
-export const EXTRA_EN: FaqItem[] = [
+//
+// The trial answer is the one that quotes prices, so it is built from the live
+// catalog (PricingFacts) rather than carrying numbers of its own.
+export function buildExtraFaq(facts: PricingFacts): FaqItem[] {
+  return EXTRA_EN_TEMPLATE.map((item) =>
+    item.id === "trial"
+      ? {
+          ...item,
+          a: `${facts.trialAnswer} A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid.`,
+        }
+      : item,
+  );
+}
+
+const EXTRA_EN_TEMPLATE: FaqItem[] = [
   {
     id: "requirements",
     category: "start",
@@ -53,7 +67,7 @@ export const EXTRA_EN: FaqItem[] = [
     id: "trial",
     category: "billing",
     q: "Is there a free trial?",
-    a: `Not free, but cheap. ${TRIALS_SENTENCE} ${TRIAL_FEE_NOTE} A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid.`,
+    a: "", // filled in by buildExtraFaq
   },
   {
     id: "payment",

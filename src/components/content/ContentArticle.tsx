@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, hasTrialPrice, isPlanPrice } from "@/lib/catalog-tiers";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import { getContentPage, type Block, type ContentPage } from "@/lib/content-pages";
-import { CHEAPEST_TRIAL_PRICE } from "@/lib/trial-copy";
+import { loadPricingFacts } from "@/lib/pricing-facts";
 import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd, jsonLdScript } from "@/lib/seo";
 import ArticleOffers from "./ArticleOffers";
 import "./content.css";
@@ -157,6 +157,9 @@ export default async function ContentArticle({ page }: { page: ContentPage }) {
     robots[filter] = await loadRobots(filter === "all" ? undefined : filter);
   }
 
+  // What the sidebar says about trials comes from the live catalog.
+  const { cheapestPaidTrial, hasFreeTrial } = await loadPricingFacts();
+
   const toc = page.blocks.filter((b): b is Extract<Block, { type: "h2" }> => b.type === "h2");
   const related = page.related.map(getContentPage).filter((p): p is ContentPage => Boolean(p));
   const trail =
@@ -231,7 +234,13 @@ export default async function ContentArticle({ page }: { page: ContentPage }) {
           )}
           <div className="ca-side-cta">
             <strong>Try GoldBot first</strong>
-            <p>Low-cost trials from {CHEAPEST_TRIAL_PRICE}.</p>
+            <p>
+              {hasFreeTrial
+                ? "A free trial is open on some robots."
+                : cheapestPaidTrial
+                  ? `Trials from ${cheapestPaidTrial}.`
+                  : "Compare the robots and their plans."}
+            </p>
             <Link href="/catalog" className="ca-btn is-primary">
               Browse robots
               <ArrowRight size={16} aria-hidden="true" />

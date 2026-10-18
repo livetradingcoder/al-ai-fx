@@ -1,13 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  buildComingSoonProducts,
-  buildContactOffers,
-  buildPaidTrialPlans,
-  buildPassPlans,
-  buildSubscriptionPlans,
-} from "./pricing-showcase";
+import { buildComingSoonProducts, buildContactOffers } from "./pricing-showcase";
 
 type TranslatorValues = {
   fallback?: string;
@@ -21,43 +15,6 @@ const t = (_key: string, values?: TranslatorValues) => {
 
   return values?.fallback ?? _key;
 };
-
-test("subscription plans keep the yearly plan featured", () => {
-  const plans = buildSubscriptionPlans(t);
-  const featuredPlan = plans.find((plan) => plan.featured);
-
-  assert.equal(plans.length, 4);
-  assert.equal(featuredPlan?.id, "1-year");
-  assert.deepEqual(
-    plans.map((plan) => plan.price),
-    ["$39", "$99", "$449", "$799"],
-  );
-  assert.equal(plans[2]?.note, "($75 / month)");
-  assert.equal(plans[3]?.note, "($66.58 / month)");
-});
-
-test("pass plans keep only the free trial public", () => {
-  const plans = buildPassPlans(t);
-
-  assert.deepEqual(
-    plans.map((plan) => plan.id),
-    ["free-trial"],
-  );
-  assert.equal(plans[0]?.price, "$0");
-});
-
-test("each paid trial is priced, runs the length its price buys, and uses the free-trial checkout slug", () => {
-  const plans = buildPaidTrialPlans(t);
-
-  assert.deepEqual(
-    plans.map((plan) => [plan.robot.slug, plan.price, plan.period, plan.title]),
-    [
-      ["gold-multirange-4", "$1.99", "for 7 days", "7-Day Trial"],
-      ["precision-trader", "$0.99", "for 3 days", "3-Day Trial"],
-    ],
-  );
-  assert.ok(plans.every((plan) => plan.id === "free-trial" && plan.featured === undefined));
-});
 
 test("coming soon products are ordered for the next gold expansion wave", () => {
   const products = buildComingSoonProducts(t);

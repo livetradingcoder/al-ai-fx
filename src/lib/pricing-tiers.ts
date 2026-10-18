@@ -8,10 +8,10 @@ export class UnknownTierError extends Error {
   }
 }
 
+// How long each tier runs. Prices are not here: they are per robot, in the
+// RobotPrice rows, and a default kept in code would only be a second copy to drift.
 export interface TierMetadata {
   enum: PricingTier;
-  amount: number;
-  priceString: string;
   durationDays: number | "lifetime";
 }
 
@@ -30,14 +30,14 @@ export const trialDays = (listPrice: number) =>
 // Record<TierId, ...> guarantees every TierId slug is present.
 // Adding a slug to TierId in src/config/pricing.ts forces this map to grow — TS error otherwise.
 export const TIER_METADATA: Record<TierId, TierMetadata> = {
-  "free-trial":      { enum: PricingTier.FREE_TRIAL,       amount:     0, priceString: "$0",      durationDays: SHORT_TRIAL_DAYS },
-  "10-days":         { enum: PricingTier.TEN_DAYS,         amount:    39, priceString: "$39",     durationDays: 10 },
-  "1-month":         { enum: PricingTier.ONE_MONTH,        amount:    99, priceString: "$99",     durationDays: 30 },
-  "6-months":        { enum: PricingTier.SIX_MONTHS,       amount:   449, priceString: "$449",    durationDays: 182 },
-  "1-year":          { enum: PricingTier.ONE_YEAR,         amount:   799, priceString: "$799",    durationDays: 365 },
-  "lifetime":        { enum: PricingTier.LIFETIME,         amount:  7999, priceString: "$7,999",  durationDays: "lifetime" },
-  "lifetime-source": { enum: PricingTier.LIFETIME_SOURCE,  amount: 79999, priceString: "$79,999", durationDays: "lifetime" },
-  "secret-test":     { enum: PricingTier.SECRET_TEST_TIER, amount:    10, priceString: "$10",     durationDays: 7 },
+  "free-trial":      { enum: PricingTier.FREE_TRIAL,       durationDays: SHORT_TRIAL_DAYS },
+  "10-days":         { enum: PricingTier.TEN_DAYS,         durationDays: 10 },
+  "1-month":         { enum: PricingTier.ONE_MONTH,        durationDays: 30 },
+  "6-months":        { enum: PricingTier.SIX_MONTHS,       durationDays: 182 },
+  "1-year":          { enum: PricingTier.ONE_YEAR,         durationDays: 365 },
+  "lifetime":        { enum: PricingTier.LIFETIME,         durationDays: "lifetime" },
+  "lifetime-source": { enum: PricingTier.LIFETIME_SOURCE,  durationDays: "lifetime" },
+  "secret-test":     { enum: PricingTier.SECRET_TEST_TIER, durationDays: 7 },
 };
 
 // NOTE: mapTier is a TOTAL function — throws UnknownTierError on unknown input.

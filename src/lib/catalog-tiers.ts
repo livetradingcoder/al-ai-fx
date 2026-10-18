@@ -1,8 +1,7 @@
 import { PricingTier } from "@prisma/client";
 
-// Publicly listable tiers, in display order. Mirrors the curated set
-// pricing-showcase.ts surfaces on the public site (free trial + the 4 paid
-// windows). Hidden/contact-only tiers (LIFETIME, LIFETIME_SOURCE, SECRET_TEST_TIER)
+// Publicly listable tiers, in display order: the trial and the 4 paid windows
+// the home page, catalog and checkout show. Hidden/contact-only tiers (LIFETIME, LIFETIME_SOURCE, SECRET_TEST_TIER)
 // are intentionally EXCLUDED so a RobotPrice row for them never leaks onto a card.
 export const CATALOG_PUBLIC_TIERS: PricingTier[] = [
   PricingTier.FREE_TRIAL,

@@ -41,6 +41,8 @@ export async function GET(req: Request) {
       reason: availability.reason,
       message: availability.message,
       resetsAt: availability.resetsAt,
+      cap: availability.cap,
+      remaining: availability.remaining,
     },
     { headers: { "Cache-Control": "no-store" } },
   );

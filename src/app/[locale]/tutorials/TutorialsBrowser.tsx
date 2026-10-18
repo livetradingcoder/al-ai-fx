@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import NextLink from "next/link";
 import {
   ArrowRight,
   BookOpen,
   Clock,
   CreditCard,
   LifeBuoy,
+  Lock,
   Rocket,
   Search,
   TrendingUp,
@@ -24,6 +26,8 @@ export type TutorialIndexItem = {
   title: string;
   summary: string;
   duration: string;
+  /** Members-only and the visitor is signed out: `href` is the login, which returns here. */
+  locked?: boolean;
 };
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -33,16 +37,34 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   trading: TrendingUp,
 };
 
+// A locked card's href already carries the locale (it is the login path), so
+// it uses the plain Link; the locale-aware one would prefix it a second time.
+function CardLink({ item, children }: { item: TutorialIndexItem; children: ReactNode }) {
+  return item.locked ? (
+    <NextLink href={item.href} className="ca-guide-card is-locked">
+      {children}
+    </NextLink>
+  ) : (
+    <Link href={item.href} className="ca-guide-card">
+      {children}
+    </Link>
+  );
+}
+
 export default function TutorialsBrowser({
   title,
   subtitle,
   readLabel,
+  membersLabel,
+  signInLabel,
   categories,
   items,
 }: {
   title: string;
   subtitle: string;
   readLabel: string;
+  membersLabel: string;
+  signInLabel: string;
   categories: TutorialIndexCategory[];
   items: TutorialIndexItem[];
 }) {
@@ -151,17 +173,25 @@ export default function TutorialsBrowser({
 
                 <div className="tu-grid">
                   {group.items.map((item) => (
-                    <Link key={item.href} href={item.href} className="ca-guide-card">
-                      <span className="ca-related-kind">
-                        <Clock size={13} aria-hidden="true" />
-                        {item.duration}
+                    <CardLink key={item.href} item={item}>
+                      <span className="tu-card-top">
+                        <span className="ca-related-kind">
+                          <Clock size={13} aria-hidden="true" />
+                          {item.duration}
+                        </span>
+                        {item.locked && (
+                          <span className="tu-badge">
+                            <Lock size={11} aria-hidden="true" />
+                            {membersLabel}
+                          </span>
+                        )}
                       </span>
                       <strong>{item.title}</strong>
                       <p>{item.summary}</p>
                       <span className="ca-related-more">
-                        {readLabel} <ArrowRight size={14} aria-hidden="true" />
+                        {item.locked ? signInLabel : readLabel} <ArrowRight size={14} aria-hidden="true" />
                       </span>
-                    </Link>
+                    </CardLink>
                   ))}
                 </div>
               </section>

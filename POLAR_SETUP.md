@@ -69,24 +69,27 @@ endpoint to view or regenerate it (update the env var after regenerating).
 | PrecisionTrader · 1 Year | `5a4301e7-61c2-427e-aeb5-448eeb9ab78a` | $399, `tier=1-year` |
 | Product "Test Product" | `43d42d45-6a3c-44bc-9939-461993908fc2` | $10.00 USD, one-time; no metadata (pass robot/tier as checkout metadata to test) |
 | Product "Algo Trading School Pro" | `ce2ffc11-26dc-4357-8ad7-efb7d72e54b4` | €29 / $32, the school's product — no robot mapping, not for this app |
+| Webhook endpoint | `44407786-898b-4786-9538-30a8c36970a4` | `https://www.al-ai-fx.xyz/api/webhooks/polar`, format `raw`, 23 events |
+| Discount "Test 100% off" | `91dcb2de-c93d-4989-b0d5-fdc982a1313c` | Code `TEST100`, 100% off, once; Test Product and Pro |
 
 The catalog prices above mirror `RobotPrice` at creation time, but the checkout page always sends the
 DB price (after discounts) as an ad-hoc price, so a price change in the DB takes effect without touching
 Polar. Polar's own prices only apply to the `GET` redirect links.
 
-### Pending in Polar (Oct 2026 pricing change)
+### Polar products for the Oct 2026 pricing
 
-- Gold MultiRange 4 · 10 Days: now $39 in the DB (was $29). Only the `GET` links still quote Polar's $29.
-- Gold MultiRange 4 · 1 Year: now $799 in the DB (was $999). Same note.
-- Gold MultiRange 4 · 7-Day Trial: **create it.** $1.99, one-time, metadata
-  `robot=gold-multirange-4 tier=free-trial`. The trial is the `FREE_TRIAL` tier with a price above zero,
-  and card checkout finds its product by that metadata. Until it exists, card checkout answers
-  "pay with crypto instead" for the trial.
-- PrecisionTrader · Trial: same again if its trial is paid, metadata `robot=precision-trader tier=free-trial`,
-  priced $0.99 (runs 3 days) or $1.99 (runs 7). The price in the admin sets the length, not Polar's.
-  Whop can't take a charge under $1, so a $0.99 trial is card (Polar) or crypto only.
-| Webhook endpoint | `44407786-898b-4786-9538-30a8c36970a4` | `https://www.al-ai-fx.xyz/api/webhooks/polar`, format `raw`, 23 events |
-| Discount "Test 100% off" | `91dcb2de-c93d-4989-b0d5-fdc982a1313c` | Code `TEST100`, 100% off, once; Test Product and Pro |
+The site now reads every price from the database, and a trial is a robot's `free-trial` price. Card
+checkout finds its Polar product by `robot` + `tier` metadata, so each trial needs one, and the two
+changed MultiRange 4 plans should match what the page shows (Polar's own price is only used by the `GET`
+redirect links).
+
+- Gold MultiRange 4 · 10 Days: $39 (was $29). Gold MultiRange 4 · 1 Year: $799 (was $999).
+- Gold MultiRange 4 · 7-Day Trial: **create it.** $1.99, one-time, metadata `robot=gold-multirange-4 tier=free-trial`.
+- PrecisionTrader · 3-Day Trial: **create it.** $0.99, one-time, metadata `robot=precision-trader tier=free-trial`.
+
+Until a trial's product exists, card checkout answers "pay with crypto instead" for that trial. The price in
+the admin sets the length (0 and 0.99 run 3 days, 1.99 and up run 7), not Polar's. Whop can't take a charge
+under $1, so a $0.99 trial is card (Polar) or crypto only.
 
 Webhook events subscribed: `checkout.created/updated`, `order.created/paid/updated/refunded`,
 `subscription.created/updated/active/canceled/uncanceled/revoked`, `refund.created/updated`,

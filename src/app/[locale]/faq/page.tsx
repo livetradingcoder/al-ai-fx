@@ -3,7 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPageMetadata } from "@/lib/seo";
 import FaqBrowser, { type FaqItem } from "./FaqBrowser";
-import { CATEGORIES, EXTRA_EN } from "@/lib/faq-content";
+import { CATEGORIES, buildExtraFaq } from "@/lib/faq-content";
+import { loadPricingFacts } from "@/lib/pricing-facts";
 import "./faq.css";
 
 export async function generateMetadata({
@@ -26,7 +27,7 @@ export default async function FAQ() {
     { id: "prop-firms", category: "trading", q: t("q4"), a: t("a4") },
   ];
 
-  const items = locale === "en" ? [...translated, ...EXTRA_EN] : translated;
+  const items = locale === "en" ? [...translated, ...buildExtraFaq(await loadPricingFacts())] : translated;
   // Keep each category's questions together, in category order.
   const ordered = CATEGORIES.flatMap((c) => items.filter((i) => i.category === c.id));
   const categories = CATEGORIES.filter((c) => ordered.some((i) => i.category === c.id));

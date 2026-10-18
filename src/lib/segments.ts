@@ -68,7 +68,7 @@ export type TrialUserInput = {
 };
 
 export type TrialUserClass = {
-  /** On a free trial and has not bought anything. Only these are ever listed. */
+  /** On a trial (free, or paid for a small fee) and has not bought a plan. Only these are ever listed. */
   prospect: boolean;
   linked: boolean;
   expiresAt: Date | null;

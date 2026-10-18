@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { PROP_FIRM } from "@/config/links";
-import { EXTRA_EN } from "./faq-content";
+import { buildExtraFaq } from "./faq-content";
+import { NO_CATALOG_FACTS } from "./pricing-test-fixtures";
 
 test("the prop firm offer is ForRealFunding at 50% off with the GOLDBOT code", () => {
   assert.equal(PROP_FIRM.url, "https://forrealfunding.com/");
@@ -31,7 +32,7 @@ test("the checkout link is the firm's own checkout for the 5k one-step challenge
 });
 
 test("the FAQ answer quotes the same code, discount and price, and links to the checkout", () => {
-  const item = EXTRA_EN.find((i) => i.id === "prop-firm-account");
+  const item = buildExtraFaq(NO_CATALOG_FACTS).find((i) => i.id === "prop-firm-account");
   assert.ok(item);
   assert.ok(item.a.includes(PROP_FIRM.code) && item.a.includes(PROP_FIRM.discount));
   assert.ok(item.a.includes(PROP_FIRM.price), "the price is quoted from the same constant");

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { attachReferral, recordCommission } from "@/lib/affiliate";
 import { sendPurchaseConfirmationEmail } from "@/lib/mail";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
-import { mapTier, computeExpirationDate, UnknownTierError } from "@/lib/pricing-tiers";
+import { mapTier, computeExpirationDate, trialDays, UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
 import { inBackground, sendPurchaseEvent } from "@/lib/meta-events";
 import { emitWebhookEvent, inBackground as webhooksInBackground, providerOf, type EventData } from "@/lib/outbound-webhooks";
@@ -37,7 +37,9 @@ export async function findOrCreateUser(email: string) {
  *  ever goes to Meta hashed, and only for a visitor who accepted ad cookies. */
 export type BuyerDetails = Pick<MetaUserInput, "firstName" | "lastName" | "city" | "state" | "zip" | "country">;
 
-function formatTierLabel(tier: PricingTier) {
+// `trialPrice` is the robot's trial price: a trial it charges for is a "7-Day Trial", not a "Free Trial".
+function formatTierLabel(tier: PricingTier, trialPrice: number) {
+  if (tier === PricingTier.FREE_TRIAL && trialPrice > 0) return `${trialDays(trialPrice)}-Day Trial`;
   return tier.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
@@ -136,10 +138,19 @@ export async function provisionSubscription(
   const events: EventData[] = [];
   if (tier === "FREE_TRIAL") {
     // One event for a trial that also created the account: a signup followed
-    // by a trial is two chat messages about one person.
+    // by a trial is two chat messages about one person. A trial the robot
+    // charges for is followed by its sale event; this one still says it started.
     events.push({
       type: "trial.started",
-      data: { userId: user.id, email, robotSlug: robot.slug, robotName: robot.name, newAccount: userCreated },
+      data: {
+        userId: user.id,
+        email,
+        robotSlug: robot.slug,
+        robotName: robot.name,
+        newAccount: userCreated,
+        paid: listPrice > 0,
+        days: trialDays(listPrice),
+      },
     });
   } else if (userCreated && !(paygateId && amount !== undefined)) {
     // A paid order from a new customer is reported by the sale event itself.
@@ -177,11 +188,18 @@ export async function provisionSubscription(
         email,
         userId: user.id,
         refCode: refCode ?? null,
-        newCustomer: userCreated,
+        // A paid trial that made the account is announced by its trial.started event.
+        newCustomer: userCreated && tier !== PricingTier.FREE_TRIAL,
+        ...(tier === PricingTier.FREE_TRIAL ? { trialDays: trialDays(listPrice) } : {}),
       },
     });
 
-    await recordCommission({ orderId: order.id, userId: user.id, amount });
+    // A trial fee earns no commission. Where affiliates are paid on a referral's
+    // first order only, it would use up the one commission the buyer's first
+    // real plan should pay.
+    if (tier !== PricingTier.FREE_TRIAL) {
+      await recordCommission({ orderId: order.id, userId: user.id, amount });
+    }
 
     // Tell Meta's Conversions API, in the background and fenced off: a tracking
     // problem must never be able to fail an order that has already been paid.
@@ -212,7 +230,7 @@ export async function provisionSubscription(
 
     await sendPurchaseConfirmationEmail(
       email,
-      formatTierLabel(tier),
+      formatTierLabel(tier, listPrice),
       expiresAt,
       magicLinkUrl,
     );
