@@ -19,6 +19,7 @@ import GtmNoScript from "@/components/marketing/GtmNoScript";
 import NdeskWidget from "@/components/NdeskWidget";
 import { authOptions } from "@/lib/auth";
 import { getPageMetadata, jsonLdScript, organizationJsonLd, SITE_URL } from "@/lib/seo";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export async function generateMetadata({
   params,
@@ -91,6 +92,7 @@ export default async function RootLayout({
           <RewardsPopup />
           </NextIntlClientProvider>
         </AuthSessionProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
