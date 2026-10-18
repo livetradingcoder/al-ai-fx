@@ -6,6 +6,7 @@ import { trialDays } from "@/lib/pricing-tiers";
 import { loadPricingFacts, type PricingFacts } from "@/lib/pricing-facts";
 import { buildExtraFaq } from "@/lib/faq-content";
 import { CONTENT_PAGES } from "@/lib/content-pages";
+import { buildTutorialArticles, publicTutorialArticles } from "@/lib/tutorial-articles";
 import { SITE_URL } from "@/lib/seo";
 import en from "@/messages/en.json";
 
@@ -115,6 +116,12 @@ export async function buildLlmsTxt() {
     "",
     "## Guides",
     ...CONTENT_PAGES.map((p) => `- [${p.h1}](${url(p.path)}): ${p.description}`),
+    "",
+    // Only the articles anyone can read; the members-only ones are not linked.
+    "## Help articles",
+    ...publicTutorialArticles(buildTutorialArticles(facts)).map(
+      (a) => `- [${a.title}](${url(`/tutorials/${a.slug}`)}): ${a.summary}`,
+    ),
     "",
     "## Policies and support",
     ...POLICY_PAGES.map(([name, path]) => `- [${name}](${url(path)})`),
