@@ -7,6 +7,7 @@ import { getPageMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { getSettings, REF_COOKIE } from "@/lib/affiliate";
 import { whopEnabled } from "@/lib/whop";
+import { listCheckoutRobots, type CheckoutRobot } from "@/lib/checkout-robots";
 
 export async function generateMetadata({
   params,
@@ -39,5 +40,14 @@ export default async function CheckoutPage() {
     // Never block checkout over a discount banner.
   }
 
-  return <CheckoutClient referralDiscount={referralDiscount} whopEnabled={whopEnabled()} />;
+  // The robots and their prices ride along with the page so the first paint is
+  // right. If the lookup fails the client fetches them itself.
+  let initialRobots: CheckoutRobot[] | null = null;
+  try {
+    initialRobots = await listCheckoutRobots();
+  } catch {
+    // The client falls back to /api/robots.
+  }
+
+  return <CheckoutClient referralDiscount={referralDiscount} whopEnabled={whopEnabled()} initialRobots={initialRobots} />;
 }

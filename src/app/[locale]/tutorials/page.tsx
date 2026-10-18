@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { buildLoginRedirectPath } from "@/lib/auth-redirects";
 import { noIndexMetadata } from "@/lib/seo";
-import { readingTime, TUTORIAL_ARTICLES, TUTORIAL_CATEGORIES } from "@/lib/tutorial-articles";
+import { loadPricingFacts } from "@/lib/pricing-facts";
+import { buildTutorialArticles, readingTime, TUTORIAL_CATEGORIES } from "@/lib/tutorial-articles";
 import "@/components/content/content.css";
 import "./tutorials.css";
 import { LEGACY_IDS, legacyCard } from "./legacy";
@@ -38,7 +39,7 @@ export default async function Tutorials({
   }));
   const articles: TutorialIndexItem[] =
     locale === "en"
-      ? TUTORIAL_ARTICLES.map((article) => ({
+      ? buildTutorialArticles(await loadPricingFacts()).map((article) => ({
           href: `/tutorials/${article.slug}`,
           category: article.category,
           title: article.title,

@@ -7,6 +7,7 @@ import TutorialArticleView from "@/components/tutorials/TutorialArticleView";
 import { authOptions } from "@/lib/auth";
 import { buildLoginRedirectPath } from "@/lib/auth-redirects";
 import { noIndexMetadata } from "@/lib/seo";
+import { loadPricingFacts } from "@/lib/pricing-facts";
 import {
   getTutorialArticle,
   readingTime,
@@ -23,7 +24,7 @@ export async function generateMetadata({
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const article = getTutorialArticle(id);
+  const article = getTutorialArticle(id, await loadPricingFacts());
   return noIndexMetadata(`${article ? article.title : "Tutorial"} | GoldBot by AL-ai-FX`);
 }
 
@@ -44,11 +45,12 @@ export default async function TutorialDetail({ params }: { params: Promise<{ id:
 
   const t = await getTranslations("Tutorials");
 
-  // A help article (English text).
-  const article = getTutorialArticle(id);
+  // A help article (English text). Its prices come from the live catalog.
+  const facts = await loadPricingFacts();
+  const article = getTutorialArticle(id, facts);
   if (article) {
     const related = (article.related ?? [])
-      .map(getTutorialArticle)
+      .map((slug) => getTutorialArticle(slug, facts))
       .filter((a): a is NonNullable<typeof a> => Boolean(a))
       .map((a) => ({ href: `/tutorials/${a.slug}`, title: a.title }));
 

@@ -1,6 +1,7 @@
 import { PricingTier } from "@prisma/client";
 import { referredDiscountForCheckout } from "@/lib/affiliate";
 import { redeemCoupon, validateCoupon, type CouponCheck } from "@/lib/coupons";
+import { prisma } from "@/lib/prisma";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
 import { provisionSubscription } from "@/lib/subscriptions";
 
@@ -41,8 +42,17 @@ export async function priceCheckout(input: {
   // A trial priced at zero is claimed without paying (/api/checkout/free-trial).
   // Letting it through here would let a coupon or a zero-amount order skip the
   // free-trial limits; a trial priced above zero is an ordinary paid checkout.
-  if (resolved.tier === PricingTier.FREE_TRIAL && resolved.amount <= 0) {
-    return { ok: false, error: "Free trial does not require checkout." };
+  if (resolved.tier === PricingTier.FREE_TRIAL) {
+    if (resolved.amount <= 0) return { ok: false, error: "Free trial does not require checkout." };
+
+    // A paid trial can be taken once per robot, ever (an expired one counts), and
+    // the licence is only provisioned after the money has moved. Turn a repeat
+    // buyer away here, before a payment page, not after it.
+    const used = await prisma.subscription.findFirst({
+      where: { tier: PricingTier.FREE_TRIAL, robotId: resolved.robot.id, user: { email: input.email } },
+      select: { id: true },
+    });
+    if (used) return { ok: false, error: "You already used your trial for this robot. Choose a plan to keep going." };
   }
 
   const discountPercent = await referredDiscountForCheckout({ email: input.email, code: input.refCode });

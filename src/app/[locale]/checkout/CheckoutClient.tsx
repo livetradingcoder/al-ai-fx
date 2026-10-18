@@ -28,18 +28,24 @@ import {
   trackInitiateCheckout,
   trackStartTrial,
 } from "@/lib/marketing-client";
-import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
+import { TierId, RETIRED_ROBOTS } from "@/config/pricing";
+import type { CheckoutRobot } from "@/lib/checkout-robots";
 import { SHORT_TRIAL_DAYS, trialDays } from "@/lib/pricing-tiers";
 import { CardBrands, CryptoBrands } from "./PaymentBrands";
 import "./checkout.css";
 
-type RobotInfo = {
-  slug: string;
-  name: string;
-  shortDescription: string;
-  artworkUrl: string | null;
-  prices: Record<string, number>;
-};
+type RobotInfo = CheckoutRobot;
+
+// Only robots a buyer can actually purchase (>=1 price) belong in the picker.
+const purchasableRobots = (robots: RobotInfo[]) => robots.filter((r) => Object.keys(r.prices).length > 0);
+
+// The robot checkout opens on: the one in the link, else its successor if it was
+// delisted, else the first on sale.
+function pickRobotSlug(robots: RobotInfo[], wanted: string): string {
+  if (robots.some((r) => r.slug === wanted)) return wanted;
+  const successor = robots.find((r) => r.slug === RETIRED_ROBOTS[wanted]);
+  return successor?.slug ?? robots[0]?.slug ?? "";
+}
 
 // Display order for tier chips; only tiers with an active RobotPrice row
 // for the selected robot are rendered.
@@ -65,7 +71,15 @@ function formatUsd(amount: number): string {
 const trialName = (price: number) =>
   price > 0 ? `${trialDays(price)}-Day Trial` : `${SHORT_TRIAL_DAYS}-Day Free Trial`;
 
-function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: number; whopEnabled: boolean }) {
+function CheckoutContent({
+  referralDiscount,
+  whopEnabled,
+  initialRobots,
+}: {
+  referralDiscount: number;
+  whopEnabled: boolean;
+  initialRobots: RobotInfo[] | null;
+}) {
   const t = useTranslations("Checkout");
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -100,8 +114,14 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
   // Display prices come from the DB (per robot); the charge amount stays
   // server-authoritative in create-session (fail-closed resolveRobotPrice).
   const [tier, setTier] = useState<TierId>(urlTier);
-  const [robots, setRobots] = useState<RobotInfo[] | null>(null);
-  const [selectedSlug, setSelectedSlug] = useState(urlRobot);
+  // The server hands over the robot list with the page, so the first render
+  // already has real prices; the fetch below only refreshes it.
+  const [robots, setRobots] = useState<RobotInfo[] | null>(() =>
+    initialRobots ? purchasableRobots(initialRobots) : null,
+  );
+  const [selectedSlug, setSelectedSlug] = useState(() =>
+    initialRobots ? pickRobotSlug(purchasableRobots(initialRobots), urlRobot) : urlRobot,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -110,15 +130,11 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
         if (!res.ok || cancelled) return;
         const data = (await res.json()) as { robots: RobotInfo[] };
         if (cancelled || !Array.isArray(data.robots)) return;
-        // Only purchasable robots (>=1 active price) belong in the picker;
-        // "coming soon" robots have zero active price rows.
-        const purchasable = data.robots.filter(
-          (r) => Object.keys(r.prices).length > 0
-        );
+        // "Coming soon" robots have zero active price rows: not for sale.
+        const purchasable = purchasableRobots(data.robots);
         setRobots(purchasable);
         if (!purchasable.some((r) => r.slug === urlRobot)) {
-          const successor = purchasable.find((r) => r.slug === RETIRED_ROBOTS[urlRobot]);
-          setSelectedSlug(successor?.slug ?? purchasable[0]?.slug ?? "");
+          setSelectedSlug(pickRobotSlug(purchasable, urlRobot));
         }
       })
       .catch(() => {
@@ -155,19 +171,21 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
     "secret-test": { name: "Secret Test Tier" },
   };
 
-  const displayAmount =
-    robot && robot.prices[tier] !== undefined
-      ? robot.prices[tier]
-      : PRICING_TIERS[tier]?.amount ?? PRICING_TIERS["1-month"].amount;
+  // The price comes from the robot's own price row and from nowhere else. If the
+  // robot isn't known (the list failed to load) there is no price to show: the
+  // server resolves the real one at checkout either way.
+  const priceKnown = robot !== null && robot.prices[tier] !== undefined;
+  const displayAmount = priceKnown ? robot.prices[tier] : 0;
+  const money = (amount: number) => (priceKnown ? formatUsd(amount) : "—");
 
   const selectedPlan = {
     name: planDetails[tier]?.name ?? planDetails["1-month"].name,
-    price: formatUsd(displayAmount),
+    price: money(displayAmount),
     amount: displayAmount.toFixed(2),
   };
   const robotName = robot?.name ?? robotNameParam;
   // Only a trial the robot gives away skips payment; a priced one is checked out like a plan.
-  const isFreeTrial = tier === "free-trial" && displayAmount === 0;
+  const isFreeTrial = tier === "free-trial" && priceKnown && displayAmount === 0;
 
   // Reflect the picker in the address bar: the URL a buyer copies (or lands on
   // after Back) should be the robot and plan they are actually looking at.
@@ -641,7 +659,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       ? t("startFreeTrial")
                       : isSubmitting
                         ? t("redirecting")
-                        : `${t("payByCard")} · ${formatUsd(payable)}`}
+                        : `${t("payByCard")} · ${money(payable)}`}
                     {!isFreeTrial && <CardBrands />}
                   </button>
 
@@ -653,7 +671,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       disabled={isSubmitting}
                       onClick={() => void handleCheckout("whop")}
                     >
-                      {`${t("payWithWhop")} · ${formatUsd(payable)}`}
+                      {`${t("payWithWhop")} · ${money(payable)}`}
                       <CardBrands />
                     </button>
                   )}
@@ -665,7 +683,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                       disabled={isSubmitting}
                       onClick={() => void handleCheckout("oxapay")}
                     >
-                      {`${t("payWithCrypto")} · ${formatUsd(payable)}`}
+                      {`${t("payWithCrypto")} · ${money(payable)}`}
                       <CryptoBrands />
                     </button>
                   )}
@@ -734,7 +752,7 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
 
                 <div className="co-total">
                   <span>{t("total")}</span>
-                  <strong className="co-num">{formatUsd(payable)}</strong>
+                  <strong className="co-num">{money(payable)}</strong>
                 </div>
 
                 {referralPrice !== null && !coupon && (
@@ -772,9 +790,11 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
 export default function CheckoutClient({
   referralDiscount = 0,
   whopEnabled = false,
+  initialRobots = null,
 }: {
   referralDiscount?: number;
   whopEnabled?: boolean;
+  initialRobots?: CheckoutRobot[] | null;
 }) {
   const t = useTranslations("Checkout");
 
@@ -787,7 +807,7 @@ export default function CheckoutClient({
         </div>
       }
     >
-      <CheckoutContent referralDiscount={referralDiscount} whopEnabled={whopEnabled} />
+      <CheckoutContent referralDiscount={referralDiscount} whopEnabled={whopEnabled} initialRobots={initialRobots} />
     </Suspense>
   );
 }

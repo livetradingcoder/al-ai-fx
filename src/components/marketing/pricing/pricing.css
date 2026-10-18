@@ -1,0 +1,753 @@
+/* ==================== Pricing section (px-) ====================
+   Dark and gold, built on the landing theme's --ds-* tokens. One restrained
+   accent: the gold is spent on the chosen robot, the highlighted plan and the
+   trial's dashed edge. Motion is a short fade on tab change and a small lift on
+   hover, all of it switched off for prefers-reduced-motion. */
+
+.landing-shell .px-section {
+  scroll-margin-top: 72px;
+}
+
+.landing-shell .px-heading {
+  max-width: 760px;
+  margin-bottom: 36px;
+}
+
+.px-explorer {
+  min-width: 0;
+}
+
+/* ---------- Robot tabs ---------- */
+.px-tabs-wrap {
+  margin-bottom: 28px;
+  min-width: 0;
+}
+
+.px-tabs {
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 6px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+    #12161b;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.px-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.px-tab {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ds-muted-strong);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.px-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.px-tab:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+.px-tab.is-active {
+  border-color: rgba(252, 213, 53, 0.55);
+  background: var(--ds-card);
+  color: #fff;
+  box-shadow: 0 12px 32px -20px rgba(252, 213, 53, 0.55);
+}
+
+.px-tab-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.px-tab-name svg {
+  color: var(--ds-primary);
+}
+
+.px-tab-meta {
+  color: var(--ds-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.px-tab.is-active .px-tab-meta {
+  color: var(--ds-muted-strong);
+}
+
+/* ---------- Selected robot ---------- */
+.px-panel {
+  animation: px-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.px-panel[hidden] {
+  display: none;
+}
+
+@keyframes px-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.px-robot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--ds-hairline);
+}
+
+.px-robot-copy {
+  min-width: 0;
+}
+
+.px-robot-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-shell .px-robot-title h3 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.px-robot-copy p {
+  max-width: 62ch;
+  margin: 10px 0 0;
+  color: var(--ds-muted-strong);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.px-robot-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  color: var(--ds-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.px-robot-link svg {
+  transition: transform 180ms ease;
+}
+
+.px-robot-link:hover svg {
+  transform: translateX(3px);
+}
+
+.px-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ds-muted-strong);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.px-chip.is-gold {
+  border-color: rgba(252, 213, 53, 0.4);
+  background: rgba(252, 213, 53, 0.08);
+  color: var(--ds-primary);
+}
+
+/* ---------- Trial, then plans ---------- */
+.px-ladder {
+  display: grid;
+  gap: 24px;
+}
+
+.px-ladder.has-both {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3.4fr);
+}
+
+/* The trial and the plans sit side by side on a wide screen. Each step is a
+   column whose card (or row of cards) takes the height left under the label, so
+   the two end level instead of the taller overhanging the shorter. */
+.px-step {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.px-step > .px-card,
+.px-step > .px-plans {
+  flex: 1 1 auto;
+}
+
+.px-step-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+  color: var(--ds-muted-strong);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.px-step-label::before {
+  content: "";
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ds-primary);
+  box-shadow: 0 0 0 4px rgba(252, 213, 53, 0.14);
+}
+
+.px-step-label span {
+  color: var(--ds-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.px-plans {
+  display: grid;
+  grid-template-columns: repeat(var(--px-cols, 4), minmax(0, 1fr));
+  gap: 14px;
+  /* A robot with one or two plans gets cards of a normal width, not stretched across the row. */
+  max-width: calc(var(--px-cols, 4) * 300px + (var(--px-cols, 4) - 1) * 14px);
+}
+
+/* ---------- Cards ---------- */
+.px-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 20px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 40%),
+    var(--ds-card);
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.px-card:hover {
+  transform: translateY(-3px);
+  border-color: #474d57;
+  box-shadow: 0 24px 50px -34px #000;
+}
+
+/* The highlighted plan: a hairline of gold around it and a soft wash from the top. */
+.px-card.is-popular {
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, rgba(252, 213, 53, 0.1), rgba(252, 213, 53, 0) 46%) padding-box,
+    linear-gradient(var(--ds-card), var(--ds-card)) padding-box,
+    linear-gradient(150deg, #fcd535, rgba(252, 213, 53, 0.18) 48%, #f0b90b) border-box;
+}
+
+.px-card.is-popular:hover {
+  box-shadow: 0 26px 56px -34px rgba(252, 213, 53, 0.45);
+}
+
+/* The trial is the way in, so it reads as an invitation rather than a plan. */
+.px-card-trial {
+  border-style: dashed;
+  border-color: rgba(252, 213, 53, 0.42);
+  background:
+    linear-gradient(180deg, rgba(252, 213, 53, 0.06), rgba(252, 213, 53, 0) 50%),
+    var(--ds-card);
+}
+
+.px-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+}
+
+.landing-shell .px-card-head h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.px-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--ds-primary);
+  color: var(--ds-on-primary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.px-note {
+  min-height: 1.5em;
+  margin: 6px 0 0;
+  color: var(--ds-muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.px-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 22px 0 0;
+}
+
+.px-price strong {
+  color: #fff;
+  font-family: var(--ds-num);
+  font-size: clamp(2rem, 2.4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.px-card.is-popular .px-price strong,
+.px-card-trial .px-price strong {
+  color: var(--ds-primary);
+}
+
+.px-price span {
+  color: var(--ds-muted);
+  font-size: 0.85rem;
+}
+
+.px-perday {
+  min-height: 1.2em;
+  margin: 8px 0 0;
+  color: var(--ds-muted-strong);
+  font-family: var(--ds-num);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reserved height so the buttons line up whether or not a plan has a saving to show. */
+.px-save {
+  min-height: 26px;
+  margin: 8px 0 0;
+}
+
+.px-save span {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(252, 213, 53, 0.1);
+  color: var(--ds-primary);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.px-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--ds-elevated);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.px-cta:hover {
+  background: #474d57;
+}
+
+.px-cta svg {
+  flex: none;
+  transition: transform 180ms ease;
+}
+
+.px-cta:hover svg {
+  transform: translateX(3px);
+}
+
+.px-cta.is-primary {
+  background: var(--ds-primary);
+  color: var(--ds-on-primary);
+}
+
+.px-cta.is-primary:hover {
+  background: #ffe066;
+}
+
+.px-cta.is-outline {
+  border-color: rgba(252, 213, 53, 0.7);
+  background: rgba(252, 213, 53, 0.06);
+  color: var(--ds-primary);
+}
+
+.px-cta.is-outline:hover {
+  background: rgba(252, 213, 53, 0.14);
+}
+
+.px-cta.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.px-cta:focus-visible,
+.px-robot-link:focus-visible,
+.px-more-link:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+.px-fine {
+  margin: 10px 0 0;
+  color: var(--ds-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.px-divider {
+  height: 1px;
+  margin: 20px 0 18px;
+  background: var(--ds-hairline);
+}
+
+.px-features {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.px-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--ds-body);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.px-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: rgba(252, 213, 53, 0.14);
+  color: var(--ds-primary);
+}
+
+/* ---------- Trust, pay-after-trial, more links ---------- */
+.px-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 32px;
+  margin: 36px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ds-muted-strong);
+  font-size: 0.875rem;
+}
+
+.px-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.px-trust svg {
+  color: var(--ds-primary);
+}
+
+.px-soon {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px 40px;
+  margin-top: 48px;
+  padding: 24px 28px;
+  border: 1px dashed var(--ds-elevated);
+  border-radius: 16px;
+}
+
+.landing-shell .px-soon h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.px-soon-copy p {
+  margin: 8px 0 0;
+  color: var(--ds-muted-strong);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.px-soon-copy .px-soon-hook {
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.landing-shell .px-soon-form .btn-secondary,
+.landing-shell .px-soon-form .btn-primary {
+  width: 100%;
+  min-height: 44px;
+}
+
+.landing-shell .px-soon-form input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 8px;
+  background: var(--ds-canvas);
+  color: var(--ds-body);
+}
+
+.landing-shell .px-soon-form input:focus {
+  outline: none;
+  border-color: var(--ds-primary);
+}
+
+.px-more {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.px-more-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--ds-hairline);
+  border-radius: 16px;
+  color: var(--ds-body);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.px-more-link:hover {
+  border-color: #474d57;
+  background: var(--ds-card);
+}
+
+.px-more-link > svg:first-child {
+  flex: none;
+  color: var(--ds-primary);
+}
+
+.px-more-link > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.px-more-link strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.px-more-link small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ds-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.px-more-link > svg:last-child {
+  flex: none;
+  color: var(--ds-muted);
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.px-more-link:hover > svg:last-child {
+  color: var(--ds-primary);
+  transform: translateX(4px);
+}
+
+/* ---------- When the price list can't be loaded ---------- */
+.px-fallback {
+  padding: 40px 28px;
+  border: 1px dashed var(--ds-elevated);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.landing-shell .px-fallback h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.px-fallback p {
+  margin: 8px 0 20px;
+  color: var(--ds-muted-strong);
+}
+
+.px-fallback .px-cta {
+  display: inline-flex;
+  margin-top: 0;
+}
+
+/* ---------- Narrower screens ---------- */
+@media (max-width: 1180px) {
+  .px-ladder.has-both {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .px-plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .px-soon {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-shell .px-heading {
+    margin-bottom: 28px;
+  }
+
+  .px-tabs-wrap {
+    margin-bottom: 22px;
+  }
+
+  .px-robot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .px-plans,
+  .px-more {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .px-plans {
+    max-width: none;
+  }
+
+  .px-soon {
+    padding: 20px;
+  }
+
+  .px-trust {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Right-to-left languages: the arrows point the way the text reads. */
+[dir="rtl"] .px-cta > svg,
+[dir="rtl"] .px-robot-link > svg,
+[dir="rtl"] .px-more-link > svg:last-child {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .px-cta:hover > svg,
+[dir="rtl"] .px-robot-link:hover > svg,
+[dir="rtl"] .px-more-link:hover > svg:last-child {
+  transform: scaleX(-1) translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-panel {
+    animation: none;
+  }
+
+  .px-tab,
+  .px-card,
+  .px-cta,
+  .px-cta svg,
+  .px-robot-link svg,
+  .px-more-link,
+  .px-more-link > svg:last-child {
+    transition: none;
+  }
+
+  .px-card:hover,
+  .px-cta:hover svg,
+  .px-robot-link:hover svg,
+  .px-more-link:hover > svg:last-child {
+    transform: none;
+  }
+
+  [dir="rtl"] .px-cta:hover > svg,
+  [dir="rtl"] .px-robot-link:hover > svg,
+  [dir="rtl"] .px-more-link:hover > svg:last-child {
+    transform: scaleX(-1);
+  }
+}

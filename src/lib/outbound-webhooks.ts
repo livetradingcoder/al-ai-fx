@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
 
 export const WEBHOOK_EVENTS = {
   "user.signup": "A new account was created",
-  "trial.started": "A free trial was started",
+  "trial.started": "A trial was started (free, or paid for a small fee)",
   "sale.completed": "An order was paid (or a free order was placed)",
   "webhook.test": "Sent from the admin to check the connection",
 } as const;
@@ -131,10 +131,22 @@ export type SaleEventData = {
   refCode: string | null;
   /** The buyer's account was created by this order, so there is no separate signup event. */
   newCustomer?: boolean;
+  /** Set when the order is a paid trial: how many days it runs, so the label says "7-Day Trial", not "Free Trial". */
+  trialDays?: number;
 };
 export type SignupEventData = { userId: string; email: string; name: string | null; source: "purchase" | "trial" };
 /** `newAccount`: this trial also created the account, so it is one event, not a signup followed by a trial. */
-export type TrialEventData = { userId: string; email: string; robotSlug: string; robotName: string; newAccount?: boolean };
+export type TrialEventData = {
+  userId: string;
+  email: string;
+  robotSlug: string;
+  robotName: string;
+  newAccount?: boolean;
+  /** The robot charges for this trial: the sale event that follows carries the payment. */
+  paid?: boolean;
+  /** How many days the trial runs. */
+  days?: number;
+};
 
 export type EventData =
   | { type: "sale.completed"; data: SaleEventData }
@@ -152,11 +164,13 @@ export function providerOf(orderRef: string): string {
   return "Paygate";
 }
 
-const tierLabel = (tier: string) =>
-  tier
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+const tierLabel = (tier: string, trialDays?: number) =>
+  tier === "FREE_TRIAL" && trialDays
+    ? `${trialDays}-Day Trial`
+    : tier
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const money = (amount: number, currency: string) =>
   `${currency.toUpperCase() === "USD" ? "$" : ""}${amount.toFixed(2)}${currency.toUpperCase() === "USD" ? "" : ` ${currency.toUpperCase()}`}`;
@@ -175,7 +189,7 @@ export function buildEventBody(event: EventData, id: string = randomUUID(), now:
     case "sale.completed": {
       const d = event.data;
       const free = d.amount <= 0;
-      title = `${d.newCustomer ? "🆕 New customer · " : ""}${free ? "🎁 Free order" : "💰 New sale"} — ${d.robotName} · ${tierLabel(d.tier)}`;
+      title = `${d.newCustomer ? "🆕 New customer · " : ""}${free ? "🎁 Free order" : "💰 New sale"} — ${d.robotName} · ${tierLabel(d.tier, d.trialDays)}`;
       message = [
         title,
         free ? `No charge (${d.provider})` : `${money(d.amount, d.currency)} via ${d.provider}`,
@@ -197,7 +211,10 @@ export function buildEventBody(event: EventData, id: string = randomUUID(), now:
     }
     case "trial.started": {
       const d = event.data;
-      title = d.newAccount ? `🆕 New signup · 🧪 free trial — ${d.robotName}` : `🧪 Free trial — ${d.robotName}`;
+      const kind = d.paid ? (d.days ? `${d.days}-day trial` : "trial") : "free trial";
+      title = d.newAccount
+        ? `🆕 New signup · 🧪 ${kind} — ${d.robotName}`
+        : `🧪 ${kind.charAt(0).toUpperCase()}${kind.slice(1)} — ${d.robotName}`;
       message = [title, d.email].join("\n");
       path = "/dashboard/admin/licences";
       break;

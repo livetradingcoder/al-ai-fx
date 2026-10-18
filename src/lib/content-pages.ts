@@ -5,8 +5,6 @@
 // performance claims, no promises about third-party prop-firm rules. If the
 // product changes, update this file alongside it.
 
-import { TRIALS_SENTENCE } from "@/lib/trial-copy";
-
 export type Block =
   | { type: "h2"; id: string; text: string }
   | { type: "p"; text: string }
@@ -106,7 +104,7 @@ export const CONTENT_PAGES: ContentPage[] = [
       },
       {
         q: "Is there a free trial?",
-        a: `Not free, but cheap. ${TRIALS_SENTENCE}`,
+        a: "Robots have a short trial. Whether a robot's trial is free or costs a small fee, how long it runs and what it costs are shown in the Pricing section of the home page and on the robot's page.",
       },
       {
         q: "Can I use one licence on several MT5 accounts?",

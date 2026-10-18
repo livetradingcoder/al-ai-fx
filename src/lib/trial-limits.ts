@@ -33,6 +33,9 @@ export type TrialAvailability = {
   message: string;
   /** When this visitor could try again. Null when nothing is blocking. */
   resetsAt: string | null;
+  /** The monthly cap and how many free trials are left under it: the real counts, absent if they couldn't be read. */
+  cap?: number;
+  remaining?: number;
 };
 
 /** Cheap enough to call on a page render — two counts over indexed columns. */
@@ -44,6 +47,8 @@ export async function checkTrialAvailability(ipHash: string | null): Promise<Tri
     const claimedThisMonth = await prisma.trialClaim.count({
       where: { createdAt: { gte: monthStart } },
     });
+
+    const monthly = { cap: TRIAL_MONTHLY_CAP, remaining: Math.max(0, TRIAL_MONTHLY_CAP - claimedThisMonth) };
 
     if (claimedThisMonth >= TRIAL_MONTHLY_CAP) {
       const oldest = await prisma.trialClaim.findFirst({
@@ -57,6 +62,7 @@ export async function checkTrialAvailability(ipHash: string | null): Promise<Tri
         reason: "monthly-cap",
         message: "This month's free trials have all been claimed. Check back soon.",
         resetsAt: resetsAt?.toISOString() ?? null,
+        ...monthly,
       };
     }
 
@@ -74,11 +80,12 @@ export async function checkTrialAvailability(ipHash: string | null): Promise<Tri
           reason: "ip-cooldown",
           message: `A free trial was already claimed from this connection. One trial per ${TRIAL_IP_COOLDOWN_DAYS} days.`,
           resetsAt: resetsAt.toISOString(),
+          ...monthly,
         };
       }
     }
 
-    return { available: true, reason: "ok", message: "", resetsAt: null };
+    return { available: true, reason: "ok", message: "", resetsAt: null, ...monthly };
   } catch (err) {
     // A limits lookup that fails must not take the trial offline; the
     // per-account unique index is still behind it.
