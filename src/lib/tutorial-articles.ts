@@ -1,4 +1,6 @@
-// Help articles listed under /tutorials (the members area).
+// Help articles listed under /tutorials. Each has an `access` level: public
+// ones are readable without an account and indexed, members ones sit behind
+// the login (see tutorial-access.ts).
 //
 // The same answers also live in the support assistant's knowledge base in
 // nDesk, which is edited separately — when a policy, price or flow changes,
@@ -10,6 +12,7 @@
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import type { PricingFacts } from "@/lib/pricing-facts";
 import type { Block } from "@/lib/content-pages";
+import type { TutorialAccess } from "@/lib/tutorial-access";
 
 /** A content block, plus the screenshots the older step-by-step tutorials use. */
 export type TutorialBlock =
@@ -31,6 +34,8 @@ export const TUTORIAL_CATEGORIES: { id: TutorialCategoryId; label: string }[] = 
 export type TutorialArticle = {
   slug: string;
   category: TutorialCategoryId;
+  /** Who may read it: no account needed, or signed-in members only. */
+  access: TutorialAccess;
   title: string;
   /** One line on the index card. */
   summary: string;
@@ -67,6 +72,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "free-trial",
       category: "start",
+      access: "public",
       title: "How do I get a trial?",
       summary: "How to start a robot's trial, what it costs and what happens next.",
       blocks: [
@@ -107,6 +113,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "link-mt5-account",
       category: "setup",
+      access: "members",
       title: "How do I link my MT5 account?",
       summary: "A short video and the steps to link your MT5 account and get your GoldBot build.",
       blocks: [
@@ -158,6 +165,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "what-is-goldbot",
       category: "start",
+      access: "public",
       title: "What is GoldBot and how does it trade gold?",
       summary: "What GoldBot is, how its robots trade gold, and why it is MetaTrader 5 only.",
       blocks: [
@@ -189,6 +197,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "before-you-buy",
       category: "start",
+      access: "public",
       title: "What do I need before I buy, and how fast is it ready?",
       summary: "What you need before you buy, and how quickly your build is ready.",
       blocks: [
@@ -229,6 +238,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "which-robot",
       category: "start",
+      access: "public",
       title: "Which robot should I choose?",
       summary: "Breakout or MultiRange: how the robots differ and which to start with.",
       blocks: [
@@ -259,6 +269,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "pricing",
       category: "billing",
+      access: "public",
       title: "How much does it cost? Plans and prices",
       summary: "Plan prices for the flagship robot, the trials, and how private deals work.",
       blocks: [
@@ -299,6 +310,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "payments-and-renewals",
       category: "billing",
+      access: "public",
       title: "How do I pay, and do plans renew automatically?",
       summary: "Payment options, what happens after you pay, and how renewals work.",
       blocks: [
@@ -321,6 +333,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "account-locked-build",
       category: "setup",
+      access: "public",
       title: "How does the account-locked build work?",
       summary: "How your build is compiled for one MT5 account, and what happens when a plan ends.",
       blocks: [
@@ -351,6 +364,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "ea-not-showing-up",
       category: "setup",
+      access: "members",
       title: "My EA isn't showing up or isn't trading: what should I check?",
       summary: "Fixes for an EA that is missing from the Navigator, not trading or removed, plus VPS advice.",
       blocks: [
@@ -387,6 +401,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "prop-firm",
       category: "trading",
+      access: "public",
       title: "Can I use GoldBot on a prop firm account?",
       summary: "How MultiRange keeps risk defined, and how to set up on a challenge or funded account.",
       blocks: [
@@ -437,6 +452,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "refund-policy",
       category: "billing",
+      access: "public",
       title: "What is the refund policy?",
       summary: "The 14-day stop-loss refund guarantee and how to claim it.",
       blocks: [
@@ -462,6 +478,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "lifetime-and-source-code",
       category: "billing",
+      access: "public",
       title: "Can I get lifetime access, the source code or a private deployment?",
       summary: "How to ask about lifetime access, source-code licensing or a private deployment.",
       blocks: [
@@ -507,6 +524,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "terms-of-use",
       category: "trading",
+      access: "public",
       title: "What are the terms of use?",
       summary: "A plain-language summary of the terms of use.",
       blocks: [
@@ -537,6 +555,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
     {
       slug: "risk-disclaimer",
       category: "trading",
+      access: "public",
       title: "Are profits guaranteed? Risk disclaimer",
       summary: "Why no profit is guaranteed, and what the risk notice means for you.",
       blocks: [
@@ -574,6 +593,11 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
 
 export function getTutorialArticle(slug: string, facts: PricingFacts): TutorialArticle | undefined {
   return buildTutorialArticles(facts).find((article) => article.slug === slug);
+}
+
+/** The articles anyone may read: the ones that are indexed and listed in the sitemap. */
+export function publicTutorialArticles(articles: TutorialArticle[]): TutorialArticle[] {
+  return articles.filter((article) => article.access === "public");
 }
 
 function blockWords(block: TutorialBlock): number {

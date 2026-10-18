@@ -188,6 +188,30 @@
   color: var(--ca-primary);
 }
 
+/* Duration on the left, the "Members" marker on the right. */
+.tu-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--ca-hairline);
+  border-radius: 999px;
+  background: var(--ca-elevated);
+  color: var(--ca-muted-strong);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .tu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

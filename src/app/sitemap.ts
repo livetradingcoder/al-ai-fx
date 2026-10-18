@@ -9,10 +9,13 @@ import {
 import { routing } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
 import { CONTENT_PAGES } from "@/lib/content-pages";
+import { buildPricingFacts } from "@/lib/pricing-facts";
+import { buildTutorialArticles, publicTutorialArticles } from "@/lib/tutorial-articles";
 
 // Pages outside seo.ts's PublicPageKey registry (English copy, own canonical).
-// Private or gated routes — dashboard, auth screens, checkout, tutorials —
-// are deliberately absent: they are noindex and would only waste crawl budget.
+// Private or gated routes — dashboard, auth screens, checkout, members-only
+// tutorials — are deliberately absent: they are noindex and would only waste
+// crawl budget.
 const EXTRA_PAGES: {
   path: string;
   changeFrequency: "daily" | "weekly" | "monthly";
@@ -37,6 +40,9 @@ function localizedEntries(
   }));
 }
 
+// Bump when the public help articles change materially.
+const TUTORIALS_UPDATED = "2026-10-18";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = getPublicSitemapEntries();
 
@@ -50,9 +56,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  // Guides and search landing pages exist in English only, so they are listed
-  // once, at their English URL (their other-locale URLs canonicalise to it).
-  for (const page of [{ path: "/guides", updated: "2026-09-29" }, ...CONTENT_PAGES]) {
+  // The tutorials index and the help articles anyone may read. The slugs don't
+  // depend on prices, so the no-catalog facts do (no database read here).
+  const publicTutorials = publicTutorialArticles(buildTutorialArticles(buildPricingFacts(null))).map((article) => ({
+    path: `/tutorials/${article.slug}`,
+    updated: TUTORIALS_UPDATED,
+  }));
+
+  // Guides, help articles and search landing pages exist in English only, so
+  // they are listed once, at their English URL (their other-locale URLs
+  // canonicalise to it).
+  for (const page of [
+    { path: "/guides", updated: "2026-09-29" },
+    { path: "/tutorials", updated: TUTORIALS_UPDATED },
+    ...publicTutorials,
+    ...CONTENT_PAGES,
+  ]) {
     entries.push({
       url: buildLocalizedUrl(routing.defaultLocale, page.path),
       lastModified: new Date(page.updated),

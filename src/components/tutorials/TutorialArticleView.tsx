@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { ArrowRight, BookOpen, ChevronRight, Clock, Info, LifeBuoy, ShieldAlert } from "lucide-react";
+import NextLink from "next/link";
+import { ArrowRight, BookOpen, ChevronRight, Clock, Info, LifeBuoy, Lock, ShieldAlert } from "lucide-react";
 
 import ArticleOffers from "@/components/content/ArticleOffers";
 import { Link } from "@/i18n/routing";
@@ -9,7 +10,9 @@ import YouTubeEmbed from "./YouTubeEmbed";
 // One tutorial or help article, in the same layout as the guides (ca-* styles
 // from components/content/content.css). The page imports that stylesheet.
 
-export type TutorialRelated = { href: string; title: string };
+// `locked`: members-only and the reader is signed out, so `href` is the login
+// (already carrying the locale, hence the plain Link below).
+export type TutorialRelated = { href: string; title: string; locked?: boolean };
 export type TutorialLink = { label: string; href: string };
 
 function renderBlock(block: TutorialBlock, index: number) {
@@ -82,6 +85,8 @@ export default function TutorialArticleView({
   related = [],
   lang,
   readLabel,
+  membersLabel,
+  signInLabel,
 }: {
   title: string;
   lead?: string;
@@ -93,6 +98,9 @@ export default function TutorialArticleView({
   /** Set when the article text is in a different language from the page. */
   lang?: string;
   readLabel: string;
+  /** The "Members" marker and the call to action on a locked related article. */
+  membersLabel?: string;
+  signInLabel?: string;
 }) {
   const toc = blocks.filter((b): b is Extract<TutorialBlock, { type: "h2" }> => b.type === "h2");
 
@@ -165,18 +173,37 @@ export default function TutorialArticleView({
         <section className="ca-container ca-related" aria-labelledby="ca-related-title" style={{ paddingBottom: 96 }}>
           <h2 id="ca-related-title">Keep reading</h2>
           <div className="ca-related-grid">
-            {related.map((item) => (
-              <Link key={item.href} href={item.href} className="ca-related-card">
-                <span className="ca-related-kind">
-                  <BookOpen size={13} aria-hidden="true" />
-                  Tutorial
-                </span>
-                <strong>{item.title}</strong>
-                <span className="ca-related-more">
-                  {readLabel} <ArrowRight size={14} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
+            {related.map((item) => {
+              const card = (
+                <>
+                  <span className="tu-card-top">
+                    <span className="ca-related-kind">
+                      <BookOpen size={13} aria-hidden="true" />
+                      Tutorial
+                    </span>
+                    {item.locked && (
+                      <span className="tu-badge">
+                        <Lock size={11} aria-hidden="true" />
+                        {membersLabel}
+                      </span>
+                    )}
+                  </span>
+                  <strong>{item.title}</strong>
+                  <span className="ca-related-more">
+                    {item.locked ? signInLabel : readLabel} <ArrowRight size={14} aria-hidden="true" />
+                  </span>
+                </>
+              );
+              return item.locked ? (
+                <NextLink key={item.href} href={item.href} className="ca-related-card is-locked">
+                  {card}
+                </NextLink>
+              ) : (
+                <Link key={item.href} href={item.href} className="ca-related-card">
+                  {card}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

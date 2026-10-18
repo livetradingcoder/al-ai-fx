@@ -1,9 +1,12 @@
 // The three original tutorials. Their words live in the message files, so
 // they stay translated; the five settings screenshots are English captures.
 
+import type { TutorialAccess } from "@/lib/tutorial-access";
 import type { TutorialBlock } from "@/lib/tutorial-articles";
 
 export const LEGACY_IDS = ["1", "2", "3"] as const;
+// Installing, sizing and configuring a build you own: members only.
+export const LEGACY_ACCESS: TutorialAccess = "members";
 export type LegacyId = (typeof LEGACY_IDS)[number];
 
 export function isLegacyId(id: string): id is LegacyId {
