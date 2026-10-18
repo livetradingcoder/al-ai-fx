@@ -60,7 +60,7 @@ export async function POST(req: Request) {
   if (!robotSlug) {
     return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
   }
-  if (tier === "free-trial" || !(tier in TIER_METADATA)) {
+  if (!(tier in TIER_METADATA)) {
     return NextResponse.json({ error: "This plan cannot be bought with crypto." }, { status: 400 });
   }
 

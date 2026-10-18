@@ -5,6 +5,8 @@
 // performance claims, no promises about third-party prop-firm rules. If the
 // product changes, update this file alongside it.
 
+import { TRIALS_SENTENCE } from "@/lib/trial-copy";
+
 export type Block =
   | { type: "h2"; id: string; text: string }
   | { type: "p"; text: string }
@@ -43,7 +45,7 @@ export const CONTENT_PAGES: ContentPage[] = [
     kind: "landing",
     title: "Gold EA for MT5 — automated XAUUSD trading robots | GoldBot",
     description:
-      "GoldBot's gold EAs for MetaTrader 5 trade XAUUSD session breakouts with a structured hedge, skip bank holidays, and ship as a build locked to your MT5 account. Free trial available.",
+      "GoldBot's gold EAs for MetaTrader 5 trade XAUUSD session breakouts with a structured hedge, skip bank holidays, and ship as a build locked to your MT5 account. Low-cost trials available.",
     eyebrow: "Gold EA for MetaTrader 5",
     h1: "A gold EA for MT5 that trades XAUUSD session breakouts",
     lead:
@@ -89,7 +91,7 @@ export const CONTENT_PAGES: ContentPage[] = [
       {
         type: "steps",
         items: [
-          { title: "Pick a robot and plan", text: "Plans run from 10 days to a year; PrecisionTrader has a 3-day free trial with no card." },
+          { title: "Pick a robot and plan", text: "Plans run from 10 days to a year, and each robot has a low-cost trial to try it first." },
           { title: "Enter your MT5 account number", text: "Your dashboard is ready as soon as checkout completes." },
           { title: "Download your build", text: "The .ex5 is compiled for that account in under 15 seconds." },
           { title: "Attach it to XAUUSD", text: "Copy it into MQL5/Experts, refresh the Navigator and drag it onto a gold chart." },
@@ -104,7 +106,7 @@ export const CONTENT_PAGES: ContentPage[] = [
       },
       {
         q: "Is there a free trial?",
-        a: "Yes. PrecisionTrader has a 3-day free trial that activates instantly with no card. Availability can be limited per visitor.",
+        a: `Not free, but cheap. ${TRIALS_SENTENCE}`,
       },
       {
         q: "Can I use one licence on several MT5 accounts?",

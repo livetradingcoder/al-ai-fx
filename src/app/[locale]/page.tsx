@@ -29,6 +29,7 @@ import {
   Zap,
 } from "lucide-react";
 import {
+  buildPaidTrialPlans,
   buildPassPlans,
   buildSubscriptionPlans,
 } from "@/lib/pricing-showcase";
@@ -94,6 +95,7 @@ export default function Home() {
   const t = useTranslations("Landing");
   const subscriptionPlans = buildSubscriptionPlans(t);
   const passPlans = buildPassPlans(t);
+  const paidTrialPlans = buildPaidTrialPlans(t);
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,10 @@ export default function Home() {
     message?: string;
     resetsAt?: string | null;
   } | null>(null);
+
+  // A free trial exists only while some robot prices it at zero. Once every
+  // trial is paid there is nothing to claim, so the card goes.
+  const showFreeTrial = !(trial && !trial.offered);
 
   useEffect(() => {
     let cancelled = false;
@@ -439,7 +445,50 @@ export default function Home() {
               />
             </motion.div>
 
-            {passPlans.map((plan) => (
+            {paidTrialPlans.map((plan, index) => (
+              <motion.article
+                key={plan.robot.slug}
+                className="pc-card pc-card-trial"
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.04 + index * 0.04 }}
+              >
+                <div className="pc-card-head">
+                  <h3>{plan.title}</h3>
+                  <span className="pc-badge">{plan.robot.name}</span>
+                </div>
+                <p className="pc-tagline">{plan.note}</p>
+                <div className="pc-price">
+                  <strong>{plan.price}</strong>
+                  <span>{plan.period}</span>
+                </div>
+
+                <Link
+                  href={`/checkout?tier=${plan.id}&robot=${plan.robot.slug}&name=${encodeURIComponent(plan.robot.name)}`}
+                  className="pc-cta is-primary"
+                >
+                  Start {plan.title.toLowerCase()}
+                  <ArrowRight size={16} />
+                </Link>
+                <p className="pc-fineprint">One trial per robot.</p>
+
+                <div className="pc-divider" />
+
+                <ul className="pc-features">
+                  {plan.features.map((feature: string) => (
+                    <li key={feature}>
+                      <span className="pc-check" aria-hidden="true">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </motion.article>
+            ))}
+
+            {showFreeTrial && passPlans.map((plan) => (
               <motion.article
                 key={plan.id}
                 className="pc-card pc-card-trial"
@@ -469,10 +518,6 @@ export default function Home() {
                         : ""}
                     </p>
                   </>
-                ) : trial && !trial.offered ? (
-                  <span className="pc-cta is-disabled" aria-disabled="true">
-                    No trial available right now
-                  </span>
                 ) : (
                   <Link
                     href={`/checkout?tier=${plan.id}&robot=${trial?.robotSlug ?? "precision-trader"}&name=${encodeURIComponent(trial?.robotName ?? "PrecisionTrader")}`}

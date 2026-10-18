@@ -67,7 +67,7 @@ export async function provisionSubscription(
 
   // Fail-closed robot+tier+price resolution (throws UnknownRobotError /
   // UnknownRobotPriceError / UnknownTierError — never defaults to GoldBot).
-  const { robot, tier } = await resolveRobotPrice(robotSlug, tierRaw);
+  const { robot, tier, amount: listPrice } = await resolveRobotPrice(robotSlug, tierRaw);
 
   // Check if an active subscription of the same tier already exists.
   // Scoped per (user, robot, tier) — an active subscription is unique per robot.
@@ -93,7 +93,8 @@ export async function provisionSubscription(
     };
   }
 
-  const expiresAt = computeExpirationDate(tier);
+  // How long a trial runs depends on what the robot charges for it (see trialDays).
+  const expiresAt = computeExpirationDate(tier, { trialPrice: listPrice });
   let subscription;
   try {
     subscription = await prisma.subscription.create({

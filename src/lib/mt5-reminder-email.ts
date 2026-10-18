@@ -64,21 +64,21 @@ export function buildMt5ReminderContent(input: Mt5ReminderContentInput): Mt5Remi
   if (input.kind === "trial") {
     if (input.stage <= 1) {
       return {
-        subject: `Your ${robot} free trial is waiting for an MT5 account`,
-        eyebrow: "Free trial",
+        subject: `Your ${robot} trial is waiting for an MT5 account`,
+        eyebrow: "Trial",
         title: "Link your MT5 account to start your trial",
-        intro: `You started a free trial of ${robot}, but no MT5 account is linked yet, so your robot has not been built.`,
+        intro: `You started a trial of ${robot}, but no MT5 account is linked yet, so your robot has not been built.`,
         detailLines: [...steps, expiry ? `Your trial runs until ${expiry}.` : access, REPLY_LINE],
         buttonLabel: BUTTON_LABEL,
       };
     }
     return {
-      subject: `Your ${robot} free trial ends soon`,
+      subject: `Your ${robot} trial ends soon`,
       eyebrow: "Trial ending soon",
       title: "Your trial ends soon and your robot is not built yet",
       intro: expiry
-        ? `Your ${robot} free trial ends on ${expiry}, and no MT5 account is linked yet. Link one now to use the time you have left.`
-        : `Your ${robot} free trial is about to end, and no MT5 account is linked yet. Link one now to use the time you have left.`,
+        ? `Your ${robot} trial ends on ${expiry}, and no MT5 account is linked yet. Link one now to use the time you have left.`
+        : `Your ${robot} trial is about to end, and no MT5 account is linked yet. Link one now to use the time you have left.`,
       detailLines: [...steps, REPLY_LINE],
       buttonLabel: BUTTON_LABEL,
     };

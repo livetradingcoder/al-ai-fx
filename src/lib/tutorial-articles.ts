@@ -8,6 +8,7 @@
 // page. No performance claims, no new promises.
 
 import { FLAGSHIP_ROBOT, PRICING_TIERS } from "@/config/pricing";
+import { TRIALS_SENTENCE, TRIAL_FEE_NOTE } from "@/lib/trial-copy";
 import type { Block } from "@/lib/content-pages";
 
 /** A content block, plus the screenshots the older step-by-step tutorials use. */
@@ -49,13 +50,13 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
   {
     slug: "free-trial",
     category: "start",
-    title: "How do I get the free trial?",
-    summary: "A 3-day PrecisionTrader trial with no card: how to start it and what happens next.",
+    title: "How do I get a trial?",
+    summary: "The low-cost PrecisionTrader and MultiRange 4 trials: how to start one and what happens next.",
     blocks: [
-      { type: "h2", id: "is-there-a-free-trial", text: "Is there a free trial?" },
+      { type: "h2", id: "is-there-a-free-trial", text: "Is there a trial?" },
       {
         type: "p",
-        text: "Yes. PrecisionTrader has a 3-day free trial that activates instantly and needs no card and no payment. Availability can be limited per visitor, and the checkout shows whether a trial is open to you.",
+        text: `Yes, a low-cost one. ${TRIALS_SENTENCE} ${TRIAL_FEE_NOTE}`,
       },
       { type: "h2", id: "how-to-start", text: "How do I start it?" },
       {
@@ -63,21 +64,20 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         items: [
           {
             title: "Choose the trial",
-            text: "Open the Pricing section on the home page and pick “Start free trial — PrecisionTrader”, or choose PrecisionTrader in the catalog and select Free trial.",
+            text: "Open the Pricing section on the home page and pick the trial for the robot you want, or choose that robot in the catalog and select its trial.",
           },
-          { title: "Enter your email", text: "Enter your email and activate the trial." },
+          { title: "Enter your email", text: "Enter your email and pay the trial fee by card or crypto. The trial starts as soon as the payment clears." },
           {
             title: "Open your dashboard",
             text: "Open the sign-in link we email you, enter your MT5 account number in the dashboard and download your build.",
           },
-          { title: "Know when it ends", text: "The trial ends after 3 days." },
+          { title: "Know when it ends", text: "The trial ends after 3 days on PrecisionTrader and 7 days on MultiRange 4." },
         ],
       },
-      { type: "p", text: "Each account can claim one free trial per robot." },
-      { type: "h2", id: "mt5-account-rule", text: "Why can't I link my MT5 account to the trial?" },
+            { type: "h2", id: "mt5-account-rule", text: "Why can't I link my MT5 account to the trial?" },
       {
         type: "p",
-        text: "A free trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid. If you see “This MT5 account has already been used with a GoldBot licence”, link a different MT5 account, or choose a plan to use that one. A paid plan has no such limit, so an account that had a trial can be used with a plan.",
+        text: "A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid. If you see “This MT5 account has already been used with a GoldBot licence”, link a different MT5 account, or choose a plan to use that one. A paid plan has no such limit, so an account that had a trial can be used with a plan.",
       },
       {
         type: "p",
@@ -132,7 +132,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
       { type: "h2", id: "stuck", text: "Stuck on a step?" },
       {
         type: "p",
-        text: "Reply to any email from us and tell us which step you are on and what you see. We will walk you through it. A free trial can only be linked to an MT5 account that has never been used with a GoldBot licence before.",
+        text: "Reply to any email from us and tell us which step you are on and what you see. We will walk you through it. A trial can only be linked to an MT5 account that has never been used with a GoldBot licence before.",
       },
     ],
     links: [{ label: "Open guided setup", href: "/dashboard/onboarding" }],
@@ -195,7 +195,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         items: [
           {
             title: "Pick a robot and plan",
-            text: "Plans run from 10 days to a year; PrecisionTrader has a 3-day free trial with no card.",
+            text: "Plans run from 10 days to a year, and each robot has a low-cost trial to try it first.",
           },
           { title: "Enter your MT5 account number", text: "Your dashboard is ready as soon as checkout completes." },
           { title: "Download your build", text: "The .ex5 is compiled for that account in under 15 seconds." },
@@ -222,7 +222,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
       { type: "h2", id: "precisiontrader", text: "PrecisionTrader" },
       {
         type: "p",
-        text: "Single-range breakout EA for gold: one session range a day, hedged, with a fixed lot you control. It has the 3-day free trial.",
+        text: "Single-range breakout EA for gold: one session range a day, hedged, with a fixed lot you control. It has a 3-day trial: see Pricing.",
       },
       { type: "h2", id: "flagship", text: `${FLAGSHIP_ROBOT.name} (flagship)` },
       {
@@ -230,7 +230,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         text: "Four independent gold session ranges a day, each with its own breakout and hedge: the GoldBot engine, expanded.",
       },
       { type: "h2", id: "not-sure", text: "Not sure?" },
-      { type: "p", text: "Start with the free trial, or compare the robots side by side in the catalog." },
+      { type: "p", text: "Start with a trial, or compare the robots side by side in the catalog." },
     ],
     links: [
       { label: "Browse the catalog", href: "/catalog" },
@@ -243,7 +243,7 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
     slug: "pricing",
     category: "billing",
     title: "How much does it cost? Plans and prices",
-    summary: "Plan prices for the flagship robot, the free trial, and how private deals work.",
+    summary: "Plan prices for the flagship robot, the trials, and how private deals work.",
     blocks: [
       {
         type: "p",
@@ -259,10 +259,10 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
           `1 Year: ${price("1-year")} for 1 year, the most popular plan. Unlimited downloads, all strategy features, Priority Liquid Guard, automated delivery.`,
         ],
       },
-      { type: "h2", id: "free-trial", text: "Free trial" },
+      { type: "h2", id: "free-trial", text: "Trials" },
       {
         type: "p",
-        text: `${price("free-trial")} for 3 days on PrecisionTrader, no card required. Basic feature set, standard recovery profile, automated delivery.`,
+        text: `${TRIALS_SENTENCE} ${TRIAL_FEE_NOTE} Basic feature set, standard recovery profile, automated delivery.`,
       },
       { type: "h2", id: "pay-after-trial", text: "Pay After Trial" },
       {
@@ -298,8 +298,8 @@ export const TUTORIAL_ARTICLES: TutorialArticle[] = [
         type: "p",
         text: "Plans auto-renew unless cancelled. Lifetime passes are a one-time payment. Renewal, cancellation and billing details are managed through your account and the payment provider flow.",
       },
-      { type: "h2", id: "free-trial", text: "Is there a free trial?" },
-      { type: "p", text: "Yes: 3 days on PrecisionTrader, no card." },
+      { type: "h2", id: "free-trial", text: "Is there a trial?" },
+      { type: "p", text: TRIALS_SENTENCE },
     ],
     links: [{ label: "Terms & conditions", href: "/terms-conditions" }],
     related: ["pricing", "refund-policy", "free-trial"],

@@ -1261,7 +1261,7 @@
 /* ---------- Trial row ---------- */
 .pc-trial {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 64px;
   padding-top: 64px;

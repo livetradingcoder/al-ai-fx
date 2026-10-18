@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { breadcrumbJsonLd, buildMetadata, jsonLdScript, ogImageUrl } from "@/lib/seo";
 import { CATALOG_FILTER_IDS } from "@/lib/catalog-filter";
 import { OG_CATALOG_COPY } from "@/lib/og-copy";
-import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
+import { CATALOG_PUBLIC_TIERS, hasTrialPrice, isPlanPrice } from "@/lib/catalog-tiers";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import CatalogGrid, { type CatalogRobot } from "./CatalogGrid";
 import "./catalog.css";
@@ -33,7 +33,7 @@ export async function generateMetadata({
     path: "/catalog",
     title: "MT5 gold trading robots catalog | GoldBot by AL-ai-FX",
     description:
-      "Compare GoldBot's MetaTrader 5 gold robots — MultiRange and Breakout expert advisors for XAUUSD, each delivered as an account-locked build minutes after checkout. Free trial available.",
+      "Compare GoldBot's MetaTrader 5 gold robots — MultiRange and Breakout expert advisors for XAUUSD, each delivered as an account-locked build minutes after checkout. Low-cost trials available.",
     image: ogImageUrl({ type: "catalog", filter }),
   });
   if (filter === "all") return metadata;
@@ -74,7 +74,7 @@ export default async function CatalogPage({
     ).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
     const cheapestPaid = publicPrices
-      .filter((p) => p.amount > 0)
+      .filter(isPlanPrice)
       .sort((a, b) => a.amount - b.amount)[0];
 
     return {
@@ -85,7 +85,7 @@ export default async function CatalogPage({
       artwork: artworkFor(robot.slug, robot.artworkUrl),
       fromPrice: cheapestPaid?.amount ?? null,
       monthlyPrice: publicPrices.find((p) => p.tier === "ONE_MONTH")?.amount ?? null,
-      hasFreeTrial: publicPrices.some((p) => p.amount === 0),
+      hasFreeTrial: hasTrialPrice(publicPrices), // any trial, free or paid: the tab and tag just say "Trial"
       comingSoon: robot.prices.length === 0,
       flagship: robot.slug === FLAGSHIP_ROBOT.slug,
     };

@@ -29,6 +29,7 @@ import {
   trackStartTrial,
 } from "@/lib/marketing-client";
 import { TierId, PRICING_TIERS, RETIRED_ROBOTS } from "@/config/pricing";
+import { SHORT_TRIAL_DAYS, trialDays } from "@/lib/pricing-tiers";
 import { CardBrands, CryptoBrands } from "./PaymentBrands";
 import "./checkout.css";
 
@@ -54,10 +55,15 @@ const TIER_ORDER: TierId[] = [
 ];
 
 function formatUsd(amount: number): string {
-  return amount === 0
-    ? "$0"
-    : `$${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  if (amount === 0) return "$0";
+  // Cents only where they matter: the $1.99 trial, not a $99 plan.
+  return `$${amount.toLocaleString("en-US", Number.isInteger(amount) ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+// The same tier is a free trial on one robot and a paid one on another: the
+// robot's price row decides which, and how many days it runs.
+const trialName = (price: number) =>
+  price > 0 ? `${trialDays(price)}-Day Trial` : `${SHORT_TRIAL_DAYS}-Day Free Trial`;
 
 function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: number; whopEnabled: boolean }) {
   const t = useTranslations("Checkout");
@@ -132,13 +138,14 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
   // available tier instead of dead-ending (create-session would reject it).
   useEffect(() => {
     if (robot && robot.prices[tier] === undefined && availableTiers.length > 0) {
-      setTier(availableTiers.find((id) => robot.prices[id] > 0) ?? availableTiers[0]);
+      // A paid trial is for trying the robot, not the plan to land on.
+      setTier(availableTiers.find((id) => id !== "free-trial" && robot.prices[id] > 0) ?? availableTiers[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [robot, tier]);
 
   const planDetails: Record<string, { name: string }> = {
-    "free-trial": { name: "3-Day Free Trial" },
+    "free-trial": { name: trialName(robot?.prices["free-trial"] ?? 0) },
     "10-days": { name: t("plan10Days", { fallback: "10-Day Plan" }) },
     "1-month": { name: t("plan1Month", { fallback: "Monthly Plan" }) },
     "6-months": { name: t("plan6Months", { fallback: "Biannual Plan" }) },
@@ -159,7 +166,8 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
     amount: displayAmount.toFixed(2),
   };
   const robotName = robot?.name ?? robotNameParam;
-  const isFreeTrial = tier === "free-trial";
+  // Only a trial the robot gives away skips payment; a priced one is checked out like a plan.
+  const isFreeTrial = tier === "free-trial" && displayAmount === 0;
 
   // Reflect the picker in the address bar: the URL a buyer copies (or lands on
   // after Back) should be the robot and plan they are actually looking at.
@@ -509,11 +517,14 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                             <span className="co-radio" aria-hidden="true" />
                             <span className="co-option-body">
                               <strong>
-                                {planDetails[id]?.name ?? id}
+                                {id === "free-trial" ? trialName(price) : (planDetails[id]?.name ?? id)}
                                 {id === "1-year" && <em className="co-tag">Best value</em>}
                               </strong>
                               {months && price > 0 && (
                                 <small>{formatUsd(Math.round(price / months))} / month</small>
+                              )}
+                              {id === "free-trial" && price > 0 && (
+                                <small>{trialDays(price)} days with the full build · one per robot</small>
                               )}
                             </span>
                             <span className="co-plan-price">{formatUsd(price)}</span>
@@ -634,7 +645,8 @@ function CheckoutContent({ referralDiscount, whopEnabled }: { referralDiscount: 
                     {!isFreeTrial && <CardBrands />}
                   </button>
 
-                  {!isFreeTrial && whopEnabled && (
+                  {/* Whop won't take a charge under $1 (WHOP_MIN_AMOUNT in src/lib/whop.ts). */}
+                  {!isFreeTrial && whopEnabled && payable >= 1 && (
                     <button
                       type="button"
                       className="co-submit co-submit-alt"

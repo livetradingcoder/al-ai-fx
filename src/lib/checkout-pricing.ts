@@ -1,3 +1,4 @@
+import { PricingTier } from "@prisma/client";
 import { referredDiscountForCheckout } from "@/lib/affiliate";
 import { redeemCoupon, validateCoupon, type CouponCheck } from "@/lib/coupons";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
@@ -36,6 +37,13 @@ export async function priceCheckout(input: {
   refCode: string | null;
 }): Promise<{ ok: true; priced: PricedCheckout } | { ok: false; error: string }> {
   const resolved = await resolveRobotPrice(input.robotSlug, input.tier);
+
+  // A trial priced at zero is claimed without paying (/api/checkout/free-trial).
+  // Letting it through here would let a coupon or a zero-amount order skip the
+  // free-trial limits; a trial priced above zero is an ordinary paid checkout.
+  if (resolved.tier === PricingTier.FREE_TRIAL && resolved.amount <= 0) {
+    return { ok: false, error: "Free trial does not require checkout." };
+  }
 
   const discountPercent = await referredDiscountForCheckout({ email: input.email, code: input.refCode });
   const referralPrice =

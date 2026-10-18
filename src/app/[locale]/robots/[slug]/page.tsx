@@ -4,6 +4,7 @@ import path from "node:path";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { RETIRED_ROBOTS } from "@/config/pricing";
+import { trialDays } from "@/lib/pricing-tiers";
 import { prisma } from "@/lib/prisma";
 import { CATALOG_PUBLIC_TIERS, TIER_ENUM_TO_SLUG, formatUsd } from "@/lib/catalog-tiers";
 import type { PricingTier } from "@prisma/client";
@@ -20,6 +21,16 @@ const TIER_DISPLAY: Record<string, { name: string; period: string }> = {
   SIX_MONTHS: { name: "Biannual", period: "per 6 months" },
   ONE_YEAR: { name: "1 Year", period: "per year" },
 };
+
+// A trial the robot charges for is the same tier as the free one, so the price
+// row decides what to call it.
+function tierDisplay(tier: PricingTier, amount: number) {
+  if (tier === "FREE_TRIAL" && amount > 0) {
+    const days = trialDays(amount);
+    return { name: `${days}-Day Trial`, period: `${days} days, full build` };
+  }
+  return TIER_DISPLAY[tier] ?? { name: tier, period: "" };
+}
 
 async function getRobot(slug: string) {
   return prisma.robot.findFirst({
@@ -65,7 +76,9 @@ export default async function RobotDetailPage(props: {
     robot.prices.find((p) => p.tier === tier)
   ).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
-  const paidPrices = prices.filter((p) => p.amount > 0);
+  // Plans, not the trial: the trial is a taste of them, so it stays out of the
+  // structured-data offers, the entry price and the best-value pick.
+  const paidPrices = prices.filter((p) => p.amount > 0 && p.tier !== "FREE_TRIAL");
   const featuredTier: PricingTier | null =
     paidPrices.length > 0 ? paidPrices[paidPrices.length - 1].tier : null;
 
@@ -83,7 +96,7 @@ export default async function RobotDetailPage(props: {
     description: robot.shortDescription,
     image: robot.artworkUrl ?? (existsSync(bundledArtwork(robot.slug)) ? `/robots/${robot.slug}.jpg` : null),
     offers: paidPrices.map((p) => ({
-      name: `${robot.name} — ${TIER_DISPLAY[p.tier]?.name ?? p.tier}`,
+      name: `${robot.name} — ${tierDisplay(p.tier, p.amount).name}`,
       price: p.amount,
       checkoutPath: `/checkout?tier=${TIER_ENUM_TO_SLUG[p.tier]}&robot=${robot.slug}`,
     })),
@@ -178,10 +191,7 @@ export default async function RobotDetailPage(props: {
             ) : (
               <div className="pricing-showcase-grid pricing-showcase-grid-four">
                 {prices.map((price) => {
-                  const display = TIER_DISPLAY[price.tier] ?? {
-                    name: price.tier,
-                    period: "",
-                  };
+                  const display = tierDisplay(price.tier, price.amount);
                   const tierSlug = TIER_ENUM_TO_SLUG[price.tier];
                   const featured = price.tier === featuredTier;
 

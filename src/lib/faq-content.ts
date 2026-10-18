@@ -1,5 +1,6 @@
 import type { FaqCategory, FaqItem } from "@/app/[locale]/faq/FaqBrowser";
 import { PROP_FIRM } from "@/config/links";
+import { TRIALS_SENTENCE, TRIAL_FEE_NOTE } from "@/lib/trial-copy";
 
 // FAQ content shared by the FAQ page and /llms-full.txt.
 
@@ -38,7 +39,7 @@ export const EXTRA_EN: FaqItem[] = [
     id: "which-robot",
     category: "start",
     q: "Which robot should I choose?",
-    a: "MultiRange robots trade several gold session ranges a day; Breakout robots trade one. Compare them side by side in the catalog, or start with the free trial.",
+    a: "MultiRange robots trade several gold session ranges a day; Breakout robots trade one. Compare them side by side in the catalog, or start with a trial.",
     link: { href: "/catalog", label: "Browse the catalog" },
   },
   {
@@ -52,7 +53,7 @@ export const EXTRA_EN: FaqItem[] = [
     id: "trial",
     category: "billing",
     q: "Is there a free trial?",
-    a: "Yes. The 3-day trial activates instantly and needs no card. Availability can be limited per visitor, and the checkout shows whether a trial is open to you. A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid.",
+    a: `Not free, but cheap. ${TRIALS_SENTENCE} ${TRIAL_FEE_NOTE} A trial can only be linked to an MT5 account that has never been used with a GoldBot licence, free or paid.`,
   },
   {
     id: "payment",

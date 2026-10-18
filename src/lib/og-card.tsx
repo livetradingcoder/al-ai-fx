@@ -227,7 +227,7 @@ function RobotCard({ card }: { card: Extract<OgCard, { kind: "robot" }> }) {
           {card.price}
         </div>
       </div>
-      <Footer chips={card.freeTrial ? ["Account-locked build", "Free trial"] : ["Account-locked build"]} />
+      <Footer chips={card.freeTrial ? ["Account-locked build", "Trial"] : ["Account-locked build"]} />
     </Frame>
   );
 }
@@ -295,7 +295,7 @@ function CatalogCard({ card }: { card: Extract<OgCard, { kind: "catalog" }> }) {
           </div>
         ))}
       </div>
-      <Footer chips={card.freeTrial ? ["Account-locked build", "Free trial"] : ["Account-locked build"]} />
+      <Footer chips={card.freeTrial ? ["Account-locked build", "Trial"] : ["Account-locked build"]} />
     </Frame>
   );
 }

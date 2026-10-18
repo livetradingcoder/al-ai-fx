@@ -4,7 +4,10 @@ import { PricingTier } from "@prisma/client";
 import {
   mapTier,
   computeExpirationDate,
+  SHORT_TRIAL_DAYS,
+  LONG_TRIAL_DAYS,
   TIER_METADATA,
+  trialDays,
   UnknownTierError,
 } from "./pricing-tiers";
 
@@ -54,4 +57,26 @@ test("computeExpirationDate handles every enum value (compile-time exhaustivenes
     // Must not throw the assertNever runtime guard.
     assert.ok(computeExpirationDate(meta.enum) instanceof Date);
   }
+});
+
+const daysFromNow = (date: Date) => Math.round((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+
+test("what a robot charges for its trial sets the length: $0 and $0.99 run 3 days, $1.99 runs 7", () => {
+  assert.equal(SHORT_TRIAL_DAYS, 3);
+  assert.equal(LONG_TRIAL_DAYS, 7);
+  assert.equal(trialDays(0), 3);
+  assert.equal(trialDays(0.99), 3);
+  assert.equal(trialDays(1.99), 7);
+  assert.equal(trialDays(4.99), 7);
+});
+
+test("computeExpirationDate gives a trial the length its price buys", () => {
+  assert.equal(daysFromNow(computeExpirationDate(PricingTier.FREE_TRIAL)), 3);
+  assert.equal(daysFromNow(computeExpirationDate(PricingTier.FREE_TRIAL, { trialPrice: 0 })), 3);
+  assert.equal(daysFromNow(computeExpirationDate(PricingTier.FREE_TRIAL, { trialPrice: 0.99 })), 3);
+  assert.equal(daysFromNow(computeExpirationDate(PricingTier.FREE_TRIAL, { trialPrice: 1.99 })), 7);
+});
+
+test("a trial price is ignored for every other tier", () => {
+  assert.equal(daysFromNow(computeExpirationDate(PricingTier.TEN_DAYS, { trialPrice: 1.99 })), 10);
 });

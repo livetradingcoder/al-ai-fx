@@ -49,10 +49,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
     }
 
-    if (tier === "free-trial") {
-      return NextResponse.json({ error: "Free trial does not require Paygate checkout." }, { status: 400 });
-    }
-
     // Fail-closed, server-authoritative price resolution — refuses unknown/inactive
     // robot, unknown tier, or an untiered/inactive price row. NEVER trust a client
     // amount; NEVER coerce to a default robot. Referral discount vs coupon

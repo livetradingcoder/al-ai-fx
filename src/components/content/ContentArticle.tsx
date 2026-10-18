@@ -4,9 +4,10 @@ import path from "node:path";
 import { ArrowRight, BookOpen, ChevronRight, Clock, Info, ShieldAlert } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
+import { CATALOG_PUBLIC_TIERS, hasTrialPrice, isPlanPrice } from "@/lib/catalog-tiers";
 import { FLAGSHIP_ROBOT } from "@/config/pricing";
 import { getContentPage, type Block, type ContentPage } from "@/lib/content-pages";
+import { CHEAPEST_TRIAL_PRICE } from "@/lib/trial-copy";
 import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd, jsonLdScript } from "@/lib/seo";
 import ArticleOffers from "./ArticleOffers";
 import "./content.css";
@@ -27,7 +28,7 @@ async function loadRobots(filter?: "prop-firm") {
     });
     return rows.map((r) => {
       const monthly = r.prices.find((p) => p.tier === "ONE_MONTH")?.amount ?? null;
-      const from = r.prices.filter((p) => p.amount > 0).sort((a, b) => a.amount - b.amount)[0]?.amount ?? null;
+      const from = r.prices.filter(isPlanPrice).sort((a, b) => a.amount - b.amount)[0]?.amount ?? null;
       const bundled = path.join(process.cwd(), "public", "robots", `${r.slug}.jpg`);
       return {
         slug: r.slug,
@@ -35,7 +36,7 @@ async function loadRobots(filter?: "prop-firm") {
         short: r.shortDescription,
         monthly,
         from,
-        trial: r.prices.some((p) => p.amount === 0),
+        trial: hasTrialPrice(r.prices),
         artwork: r.artworkUrl ?? (existsSync(bundled) ? `/robots/${r.slug}.jpg` : null),
       };
     });
@@ -62,7 +63,7 @@ function RobotCards({ robots }: { robots: RobotCard[] }) {
             <strong>
               {robot.name}
               {robot.slug === FLAGSHIP_ROBOT.slug && <em>Flagship</em>}
-              {robot.trial && <em className="is-trial">Free trial</em>}
+              {robot.trial && <em className="is-trial">Trial</em>}
             </strong>
             <small>{robot.short}</small>
             <span className="ca-robot-price">
@@ -229,8 +230,8 @@ export default async function ContentArticle({ page }: { page: ContentPage }) {
             </nav>
           )}
           <div className="ca-side-cta">
-            <strong>Try GoldBot free</strong>
-            <p>3-day trial on PrecisionTrader. No card needed.</p>
+            <strong>Try GoldBot first</strong>
+            <p>Low-cost trials from {CHEAPEST_TRIAL_PRICE}.</p>
             <Link href="/catalog" className="ca-btn is-primary">
               Browse robots
               <ArrowRight size={16} aria-hidden="true" />

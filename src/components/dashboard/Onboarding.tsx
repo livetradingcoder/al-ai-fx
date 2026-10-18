@@ -183,7 +183,7 @@ export default function Onboarding({
                   {tier === "FREE_TRIAL" && (
                     <>
                       {" "}
-                      A free trial can only use an MT5 account that has never been used with a GoldBot licence.
+                      A trial can only use an MT5 account that has never been used with a GoldBot licence.
                     </>
                   )}
                 </p>

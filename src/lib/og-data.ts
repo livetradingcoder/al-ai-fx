@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { CATALOG_PUBLIC_TIERS, formatUsd } from "@/lib/catalog-tiers";
+import { CATALOG_PUBLIC_TIERS, formatUsd, hasTrialPrice, isPlanPrice } from "@/lib/catalog-tiers";
 import { getContentPage } from "@/lib/content-pages";
 import { getSharp } from "@/lib/image-tools";
 import { OG_CATALOG_COPY, OG_PAGE_COPY } from "@/lib/og-copy";
@@ -93,11 +93,12 @@ function priceLabel(robot: RobotRow): string {
   const prices = publicPrices(robot);
   const monthly = prices.find((p) => p.tier === "ONE_MONTH")?.amount ?? null;
   if (monthly !== null) return `${formatUsd(monthly)} / month`;
-  const cheapest = prices.filter((p) => p.amount > 0).sort((a, b) => a.amount - b.amount)[0]?.amount ?? null;
+  const cheapest = prices.filter(isPlanPrice).sort((a, b) => a.amount - b.amount)[0]?.amount ?? null;
   return cheapest !== null ? `From ${formatUsd(cheapest)}` : "Coming soon";
 }
 
-const hasFreeTrial = (robot: RobotRow) => publicPrices(robot).some((p) => p.amount === 0);
+// Any trial, free or paid: the card chip and the filter just say "Trial".
+const hasFreeTrial = (robot: RobotRow) => hasTrialPrice(publicPrices(robot));
 
 /** Same split the catalog's filter tabs make. */
 const FILTERS = {
@@ -136,7 +137,7 @@ export async function resolveOgCard(spec: OgSpec): Promise<OgCard | null> {
         chosen = live;
       }
       const lowest = chosen
-        .flatMap((r) => publicPrices(r).filter((p) => p.amount > 0).map((p) => p.amount))
+        .flatMap((r) => publicPrices(r).filter(isPlanPrice).map((p) => p.amount))
         .sort((a, b) => a - b)[0];
       const shown = chosen.slice(0, 4);
       const artworks = await Promise.all(shown.map((r) => loadArtwork(r.slug, r.artworkUrl)));

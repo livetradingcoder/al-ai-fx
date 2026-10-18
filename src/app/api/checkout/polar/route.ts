@@ -86,9 +86,6 @@ export async function POST(req: Request) {
   if (!robotSlug) {
     return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
   }
-  if (tier === "free-trial") {
-    return NextResponse.json({ error: "Free trial does not require checkout." }, { status: 400 });
-  }
 
   const refCode = (await cookies()).get(REF_COOKIE)?.value ?? null;
 

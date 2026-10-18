@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { CATALOG_PUBLIC_TIERS } from "@/lib/catalog-tiers";
+import { CATALOG_PUBLIC_TIERS, hasTrialPrice, isPlanPrice } from "@/lib/catalog-tiers";
 import RobotsTable from "./RobotsTable";
 
 export const metadata = { title: "Manage robots" };
@@ -29,7 +29,7 @@ export default async function AdminRobotsPage() {
   // infer it from a boolean.
   const rows = robots.map((robot) => {
     const publicPrices = robot.prices.filter((p) => CATALOG_PUBLIC_TIERS.includes(p.tier));
-    const paid = publicPrices.filter((p) => p.amount > 0);
+    const paid = publicPrices.filter(isPlanPrice);
     return {
       id: robot.id,
       slug: robot.slug,
@@ -43,7 +43,7 @@ export default async function AdminRobotsPage() {
       sourceVersion: robot.sourceVersion,
       paidTiers: paid.length,
       cheapestPaid: paid.length ? Math.min(...paid.map((p) => p.amount)) : null,
-      hasFreeTrial: publicPrices.some((p) => p.amount === 0),
+      hasFreeTrial: hasTrialPrice(publicPrices), // any trial, free or paid
       subscriptions: robot._count.subscriptions,
     };
   });

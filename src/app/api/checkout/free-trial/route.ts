@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     }
     if (resolved.amount !== 0) {
       return NextResponse.json(
-        { error: "Free trial is misconfigured for this robot." },
+        { error: "This robot's trial is not free. Start it from the checkout page." },
         { status: 400 },
       );
     }

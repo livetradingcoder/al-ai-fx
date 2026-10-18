@@ -4,7 +4,7 @@ import { routing } from "@/i18n/routing";
 import { REF_COOKIE } from "@/lib/affiliate";
 import { priceCheckout, provisionFreeCouponCheckout } from "@/lib/checkout-pricing";
 import { buildCheckoutThankYouPath } from "@/lib/marketing";
-import { TIER_METADATA, UnknownTierError } from "@/lib/pricing-tiers";
+import { TIER_METADATA, trialDays, UnknownTierError } from "@/lib/pricing-tiers";
 import { checkApiRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { inBackground, rememberCheckoutAttribution, sendAddPaymentInfoEvent } from "@/lib/meta-events";
 import { readMetaRequestContext } from "@/lib/meta-request";
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
   if (!robotSlug) {
     return NextResponse.json({ error: "Missing robotSlug." }, { status: 400 });
   }
-  if (tier === "free-trial" || !(tier in TIER_METADATA)) {
+  if (!(tier in TIER_METADATA)) {
     return NextResponse.json({ error: "This plan cannot be bought through Whop." }, { status: 400 });
   }
   if (!whopKey() || !whopProductId(robotSlug)) {
@@ -108,7 +108,8 @@ export async function POST(req: Request) {
     const orderRef = crypto.randomUUID();
     const requestUrl = new URL(req.url);
     const base = (process.env.NEXTAUTH_URL || `${requestUrl.protocol}//${requestUrl.host}`).replace(/\/$/, "");
-    const days = TIER_METADATA[tier].durationDays;
+    // The trial's length depends on the robot's trial price, not on the tier alone.
+    const days = tier === "free-trial" ? trialDays(listPrice) : TIER_METADATA[tier].durationDays;
 
     const checkout = await createWhopCheckout({
       robotSlug,

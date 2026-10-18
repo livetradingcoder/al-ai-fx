@@ -9,6 +9,7 @@ import {
   getPendingCheckout,
   trackPurchase,
 } from "@/lib/marketing-client";
+import { trialDays } from "@/lib/pricing-tiers";
 
 type OrderStatusResponse =
   | {
@@ -23,7 +24,8 @@ type OrderStatusResponse =
       status: "SUCCESS" | "FAILED";
     };
 
-function formatTier(tier: string | null | undefined) {
+// `amount` tells a free trial from a paid one: the tier is the same.
+function formatTier(tier: string | null | undefined, amount?: number | null) {
   switch (tier) {
     case "ONE_MONTH":
     case "1-month":
@@ -36,7 +38,7 @@ function formatTier(tier: string | null | undefined) {
       return "Lifetime Access";
     case "FREE_TRIAL":
     case "free-trial":
-      return "Free Trial";
+      return amount && amount > 0 ? `${trialDays(amount)}-Day Trial` : "Free Trial";
     case "TEN_DAYS":
     case "10-days":
       return "10-Day Plan";
@@ -118,7 +120,7 @@ export default function ThankYouClient() {
             orderRef,
             robotName: pendingCheckout?.robotName,
             robotSlug: pendingCheckout?.robotSlug,
-            tier: formatTier(data.pricingTier ?? pendingCheckout?.tier),
+            tier: formatTier(data.pricingTier ?? pendingCheckout?.tier, data.amount ?? pendingCheckout?.amount),
             tierSlug: pendingCheckout?.tier,
           };
 
@@ -190,7 +192,7 @@ export default function ThankYouClient() {
   }, []);
 
   const checkoutUrl = pendingCheckout?.checkoutUrl;
-  const planName = formatTier(pendingCheckout?.tier);
+  const planName = formatTier(pendingCheckout?.tier, pendingCheckout?.amount);
   const retryHref = pendingCheckout?.robotSlug
     ? `/checkout?robot=${encodeURIComponent(pendingCheckout.robotSlug)}&tier=${encodeURIComponent(pendingCheckout.tier)}`
     : "/catalog";

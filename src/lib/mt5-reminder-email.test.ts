@@ -79,7 +79,7 @@ test("the rendered email carries the sign-in link, the opt-out, and the one-clic
     optOutUrl,
   });
 
-  assert.equal(mail.subject, "Your PrecisionTrader free trial is waiting for an MT5 account");
+  assert.equal(mail.subject, "Your PrecisionTrader trial is waiting for an MT5 account");
   assert.ok(mail.html.includes(`href="${magicLinkUrl}"`));
   assert.ok(mail.html.includes(`href="${optOutUrl}"`));
   assert.ok(mail.html.includes("Stop these reminders"));

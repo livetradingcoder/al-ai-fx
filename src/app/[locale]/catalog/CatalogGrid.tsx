@@ -27,7 +27,7 @@ const FILTERS: { id: CatalogFilterId; label: string; match: (r: CatalogRobot) =>
   { id: "all", label: "All robots", match: () => true },
   { id: "multirange", label: "MultiRange", match: (r) => /multirange/i.test(r.name) },
   { id: "breakout", label: "Breakout", match: (r) => /breakout/i.test(r.name) },
-  { id: "free-trial", label: "Free trial", match: (r) => r.hasFreeTrial },
+  { id: "free-trial", label: "Trial", match: (r) => r.hasFreeTrial },
 ];
 
 const usd = (amount: number) => `$${amount.toLocaleString("en-US")}`;
@@ -115,7 +115,7 @@ export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
                   {robot.hasFreeTrial && (
                     <span className="cat-tag is-trial">
                       <Sparkles size={12} aria-hidden="true" />
-                      Free trial
+                      Trial
                     </span>
                   )}
                   {robot.comingSoon && (
@@ -182,7 +182,7 @@ export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
           <strong>Not sure which robot fits your account?</strong>
           <span>
             MultiRange robots trade more sessions a day; Breakout robots trade one.
-            Start with the free trial or ask us.
+            Start with a trial or ask us.
           </span>
         </div>
         <div className="cat-help-actions">

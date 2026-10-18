@@ -85,7 +85,7 @@ export const OG_CATALOG_COPY: Record<CatalogFilterId, OgCatalogCopy> = {
     subtitle: "One session range a day, with a structured hedge behind every trade.",
   },
   "free-trial": {
-    title: "Gold robots with a free trial",
-    subtitle: "Start with a 3-day free trial. No card needed.",
+    title: "Gold robots with a trial",
+    subtitle: "Try a robot first for a small fee, then pick a plan.",
   },
 };

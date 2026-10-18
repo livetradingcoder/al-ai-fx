@@ -1,4 +1,5 @@
-import { PRICING_TIERS, type TierId } from "@/config/pricing";
+import { PAID_TRIALS, PRICING_TIERS, type TierId } from "@/config/pricing";
+import { trialDays } from "@/lib/pricing-tiers";
 
 type TranslateValues = {
   fallback?: string;
@@ -262,4 +263,31 @@ export function buildPassPlans(t: Translate): PricingShowcasePlan[] {
       ],
     },
   ];
+}
+
+export interface PaidTrialPlan extends PricingShowcasePlan {
+  robot: { slug: string; name: string };
+}
+
+// One card per robot that charges for its trial: a few cents or dollars toward
+// build and server costs rather than a free pass. Length comes from the price.
+// Each is the FREE_TRIAL tier, so the card links to the same checkout slug the
+// free one did. English only, like the rest of the pricing copy around it.
+export function buildPaidTrialPlans(t: Translate): PaidTrialPlan[] {
+  return PAID_TRIALS.map((trial) => {
+    const days = trialDays(trial.amount);
+    return {
+      id: "free-trial",
+      robot: { slug: trial.slug, name: trial.name },
+      title: `${days}-Day Trial`,
+      price: trial.priceString,
+      period: `for ${days} days`,
+      note: "Covers build and server costs",
+      features: [
+        t("basicFeatureSet"),
+        t("standardRecovery"),
+        t("automatedDelivery"),
+      ],
+    };
+  });
 }
