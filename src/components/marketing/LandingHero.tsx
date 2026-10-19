@@ -19,8 +19,8 @@ import VideoModal from "@/components/marketing/VideoModal";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// The unlisted setup video shown from the hero button.
-const HERO_VIDEO_ID = "AC5MUEfv7eI";
+// The video the hero button plays.
+const HERO_VIDEO_ID = "fivmY1wyPD4";
 const HERO_VIDEO_URL = `https://youtu.be/${HERO_VIDEO_ID}`;
 
 const HERO_POINTS = ["Holiday liquidity protection", "Account-locked cloud builds"];
@@ -251,7 +251,7 @@ export default function LandingHero() {
       {videoOpen && (
         <VideoModal
           videoId={HERO_VIDEO_ID}
-          title="How GoldBot sets up on your MT5 account"
+          title="GoldBot live profit report (XAUUSD)"
           onClose={() => setVideoOpen(false)}
         />
       )}
