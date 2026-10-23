@@ -16,7 +16,7 @@ import {
 import { ArrowRight, Play } from "lucide-react";
 import { GoldGlyph } from "@/components/GoldGlyph";
 import VideoModal from "@/components/marketing/VideoModal";
-import HeroShortCard from "@/components/marketing/HeroShortCard";
+import HeroVideoCard from "@/components/marketing/HeroVideoCard";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -246,7 +246,7 @@ export default function LandingHero() {
         </div>
       </motion.div>
 
-      <HeroShortCard onOpenFull={() => setVideoOpen(true)} />
+      <HeroVideoCard onOpenFull={() => setVideoOpen(true)} />
 
       <div className="hero-robot-scroll" aria-hidden="true">
         <span />
