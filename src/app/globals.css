@@ -7197,8 +7197,10 @@ textarea.enroll-input {
      off the corner where the support chat opens. */
   .hero-clip {
     position: absolute;
-    right: clamp(0px, 2vw, 28px);
-    bottom: clamp(8px, 5vh, 64px);
+    /* Up and left of the corner: clear of the MetaTrader badge, the chat
+       bubble and the scroll hint, and clear of the headline on its left. */
+    right: clamp(60px, 9vw, 200px);
+    bottom: clamp(130px, 19vh, 280px);
     margin: 0;
     width: clamp(340px, 32vw, 560px);
     max-width: none;
