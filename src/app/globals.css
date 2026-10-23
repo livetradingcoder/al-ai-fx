@@ -7033,7 +7033,26 @@ textarea.enroll-input {
   .landing-intro .hero-robot-content {
     text-align: center;
     justify-content: center;
-    padding-block: 300px 72px;
+    /* Was 300px, which pushed the clip a screen and a half down. The art
+       still shows: it covers the whole hero behind the copy. */
+    padding-block: 140px 56px;
+  }
+
+  /* Tightened so headline, lead and the clip all land on the first screen. */
+  .hero-robot-content .landing-hero-title {
+    font-size: clamp(2rem, 8.6vw, 2.5rem);
+  }
+
+  .hero-robot-content .landing-hero-lead {
+    margin-top: 14px;
+  }
+
+  .hero-robot-content .landing-hero-actions {
+    margin-top: 18px;
+  }
+
+  .hero-robot-content .hero-clip {
+    margin-top: 16px;
   }
 
   .hero-robot-content .landing-hero-copy {

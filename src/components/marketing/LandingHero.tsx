@@ -146,6 +146,8 @@ export default function LandingHero() {
             {t("heroSubtitle")}
           </motion.p>
 
+          <HeroVideoCard onOpenFull={() => setVideoOpen(true)} />
+
           <motion.div className="landing-hero-actions" variants={itemVariants}>
             <Link href="/#pricing" className="btn-primary large hero-robot-cta">
               {t("getAccess")}
@@ -196,8 +198,6 @@ export default function LandingHero() {
               </span>
             </div>
           </motion.div>
-
-          <HeroVideoCard onOpenFull={() => setVideoOpen(true)} />
 
           <motion.ul
             className="hero-robot-trust"
