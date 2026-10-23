@@ -85,6 +85,8 @@ export default async function CatalogPage({
       artwork: artworkFor(robot.slug, robot.artworkUrl),
       fromPrice: cheapestPaid?.amount ?? null,
       monthlyPrice: publicPrices.find((p) => p.tier === "ONE_MONTH")?.amount ?? null,
+      // The trial is the cheapest way in, so the card leads with it.
+      trialPrice: publicPrices.find((p) => p.tier === "FREE_TRIAL")?.amount ?? null,
       hasFreeTrial: hasTrialPrice(publicPrices), // any trial, free or paid: the tab and tag just say "Trial"
       comingSoon: robot.prices.length === 0,
       flagship: robot.slug === FLAGSHIP_ROBOT.slug,

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { trialDays } from "@/lib/pricing-tiers";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Clock, Crown, LifeBuoy, Sparkles } from "lucide-react";
@@ -16,6 +17,7 @@ export type CatalogRobot = {
   artwork: string | null;
   fromPrice: number | null;
   monthlyPrice: number | null;
+  trialPrice: number | null;
   hasFreeTrial: boolean;
   comingSoon: boolean;
   flagship: boolean;
@@ -137,7 +139,20 @@ export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
                     <span className="cat-price-soon">Pricing announced at launch</span>
                   ) : (
                     <div className="cat-price">
-                      {robot.monthlyPrice !== null ? (
+                      {/* Lead with the trial where there is one: $2 for a week
+                          is the price someone actually pays first, and the
+                          monthly figure alone made the Trial tab read as $39. */}
+                      {robot.trialPrice !== null ? (
+                        <>
+                          <strong>
+                            {robot.trialPrice === 0 ? "Free" : usd(robot.trialPrice)}
+                          </strong>
+                          <span>{trialDays(robot.trialPrice)}-day trial</span>
+                          {robot.monthlyPrice !== null && (
+                            <small>then {usd(robot.monthlyPrice)} / month</small>
+                          )}
+                        </>
+                      ) : robot.monthlyPrice !== null ? (
                         <>
                           <strong>{usd(robot.monthlyPrice)}</strong>
                           <span>/ month</span>
@@ -148,7 +163,8 @@ export default function CatalogGrid({ robots }: { robots: CatalogRobot[] }) {
                           <strong>{usd(robot.fromPrice)}</strong>
                         </>
                       ) : null}
-                      {robot.fromPrice !== null &&
+                      {robot.trialPrice === null &&
+                        robot.fromPrice !== null &&
                         robot.monthlyPrice !== null &&
                         robot.fromPrice < robot.monthlyPrice && (
                           <small>or {usd(robot.fromPrice)} for 10 days</small>
