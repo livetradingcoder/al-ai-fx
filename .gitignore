@@ -45,3 +45,8 @@ next-env.d.ts
 
 # python
 __pycache__/
+
+# personal data exports for email marketing
+marketing-assets/csvs/
+marketing-assets/email-campaigns/daily/
+marketing-assets/video/
