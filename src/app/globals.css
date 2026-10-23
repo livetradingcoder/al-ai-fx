@@ -7027,15 +7027,16 @@ textarea.enroll-input {
   }
 
   .hero-robot-scrim {
-    background: linear-gradient(180deg, rgba(6, 5, 2, 0.1) 0%, rgba(6, 5, 2, 0.05) 180px, rgba(6, 5, 2, 0.85) 380px, #090703 440px);
+    background: linear-gradient(180deg, rgba(6, 5, 2, 0.28) 0%, rgba(6, 5, 2, 0.45) 90px, rgba(6, 5, 2, 0.84) 280px, #090703 420px);
   }
 
   .landing-intro .hero-robot-content {
     text-align: center;
     justify-content: center;
-    /* Was 300px, which pushed the clip a screen and a half down. The art
-       still shows: it covers the whole hero behind the copy. */
-    padding-block: 140px 56px;
+    /* The copy starts just under the navbar. 300px here, then 140px, both
+       spent the first screen on an empty band of artwork; the robot is still
+       behind every line of this text. */
+    padding-block: 40px 48px;
   }
 
   /* Tightened so headline, lead and the clip all land on the first screen. */
