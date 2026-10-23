@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import OrdersTable, { type OrderRow } from "../OrdersTable";
 
@@ -12,6 +13,9 @@ export default async function AdminOrdersPage() {
   if (!session?.user?.id || session?.user?.role !== "ADMIN") {
     redirect("/dashboard");
   }
+
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
 
   // The table searches, filters and paginates in the browser, so send a
   // working set rather than a 10-row slice — capped so the page stays cheap if

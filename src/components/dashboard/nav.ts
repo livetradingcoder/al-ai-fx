@@ -64,6 +64,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: "/dashboard/admin/proofs", icon: "proofs", label: "manageProofs" },
       { href: "/dashboard/admin/giveaways", icon: "giveaways", label: "manageGiveaways" },
       { href: "/dashboard/admin/promo-bar", icon: "promobar", label: "managePromoBar" },
+      { href: "/dashboard/admin/payments", icon: "billing", label: "managePayments" },
       { href: "/dashboard/admin/webhooks", icon: "webhooks", label: "manageWebhooks" },
     ],
   },

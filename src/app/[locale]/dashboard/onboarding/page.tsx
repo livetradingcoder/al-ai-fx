@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import Onboarding from "@/components/dashboard/Onboarding";
 
 export const metadata = { title: "Setup" };
@@ -9,6 +10,9 @@ export const metadata = { title: "Setup" };
 export default async function OnboardingPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
+
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
 
   const sub = await prisma.subscription.findFirst({
     where: { userId: session.user.id, status: "ACTIVE" },

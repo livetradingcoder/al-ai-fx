@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import LicenseManager from "@/components/dashboard/LicenseManager";
 import { getTranslations } from "next-intl/server";
@@ -13,6 +14,9 @@ export default async function LicensesPage() {
   if (!session?.user?.id) {
     redirect("/login");
   }
+
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

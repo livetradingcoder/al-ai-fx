@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import { loadUserLocations } from "@/lib/admin-locations";
 import { classifyTrialUser, isListable, SEGMENT_LABELS, TRIAL_SEGMENTS, type TrialSegment } from "@/lib/segments";
@@ -19,6 +20,9 @@ export default async function AdminUsersPage({
 
   // An explicit select, not `include`: these rows are serialised into the
   // page for the client table, and password hashes must never ride along.
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
+
   const users = await prisma.user.findMany({
     orderBy: { createdAt: 'desc' },
     select: {

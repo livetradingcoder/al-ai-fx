@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect as redirectLocalized } from "@/i18n/routing";
@@ -32,6 +33,9 @@ export default async function DashboardOverview({
   if (session.user.role === "ADMIN" && (await searchParams).view !== "account") {
     redirectLocalized({ href: "/dashboard/admin", locale: await getLocale() });
   }
+
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

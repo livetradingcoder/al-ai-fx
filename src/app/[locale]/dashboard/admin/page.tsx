@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import CompileServerStatus from "@/components/dashboard/CompileServerStatus";
@@ -31,6 +32,9 @@ export default async function AdminDashboard() {
   if (!session?.user?.id || session?.user?.role !== "ADMIN") {
     redirect("/dashboard");
   }
+
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
 
   const mail = mailDeliveryStatus();
   const metaStatus = await metaTrackingStatus();

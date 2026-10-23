@@ -1,6 +1,7 @@
 import { countryOfIp } from "@/lib/geo-country";
 import { prisma } from "@/lib/prisma";
 import { SESSION_RETENTION_DAYS, USER_IP_RETENTION_DAYS } from "@/lib/retention";
+import { countLapsedSubscriptions, expireLapsedSubscriptions } from "@/lib/subscription-expiry";
 
 // The daily tidy-up behind the privacy policy's "IP addresses are deleted a
 // year after we last saw them", plus filling in the country of addresses that
@@ -22,6 +23,8 @@ export type HousekeepingResult = {
   countriesFilled: number;
   /** Addresses that still have no country (not in the database). */
   countriesUnknown: number;
+  /** ACTIVE subscriptions past their expiry, marked EXPIRED (counted only on a dry run). */
+  subscriptionsExpired: number;
 };
 
 export async function runHousekeeping(options: { dryRun?: boolean; now?: Date } = {}): Promise<HousekeepingResult> {
@@ -37,6 +40,10 @@ export async function runHousekeeping(options: { dryRun?: boolean; now?: Date } 
   const oldSessions = dryRun
     ? await prisma.userSession.count({ where: { lastSeenAt: { lt: sessionCutoff } } })
     : (await prisma.userSession.deleteMany({ where: { lastSeenAt: { lt: sessionCutoff } } })).count;
+
+  const subscriptionsExpired = dryRun
+    ? await countLapsedSubscriptions(now)
+    : await expireLapsedSubscriptions(now);
 
   let countriesFilled = 0;
   let countriesUnknown = 0;
@@ -73,7 +80,7 @@ export async function runHousekeeping(options: { dryRun?: boolean; now?: Date } 
 
   console.log(
     `[Housekeeping] dry=${dryRun} oldAddresses=${oldAddresses} oldSessions=${oldSessions} ` +
-      `countriesFilled=${countriesFilled} countriesUnknown=${countriesUnknown}`,
+      `countriesFilled=${countriesFilled} countriesUnknown=${countriesUnknown} subscriptionsExpired=${subscriptionsExpired}`,
   );
-  return { dryRun, oldAddresses, oldSessions, countriesFilled, countriesUnknown };
+  return { dryRun, oldAddresses, oldSessions, countriesFilled, countriesUnknown, subscriptionsExpired };
 }

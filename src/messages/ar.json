@@ -287,7 +287,7 @@
     "planLifetimeSource": "Lifetime + Source",
     "payByCard": "الدفع بالبطاقة",
     "payWithCrypto": "الدفع بالعملات المشفرة",
-    "checkoutRedirect": "سيتم توجيهك إلى صفحة دفع آمنة لإتمام العملية. تتم معالجة مدفوعات البطاقات عبر Polar أو Whop، والعملات المشفرة عبر OxaPay.",
+    "checkoutRedirect": "ستنتقل إلى صفحة دفع آمنة مستضافة لإتمام الدفع.",
     "payWithWhop": "الدفع عبر Whop"
   },
   "Tutorials": {
@@ -434,6 +434,7 @@
     "manageProofs": "Results & shares",
     "manageGiveaways": "Giveaways",
     "managePromoBar": "Promo bar",
+    "managePayments": "المدفوعات",
     "rewards": "المكافآت",
     "workspaceAdmin": "المشرف",
     "workspaceAccount": "حسابي",

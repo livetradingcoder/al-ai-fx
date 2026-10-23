@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import { licencesPerAccount } from "@/lib/trial-abuse";
 import LicencesTable from "../LicencesTable";
@@ -17,6 +18,9 @@ export default async function AdminLicencesPage() {
 
   // Same working-set approach as the orders page: the table narrows it in the
   // browser, capped so the page stays cheap as the platform grows.
+  // Licence status below must reflect expiry dates that have passed.
+  await syncLapsedSubscriptions();
+
   const subscriptionRows = await prisma.subscription.findMany({
     take: 500,
     orderBy: { createdAt: 'desc' },
