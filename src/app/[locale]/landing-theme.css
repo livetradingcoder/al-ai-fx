@@ -1035,6 +1035,25 @@
   .landing-shell .hero-robot-content .landing-hero-actions {
     margin-top: 18px;
   }
+
+  /* Stacked means centred: left-aligned copy under a full-width hero image
+     leaves a ragged column with empty space beside it. */
+  .landing-shell .hero-robot-content,
+  .landing-shell .hero-robot-content .landing-hero-copy {
+    text-align: center;
+  }
+
+  .landing-shell .hero-robot-content .landing-hero-copy,
+  .landing-shell .hero-robot-content .landing-eyebrow,
+  .landing-shell .hero-robot-content .landing-hero-lead,
+  .landing-shell .hero-robot-content .hero-clip {
+    margin-inline: auto;
+  }
+
+  .landing-shell .hero-robot-content .landing-hero-actions,
+  .landing-shell .hero-robot-trust {
+    justify-content: center;
+  }
 }
 
 /* Matches the 64px landing navbar (the classic one is 74px). */
