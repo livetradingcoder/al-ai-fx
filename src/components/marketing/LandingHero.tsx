@@ -197,6 +197,8 @@ export default function LandingHero() {
             </div>
           </motion.div>
 
+          <HeroVideoCard onOpenFull={() => setVideoOpen(true)} />
+
           <motion.ul
             className="hero-robot-trust"
             aria-label="GoldBot highlights"
@@ -245,8 +247,6 @@ export default function LandingHero() {
           </span>
         </div>
       </motion.div>
-
-      <HeroVideoCard onOpenFull={() => setVideoOpen(true)} />
 
       <div className="hero-robot-scroll" aria-hidden="true">
         <span />

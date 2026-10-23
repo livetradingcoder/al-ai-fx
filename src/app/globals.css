@@ -7106,8 +7106,11 @@ textarea.enroll-input {
 .hero-clip {
   position: relative;
   z-index: 3;
-  margin: 28px 0 0;
-  width: min(420px, 100%);
+  margin: 26px 0 0;
+  /* Phones: a normal block in the copy column. As a child of the hero's flex
+     row it was shrink-wrapped to 75px wide. */
+  width: 100%;
+  max-width: 520px;
 }
 
 .hero-clip-frame {
@@ -7186,11 +7189,14 @@ textarea.enroll-input {
 }
 
 @media (min-width: 1025px) {
+  /* Anchored to the hero's content container, so it lands over the coin and
+     off the corner where the support chat opens. */
   .hero-clip {
     position: absolute;
-    right: clamp(40px, 10vw, 200px);
-    bottom: clamp(120px, 20vh, 240px);
+    right: clamp(0px, 2vw, 28px);
+    bottom: clamp(8px, 5vh, 64px);
     margin: 0;
-    width: clamp(280px, 26vw, 420px);
+    width: clamp(340px, 32vw, 560px);
+    max-width: none;
   }
 }
