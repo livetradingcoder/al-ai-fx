@@ -10,6 +10,20 @@ import { ladderInversions } from "@/lib/pricing-catalog";
 import { TIER_METADATA } from "@/lib/pricing-tiers";
 import type { ActionResult } from "@/lib/action-result";
 
+/**
+ * Drop the whole public cache after an admin edit.
+ *
+ * A robot's name, badge, listing state and prices are read by the home page,
+ * /catalog, /robots/<slug>, /checkout and llms.txt — each of those under every
+ * locale prefix. Naming them one by one means a page gets forgotten and keeps
+ * serving an old price to customers, which is exactly what happened before:
+ * the site advertised $99/month and "Free" trials while the database said $67
+ * and $0.99. Admin edits are rare, so a full purge is the cheap, safe trade.
+ */
+function revalidatePublicPages() {
+  revalidatePath("/", "layout");
+}
+
 export async function toggleRobotActive(robotId: string, currentActive: boolean): Promise<ActionResult> {
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== "ADMIN") {
@@ -22,6 +36,7 @@ export async function toggleRobotActive(robotId: string, currentActive: boolean)
   });
 
   revalidatePath("/dashboard/admin/robots");
+  revalidatePublicPages();
   return {
     ok: true,
     message: currentActive
@@ -69,6 +84,8 @@ export async function updateRobot(
   });
 
   revalidatePath("/dashboard/admin/robots");
+  // Name, descriptions, artwork and badge are all shopper-facing.
+  revalidatePublicPages();
   return { ok: true, message: `${name} saved.` };
 }
 
@@ -211,7 +228,7 @@ export async function updateRobotPrices(
 
   // Deploy-free price change (PRIC-04): refresh admin AND public catalog.
   revalidatePath("/dashboard/admin/robots");
-  revalidatePath("/catalog");
+  revalidatePublicPages();
 
   const onSale = PLAN_SLUGS.flatMap((slug) => {
     const sent = prices.find((p) => p.tier === slug && (p.active ?? true) && Number(p.amount) > 0);
