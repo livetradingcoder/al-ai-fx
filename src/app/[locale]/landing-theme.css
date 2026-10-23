@@ -997,7 +997,11 @@
   }
 }
 
-@media (max-width: 900px) {
+/* Up to 1024px the hero stacks: art on top, copy and clip beneath. Above it,
+   the clip floats over the art (see .hero-clip in globals.css). The two used
+   to meet at 900/1025, and tablets in between got the stacked clip wedged
+   into a side-by-side hero. */
+@media (max-width: 1024px) {
   .landing-shell .hero-robot {
     min-height: 0;
   }
