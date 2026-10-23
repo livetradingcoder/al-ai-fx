@@ -7099,3 +7099,98 @@ textarea.enroll-input {
 @media (prefers-reduced-motion: reduce) {
   .fold > summary::after { transition: none; }
 }
+
+/* Hero Short — the vertical clip looping over the robot art. Desktop: parked
+   on the right, over the gold coin. Phones: it sits under the buttons in the
+   normal flow, because there is no room beside the headline. */
+.hero-short {
+  position: relative;
+  z-index: 3;
+  margin: 28px 0 0;
+  width: min(190px, 52vw);
+}
+
+.hero-short-frame {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(244, 220, 162, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.hero-short-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  /* The overlay button takes every click; the frame itself is scenery. */
+  pointer-events: none;
+}
+
+.hero-short-hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 32%, transparent 62%, rgba(0, 0, 0, 0.72));
+  color: #fff7e3;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.hero-short-live,
+.hero-short-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+.hero-short-live {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.hero-short-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.18);
+}
+
+.hero-short-cta {
+  background: rgba(244, 220, 162, 0.92);
+  color: #1a130c;
+}
+
+.hero-short-hit:hover .hero-short-cta,
+.hero-short-hit:focus-visible .hero-short-cta {
+  background: #fff3cf;
+}
+
+@media (min-width: 1025px) {
+  .hero-short {
+    position: absolute;
+    right: clamp(24px, 6vw, 96px);
+    bottom: clamp(90px, 14vh, 170px);
+    margin: 0;
+    width: clamp(200px, 15vw, 260px);
+  }
+}
