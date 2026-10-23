@@ -82,6 +82,8 @@ export async function provisionSubscription(
       robotId: robot.id,
       tier,
       status: "ACTIVE",
+      // A lapsed one doesn't count: buying the plan again must create a new licence.
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
   });
 

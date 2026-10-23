@@ -71,13 +71,17 @@ function formatUsd(amount: number): string {
 const trialName = (price: number) =>
   price > 0 ? `${trialDays(price)}-Day Trial` : `${SHORT_TRIAL_DAYS}-Day Free Trial`;
 
+type Provider = "polar" | "oxapay" | "whop";
+export type CheckoutProviders = Record<Provider, boolean>;
+type PayMethod = { provider: Provider; kind: "card" | "crypto"; label: string };
+
 function CheckoutContent({
   referralDiscount,
-  whopEnabled,
+  providers,
   initialRobots,
 }: {
   referralDiscount: number;
-  whopEnabled: boolean;
+  providers: CheckoutProviders;
   initialRobots: RobotInfo[] | null;
 }) {
   const t = useTranslations("Checkout");
@@ -210,6 +214,26 @@ function CheckoutContent({
     : referralPrice ?? displayAmount;
   const discounted = payable < displayAmount;
 
+  // Which ways to pay are on offer (Admin → Payments, and the provider's keys).
+  // Whop won't take a charge under $1 (WHOP_MIN_AMOUNT in src/lib/whop.ts).
+  const payMethods: PayMethod[] = [
+    ...(providers.polar ? [{ provider: "polar" as const, kind: "card" as const, label: t("payByCard") }] : []),
+    ...(providers.whop && payable >= 1
+      ? [{ provider: "whop" as const, kind: "card" as const, label: providers.polar ? t("payWithWhop") : t("payByCard") }]
+      : []),
+    ...(providers.oxapay ? [{ provider: "oxapay" as const, kind: "crypto" as const, label: t("payWithCrypto") }] : []),
+  ];
+  // A 100% coupon needs no provider; any checkout route provisions it, Polar's
+  // never asks for its keys first.
+  const freeOrder = !isFreeTrial && payable <= 0 && Boolean(coupon?.free);
+  const primaryMethod = freeOrder ? undefined : payMethods[0];
+  const primaryProvider: Provider | undefined = freeOrder ? "polar" : primaryMethod?.provider;
+  const paymentsPaused = !isFreeTrial && !freeOrder && payMethods.length === 0;
+  const cardNames = [providers.polar && "Polar", providers.whop && "Whop"].filter(Boolean).join(" or ");
+  const providerLine = [cardNames && `Card by ${cardNames}`, providers.oxapay && "Crypto by OxaPay"]
+    .filter(Boolean)
+    .join(" · ");
+
   async function openThankYouFlow(input: {
     amount: number;
     checkoutUrl: string;
@@ -286,7 +310,7 @@ function CheckoutContent({
 
   // Card payments go through Polar (or Whop), crypto through OxaPay. All three
   // endpoints answer the same shape, so the thank-you flow is shared.
-  async function handleCheckout(provider: "polar" | "oxapay" | "whop") {
+  async function handleCheckout(provider: Provider) {
     if (!email.trim() || !email.includes("@")) {
       setCheckoutError("Please enter a valid email before continuing.");
       return;
@@ -481,7 +505,7 @@ function CheckoutContent({
                 className="co-form"
                 onSubmit={(event) => {
                   event.preventDefault();
-                  void handleCheckout("polar");
+                  void handleCheckout(primaryProvider ?? "polar");
                 }}
               >
                 {robots && robots.length > 1 && (
@@ -649,7 +673,8 @@ function CheckoutContent({
                     </p>
                   )}
 
-                  <button type="submit" className="co-submit" disabled={isSubmitting}>
+                  {/* The first method on offer is the main button; the rest sit under it. */}
+                  <button type="submit" className="co-submit" disabled={isSubmitting || paymentsPaused}>
                     {isSubmitting ? (
                       <LoaderCircle size={18} className="co-spin" aria-hidden="true" />
                     ) : (
@@ -659,33 +684,31 @@ function CheckoutContent({
                       ? t("startFreeTrial")
                       : isSubmitting
                         ? t("redirecting")
-                        : `${t("payByCard")} · ${money(payable)}`}
-                    {!isFreeTrial && <CardBrands />}
+                        : `${primaryMethod?.label ?? t("payByCard")} · ${money(payable)}`}
+                    {!isFreeTrial && primaryMethod?.kind !== "crypto" && <CardBrands />}
+                    {!isFreeTrial && primaryMethod?.kind === "crypto" && <CryptoBrands />}
                   </button>
 
-                  {/* Whop won't take a charge under $1 (WHOP_MIN_AMOUNT in src/lib/whop.ts). */}
-                  {!isFreeTrial && whopEnabled && payable >= 1 && (
-                    <button
-                      type="button"
-                      className="co-submit co-submit-alt"
-                      disabled={isSubmitting}
-                      onClick={() => void handleCheckout("whop")}
-                    >
-                      {`${t("payWithWhop")} · ${money(payable)}`}
-                      <CardBrands />
-                    </button>
-                  )}
+                  {!isFreeTrial &&
+                    !freeOrder &&
+                    payMethods.slice(1).map((m) => (
+                      <button
+                        key={m.provider}
+                        type="button"
+                        className="co-submit co-submit-alt"
+                        disabled={isSubmitting}
+                        onClick={() => void handleCheckout(m.provider)}
+                      >
+                        {`${m.label} · ${money(payable)}`}
+                        {m.kind === "crypto" ? <CryptoBrands /> : <CardBrands />}
+                      </button>
+                    ))}
 
-                  {!isFreeTrial && (
-                    <button
-                      type="button"
-                      className="co-submit co-submit-alt"
-                      disabled={isSubmitting}
-                      onClick={() => void handleCheckout("oxapay")}
-                    >
-                      {`${t("payWithCrypto")} · ${money(payable)}`}
-                      <CryptoBrands />
-                    </button>
+                  {paymentsPaused && (
+                    <p className="co-msg is-error" role="status">
+                      <CircleAlert size={15} aria-hidden="true" />
+                      Payments are paused for a moment. Please check back soon, or contact support@al-ai-fx.xyz.
+                    </p>
                   )}
 
                   <p className="co-pay-note">
@@ -695,7 +718,7 @@ function CheckoutContent({
                   <div className="co-pay-meta">
                     <span>
                       <ShieldCheck size={14} aria-hidden="true" />
-                      {whopEnabled ? "Card by Polar or Whop" : "Card by Polar"} · Crypto by OxaPay
+                      {providerLine}
                     </span>
                     {!isFreeTrial && (
                       <span>
@@ -789,11 +812,11 @@ function CheckoutContent({
 
 export default function CheckoutClient({
   referralDiscount = 0,
-  whopEnabled = false,
+  providers = { polar: false, whop: false, oxapay: false },
   initialRobots = null,
 }: {
   referralDiscount?: number;
-  whopEnabled?: boolean;
+  providers?: CheckoutProviders;
   initialRobots?: CheckoutRobot[] | null;
 }) {
   const t = useTranslations("Checkout");
@@ -807,7 +830,7 @@ export default function CheckoutClient({
         </div>
       }
     >
-      <CheckoutContent referralDiscount={referralDiscount} whopEnabled={whopEnabled} initialRobots={initialRobots} />
+      <CheckoutContent referralDiscount={referralDiscount} providers={providers} initialRobots={initialRobots} />
     </Suspense>
   );
 }

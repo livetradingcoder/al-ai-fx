@@ -12,6 +12,7 @@ import { readMetaRequestContext } from "@/lib/meta-request";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
+import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -91,6 +92,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         await provisionFreeCouponCheckout({ email, tier, robotSlug, currency: "USD", refCode, coupon }),
       );
+    }
+
+    if (!(await isProviderAvailable("oxapay"))) {
+      return NextResponse.json({ error: providerOffMessage("oxapay") }, { status: 503 });
     }
 
     const amount = chargeable.toFixed(2);

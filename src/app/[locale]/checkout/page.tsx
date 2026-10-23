@@ -6,7 +6,7 @@ import CheckoutClient from "./CheckoutClient";
 import { getPageMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { getSettings, REF_COOKIE } from "@/lib/affiliate";
-import { whopEnabled } from "@/lib/whop";
+import { availableProviders } from "@/lib/payment-settings";
 import { listCheckoutRobots, type CheckoutRobot } from "@/lib/checkout-robots";
 
 export async function generateMetadata({
@@ -19,8 +19,8 @@ export async function generateMetadata({
 }
 
 export default async function CheckoutPage() {
-  // Whether the Whop button is offered depends on the running container's env,
-  // so the page must not be prerendered. The cookie read below already opts in,
+  // Which ways to pay are offered depends on the admin switches and the running
+  // container's env, so the page must not be prerendered. The cookie read below already opts in,
   // this makes it explicit.
   await connection();
   // The cookie is httpOnly, so the client cannot see it — the server reads it
@@ -49,5 +49,7 @@ export default async function CheckoutPage() {
     // The client falls back to /api/robots.
   }
 
-  return <CheckoutClient referralDiscount={referralDiscount} whopEnabled={whopEnabled()} initialRobots={initialRobots} />;
+  const providers = await availableProviders();
+
+  return <CheckoutClient referralDiscount={referralDiscount} providers={providers} initialRobots={initialRobots} />;
 }

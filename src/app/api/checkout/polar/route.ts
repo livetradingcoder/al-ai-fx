@@ -12,6 +12,7 @@ import { readMetaRequestContext } from "@/lib/meta-request";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
+import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -103,6 +104,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         await provisionFreeCouponCheckout({ email, tier, robotSlug, currency: "USD", refCode, coupon }),
       );
+    }
+
+    if (!(await isProviderAvailable("polar"))) {
+      return NextResponse.json({ error: providerOffMessage("polar") }, { status: 503 });
     }
 
     const productId = await findPolarProduct(robotSlug, tier);

@@ -719,3 +719,15 @@ model PromoBanner {
 
   @@index([active, endsAt])
 }
+
+// Which payment providers checkout offers. One row ("default"); a missing row or
+// table means the defaults below. Switching a provider off hides its button and
+// makes its checkout route refuse new orders; its webhook still fulfils orders
+// already paid.
+model PaymentSettings {
+  id            String   @id @default("default")
+  polarEnabled  Boolean  @default(false)
+  whopEnabled   Boolean  @default(true)
+  oxapayEnabled Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+}

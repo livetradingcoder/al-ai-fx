@@ -12,6 +12,7 @@ import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import { WHOP_MIN_AMOUNT, createWhopCheckout, whopKey, whopOrderRef, whopProductId } from "@/lib/whop";
 import type { TierId } from "@/config/pricing";
+import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -97,6 +98,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         await provisionFreeCouponCheckout({ email, tier, robotSlug, currency: "USD", refCode, coupon }),
       );
+    }
+
+    if (!(await isProviderAvailable("whop"))) {
+      return NextResponse.json({ error: providerOffMessage("whop") }, { status: 503 });
     }
     if (chargeable < WHOP_MIN_AMOUNT) {
       return NextResponse.json(
