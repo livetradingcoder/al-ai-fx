@@ -1007,12 +1007,29 @@
     height: 400px;
   }
 
+  /* The copy starts just under the navbar. At 260px the first screen was a
+     band of artwork with no words in it, and the clip never made the fold. */
   .landing-shell .hero-robot-content {
-    padding-block: 260px 56px;
+    padding-block: 40px 48px;
   }
 
+  /* Shaped for copy that began 260px down, so it stayed clear for the first
+     160px. The headline sits there now and needs the cover. */
   .landing-shell .hero-robot-scrim {
-    background: linear-gradient(180deg, rgba(11, 14, 17, 0.1) 0%, rgba(11, 14, 17, 0.05) 160px, rgba(11, 14, 17, 0.88) 340px, var(--ds-canvas) 400px);
+    background: linear-gradient(180deg, rgba(11, 14, 17, 0.32) 0%, rgba(11, 14, 17, 0.5) 90px, rgba(11, 14, 17, 0.88) 270px, var(--ds-canvas) 400px);
+  }
+
+  /* Tightened so headline, lead and the clip all land on the first screen. */
+  .landing-shell .hero-robot-content .landing-hero-title {
+    font-size: clamp(2rem, 8.4vw, 2.4rem);
+  }
+
+  .landing-shell .hero-robot-content .landing-hero-lead {
+    margin-top: 14px;
+  }
+
+  .landing-shell .hero-robot-content .landing-hero-actions {
+    margin-top: 18px;
   }
 }
 
