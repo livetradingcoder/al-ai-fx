@@ -176,25 +176,27 @@ export async function provisionSubscription(
     });
     orderId = order.id;
 
-    events.push({
-      type: "sale.completed",
-      data: {
-        orderId: order.id,
-        orderRef: paygateId,
-        provider: providerOf(paygateId),
-        amount,
-        currency: currency || "USD",
-        tier,
-        robotSlug: robot.slug,
-        robotName: robot.name,
-        email,
-        userId: user.id,
-        refCode: refCode ?? null,
-        // A paid trial that made the account is announced by its trial.started event.
-        newCustomer: userCreated && tier !== PricingTier.FREE_TRIAL,
-        ...(tier === PricingTier.FREE_TRIAL ? { trialDays: trialDays(listPrice) } : {}),
-      },
-    });
+    // A paid trial stays one message: trial.started already announced it, and a
+    // trial fee is not takings a relay should add to the day's sales.
+    if (tier !== PricingTier.FREE_TRIAL) {
+      events.push({
+        type: "sale.completed",
+        data: {
+          orderId: order.id,
+          orderRef: paygateId,
+          provider: providerOf(paygateId),
+          amount,
+          currency: currency || "USD",
+          tier,
+          robotSlug: robot.slug,
+          robotName: robot.name,
+          email,
+          userId: user.id,
+          refCode: refCode ?? null,
+          newCustomer: userCreated,
+        },
+      });
+    }
 
     // A trial fee earns no commission. Where affiliates are paid on a referral's
     // first order only, it would use up the one commission the buyer's first
