@@ -16,13 +16,17 @@ import {
 import { ArrowRight, Play } from "lucide-react";
 import { GoldGlyph } from "@/components/GoldGlyph";
 import VideoModal from "@/components/marketing/VideoModal";
-import HeroVideoCard from "@/components/marketing/HeroVideoCard";
+import HeroVideoCard, { HERO_VIDEO_IDS } from "@/components/marketing/HeroVideoCard";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// The video the hero button plays.
-const HERO_VIDEO_ID = "fivmY1wyPD4";
-const HERO_VIDEO_URL = `https://youtu.be/${HERO_VIDEO_ID}`;
+// The videos the hero's pop-up plays, in playlist order. The first is the one
+// the "Open on YouTube" link goes to.
+const HERO_VIDEOS = [
+  { id: HERO_VIDEO_IDS[0], title: "GoldBot live profit report (XAUUSD)" },
+  { id: HERO_VIDEO_IDS[1], title: "GoldBot video 2" },
+];
+const HERO_VIDEO_URL = `https://youtu.be/${HERO_VIDEO_IDS[0]}`;
 
 const HERO_POINTS = ["Holiday liquidity protection", "Account-locked cloud builds"];
 
@@ -252,11 +256,7 @@ export default function LandingHero() {
         <span />
       </div>
       {videoOpen && (
-        <VideoModal
-          videoId={HERO_VIDEO_ID}
-          title="GoldBot live profit report (XAUUSD)"
-          onClose={() => setVideoOpen(false)}
-        />
+        <VideoModal videos={HERO_VIDEOS} onClose={() => setVideoOpen(false)} />
       )}
     </div>
   );

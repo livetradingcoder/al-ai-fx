@@ -946,6 +946,31 @@ html.has-announce .lnav-sheet {
   .rw-video { animation: none; }
 }
 
+/* Playlist tabs under the hero video pop-up */
+.rw-video-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.rw-video-tab {
+  padding: 8px 14px;
+  border: 1px solid var(--rw-hairline);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rw-video-tab[aria-selected="true"] {
+  background: #fcd535;
+  border-color: #fcd535;
+  color: #181a20;
+}
+
 /* ---------- Hero "Watch Tutorials": two choices on hover ---------- */
 .hero-watch {
   display: inline-flex;

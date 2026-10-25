@@ -10,6 +10,9 @@ import { Play, Volume2 } from "lucide-react";
  * the whole card is a button: clicking it reopens the same video from the top,
  * with sound, in the hero's pop-up.
  *
+ * Two videos play as one playlist: the card runs through both on a loop, and the
+ * pop-up lets the visitor pick either.
+ *
  * It is the landscape cut on purpose. The Short (ocmp5cf7dd0) is 9:16 footage
  * and a wide frame would crop it to a strip.
  *
@@ -17,13 +20,15 @@ import { Play, Volume2 } from "lucide-react";
  * decoration, and the hero image is what the visitor is waiting for. With
  * reduced motion it never loads at all and the thumbnail stands in.
  */
-const VIDEO_ID = "fivmY1wyPD4";
+export const HERO_VIDEO_IDS = ["fivmY1wyPD4", "l6gyLFXfmnA"] as const;
+const [FIRST_VIDEO_ID] = HERO_VIDEO_IDS;
 
+// playlist= lists the videos in order, so the embed plays them one after another
+// and loop=1 starts the list again. Controls/keyboard off because the overlay
+// button owns every click.
 const EMBED =
-  `https://www.youtube-nocookie.com/embed/${VIDEO_ID}` +
-  // loop needs playlist= to loop a single video; controls/keyboard off because
-  // the overlay button owns every click.
-  `?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&disablekb=1` +
+  `https://www.youtube-nocookie.com/embed/${FIRST_VIDEO_ID}` +
+  `?autoplay=1&mute=1&loop=1&playlist=${HERO_VIDEO_IDS.join(",")}&controls=0&disablekb=1` +
   `&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3`;
 
 export default function HeroVideoCard({ onOpenFull }: { onOpenFull: () => void }) {
@@ -52,7 +57,7 @@ export default function HeroVideoCard({ onOpenFull }: { onOpenFull: () => void }
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className="hero-clip-video"
-            src={`https://i.ytimg.com/vi/${VIDEO_ID}/hqdefault.jpg`}
+            src={`https://i.ytimg.com/vi/${FIRST_VIDEO_ID}/hqdefault.jpg`}
             alt=""
             aria-hidden="true"
           />
