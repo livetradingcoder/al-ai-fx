@@ -20,7 +20,7 @@ import { Play, Volume2 } from "lucide-react";
  * decoration, and the hero image is what the visitor is waiting for. With
  * reduced motion it never loads at all and the thumbnail stands in.
  */
-export const HERO_VIDEO_IDS = ["fivmY1wyPD4", "l6gyLFXfmnA"] as const;
+export const HERO_VIDEO_IDS = ["fivmY1wyPD4", "l6gyLFXfmnA", "fWLePE5QhzM"] as const;
 const [FIRST_VIDEO_ID] = HERO_VIDEO_IDS;
 
 // playlist= lists the videos in order, so the embed plays them one after another

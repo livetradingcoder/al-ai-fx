@@ -25,6 +25,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const HERO_VIDEOS = [
   { id: HERO_VIDEO_IDS[0], title: "GoldBot live profit report (XAUUSD)" },
   { id: HERO_VIDEO_IDS[1], title: "GoldBot video 2" },
+  { id: HERO_VIDEO_IDS[2], title: "GoldBot video 3" },
 ];
 const HERO_VIDEO_URL = `https://youtu.be/${HERO_VIDEO_IDS[0]}`;
 
