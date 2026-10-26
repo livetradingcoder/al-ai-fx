@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 
 import type { ActionResult } from "@/lib/action-result";
 import { authOptions } from "@/lib/auth";
-import { drawableEntries, pickWinner } from "@/lib/giveaway";
+import { drawableEntries, paidTrialEmails, pickWinner } from "@/lib/giveaway";
 import { prisma } from "@/lib/prisma";
 
 async function requireAdmin(): Promise<ActionResult | null> {
@@ -106,7 +106,8 @@ export async function drawGiveawayWinner(input: { id: string }): Promise<ActionR
     where: { giveawayId: giveaway.id },
     select: { id: true, email: true, bonusEntries: true, country: true },
   });
-  const winnerId = pickWinner(drawableEntries(entries));
+  const paid = await paidTrialEmails(entries.map((e) => e.email));
+  const winnerId = pickWinner(drawableEntries(entries, paid));
   if (!winnerId) return { ok: false, error: "There are no eligible entries to draw from" };
   const winner = entries.find((e) => e.id === winnerId)!;
 

@@ -25,7 +25,7 @@ type Notice = { kind: "ok" | "error"; text: string } | null;
 const TONE = { DRAFT: "off", LIVE: "live", DRAWN: "soon" } as const;
 
 const DEFAULT_RULES = `Who can enter: anyone aged 18 or over, in a country where this giveaway is offered. No purchase is necessary to enter or to win.
-How to enter: submit your email on the giveaway page. One entry per person. Sharing your results (reviewed by us) earns extra chances.
+How to enter: submit your email on the giveaway page. One entry per person. A paid trial on the same email adds nine chances; sharing your results (reviewed by us) earns one more each time.
 The draw: after the closing date we pick one winner at random from all valid entries and contact them by email. If we cannot reach the winner within 7 days we may draw again.
 Marketing emails are optional and separate from entering. You can unsubscribe at any time.
 We may exclude entries that break these rules. Not open where prohibited by law.`;

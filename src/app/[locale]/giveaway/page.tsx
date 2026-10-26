@@ -30,7 +30,7 @@ export default async function GiveawayPage({ params }: { params: Promise<{ local
             <>
               <p className="rw-lead">
                 Prize: <strong style={{ color: "#fff" }}>{giveaway.prize}</strong>. Enter with your email: no purchase
-                necessary. Share your results from the free trial to earn extra chances.
+                necessary. A paid trial and shared results earn extra chances.
               </p>
               <div className="rw-prize">
                 <Countdown endsAt={giveaway.endsAt.toISOString()} />
@@ -61,8 +61,8 @@ export default async function GiveawayPage({ params }: { params: Promise<{ local
               <div className="rw-card">
                 <h2 style={{ marginBottom: "10px" }}>Boost your chances</h2>
                 <ol className="rw-muted" style={{ margin: 0, paddingLeft: "20px", display: "grid", gap: "6px" }}>
-                  <li>Start the free trial and link your MT5 account.</li>
-                  <li>Send your results. Approved: +1 chance.</li>
+                  <li>Start a paid trial (from $2 for 7 days): +9 chances, 10 in all.</li>
+                  <li>Link your MT5 account and send your results. Approved: +1 chance.</li>
                   <li>Share them on social media. Approved: +1 chance and a discount code.</li>
                 </ol>
                 <p style={{ marginTop: "14px" }}>

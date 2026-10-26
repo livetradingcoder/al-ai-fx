@@ -45,9 +45,9 @@ export default async function AdminGiveawaysPage() {
         <h1 style={{ fontSize: "2.1rem", marginBottom: "0.35rem" }}>Giveaways</h1>
         <p style={{ color: "var(--text-secondary)", maxWidth: "72ch" }}>
           One giveaway can be live at a time. Entering needs only an email; people who also tick the
-          email box are added to your list ({optedIn} opted in right now). An approved results
-          screenshot and an approved shared post each add one extra chance. Entries from restricted
-          countries are skipped at the draw.
+          email box are added to your list ({optedIn} opted in right now). A paid trial adds nine
+          chances; an approved results screenshot and an approved shared post add one each. Entries
+          from restricted countries are skipped at the draw.
         </p>
       </header>
       <GiveawaysAdmin giveaways={rows} optedIn={optedIn} />

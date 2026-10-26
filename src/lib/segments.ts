@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { chancesOf, paidTrialEmails } from "@/lib/giveaway";
 import { isPromoBlockedCountry } from "@/lib/promo-eligibility";
 import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { buildProofPortalUrl } from "@/lib/proof-token";
@@ -230,10 +231,11 @@ export async function buildSegmentRows(
       orderBy: { createdAt: "asc" },
       select: { email: true, source: true, bonusEntries: true, marketingOptIn: true, country: true, locale: true, createdAt: true },
     });
+    const paid = await paidTrialEmails(entries.map((e) => e.email));
     const rows = entries.map((e) => ({
       email: e.email,
       source: e.source,
-      chances: 1 + e.bonusEntries,
+      chances: chancesOf(e, paid.has(e.email.toLowerCase())),
       marketing_opt_in: e.marketingOptIn ? "yes" : "no",
       country: e.country ?? "",
       locale: e.locale ?? "",

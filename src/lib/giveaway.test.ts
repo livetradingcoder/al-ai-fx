@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { drawableEntries, pickWinner } from "./giveaway";
+import { drawableEntries, PAID_TRIAL_BONUS, pickWinner } from "./giveaway";
 
 test("pickWinner returns null for an empty or zero-weight pool", () => {
   assert.equal(pickWinner([]), null);
@@ -40,11 +40,11 @@ test("drawable entries weigh 1 plus bonus and drop countries on the block list",
   process.env.PROMO_BLOCKED_COUNTRIES = "PK";
   try {
     const out = drawableEntries([
-      { id: "ng", bonusEntries: 0, country: "NG" },
-      { id: "ke", bonusEntries: 2, country: "KE" },
-      { id: "pk", bonusEntries: 2, country: "PK" },
-      { id: "none", bonusEntries: 0, country: null },
-      { id: "neg", bonusEntries: -3, country: "DE" },
+      { id: "ng", email: "ng@x.co", bonusEntries: 0, country: "NG" },
+      { id: "ke", email: "ke@x.co", bonusEntries: 2, country: "KE" },
+      { id: "pk", email: "pk@x.co", bonusEntries: 2, country: "PK" },
+      { id: "none", email: "none@x.co", bonusEntries: 0, country: null },
+      { id: "neg", email: "neg@x.co", bonusEntries: -3, country: "DE" },
     ]);
     assert.deepEqual(out, [
       { id: "ng", weight: 1 },
@@ -63,13 +63,34 @@ test("with the country gate off (the default) nobody is dropped for their countr
   delete process.env.PROMO_BLOCKED_COUNTRIES;
   try {
     const out = drawableEntries([
-      { id: "pk", bonusEntries: 1, country: "PK" },
-      { id: "in", bonusEntries: 0, country: "IN" },
+      { id: "pk", email: "pk@x.co", bonusEntries: 1, country: "PK" },
+      { id: "in", email: "in@x.co", bonusEntries: 0, country: "IN" },
     ]);
     assert.deepEqual(out, [
       { id: "pk", weight: 2 },
       { id: "in", weight: 1 },
     ]);
+  } finally {
+    if (saved !== undefined) process.env.PROMO_BLOCKED_COUNTRIES = saved;
+  }
+});
+
+test("a paid trial adds PAID_TRIAL_BONUS chances, matched on the email without case", () => {
+  const saved = process.env.PROMO_BLOCKED_COUNTRIES;
+  delete process.env.PROMO_BLOCKED_COUNTRIES;
+  try {
+    const out = drawableEntries(
+      [
+        { id: "paid", email: "Paid@X.co", bonusEntries: 1, country: "DE" },
+        { id: "free", email: "free@x.co", bonusEntries: 0, country: "DE" },
+      ],
+      new Set(["paid@x.co"]),
+    );
+    assert.deepEqual(out, [
+      { id: "paid", weight: 2 + PAID_TRIAL_BONUS },
+      { id: "free", weight: 1 },
+    ]);
+    assert.equal(PAID_TRIAL_BONUS, 9);
   } finally {
     if (saved !== undefined) process.env.PROMO_BLOCKED_COUNTRIES = saved;
   }

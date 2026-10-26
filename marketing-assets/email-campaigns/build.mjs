@@ -440,6 +440,31 @@ const RULES_LINE = `Prop firms set their own rules on expert advisors and change
 
 const PROP_MAILS = [
   {
+    file: "16-giveaway-paid-trial-10x",
+    segment: "giveaway-subscribers",
+    timing: "Once, while the giveaway is live",
+    subject: "10 chances instead of 1 in the Halloween giveaway",
+    preview: "Start a 7-day trial from $2 and your entry counts ten times at the draw.",
+    eyebrow: "Halloween giveaway",
+    title: "Turn your 1 chance into 10",
+    paragraphs: [
+      "You are in the Halloween giveaway with one chance at the prize: three weeks of GoldBot, free. The draw is on 5 November.",
+      "Until then, a paid 7-day trial of any GoldBot robot adds **nine more chances**, so your entry counts ten times. The trial is $2 for PrecisionTrader or $4 for Gold MultiRange 4, and you get the robot running on your own MT5 account for the week.",
+      {
+        steps: [
+          "Start the trial with **the same email address** you entered the giveaway with. That is how we match the two.",
+          "Link your MT5 account and attach the robot to a gold chart.",
+          "Send us your results if you like: an approved screenshot is +1 more, a shared post +1 again.",
+        ],
+      },
+      "Entering stays free, and a free entry can still win. The trial is for people who want to see the robot run before the draw.",
+    ],
+    cta: { label: "Start the 7-day trial", url: `${SITE}/catalog?filter=free-trial` },
+    secondary: `Your chances are listed on [your Rewards page](${SITE}/dashboard/rewards).`,
+    risk: true,
+    footer: FOOTERS.list,
+  },
+  {
     file: "20-prop-1-built-for-the-rules",
     segment: "Prop firm traders: everyone on the firm's marketing list",
     timing: "Day 0",

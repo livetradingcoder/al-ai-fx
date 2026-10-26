@@ -8,7 +8,10 @@ import { isPromoBlockedCountry } from "@/lib/promo-eligibility";
 // Giveaway entries and the draw. An entry needs only an email: marketing
 // consent is a separate choice and only creates/updates an EmailSubscriber row
 // when the person ticked it. Bonus entries come from an approved results proof
-// and an approved share (one each), granted by the admin approval actions.
+// and an approved share (one each), granted by the admin approval actions. A
+// paid trial adds PAID_TRIAL_BONUS more, worked out from the person's orders at
+// the moment chances are counted (see paidTrialEmails), so it needs no write
+// and cannot be granted twice.
 
 export type EntrySource = "exit-intent" | "page" | "proof" | "share";
 
@@ -98,6 +101,32 @@ export async function grantBonusEntry(input: {
   });
 }
 
+/** Extra chances a paid trial earns on top of the single entry: 10 chances in all. */
+export const PAID_TRIAL_BONUS = 9;
+
+/**
+ * Which of these entrants has paid for a trial, by the email on their account.
+ * Any successful trial order with a charge counts, whenever it was placed.
+ */
+export async function paidTrialEmails(emails: string[]): Promise<Set<string>> {
+  if (emails.length === 0) return new Set();
+  const orders = await prisma.order.findMany({
+    where: {
+      pricingTier: "FREE_TRIAL",
+      status: "SUCCESS",
+      amount: { gt: 0 },
+      user: { email: { in: emails, mode: "insensitive" } },
+    },
+    select: { user: { select: { email: true } } },
+  });
+  return new Set(orders.map((o) => o.user.email.toLowerCase()));
+}
+
+/** How many chances one entry has in the draw. */
+export function chancesOf(entry: { bonusEntries: number }, paidTrial: boolean): number {
+  return 1 + Math.max(0, entry.bonusEntries) + (paidTrial ? PAID_TRIAL_BONUS : 0);
+}
+
 export type DrawEntry = { id: string; weight: number };
 
 /** Picks one entry at random, each weighted by its number of chances. Null when there is nothing to pick. */
@@ -115,9 +144,10 @@ export function pickWinner(entries: DrawEntry[], rand: (max: number) => number =
 
 /** Entries that may win: not from a restricted country (the list may have changed since they entered). */
 export function drawableEntries(
-  entries: { id: string; bonusEntries: number; country: string | null }[],
+  entries: { id: string; email: string; bonusEntries: number; country: string | null }[],
+  paidTrial: Set<string> = new Set(),
 ): DrawEntry[] {
   return entries
     .filter((e) => !isPromoBlockedCountry(e.country))
-    .map((e) => ({ id: e.id, weight: 1 + Math.max(0, e.bonusEntries) }));
+    .map((e) => ({ id: e.id, weight: chancesOf(e, paidTrial.has(e.email.toLowerCase())) }));
 }

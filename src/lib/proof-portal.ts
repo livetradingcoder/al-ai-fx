@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getLiveGiveaway } from "@/lib/giveaway";
+import { chancesOf, getLiveGiveaway, paidTrialEmails } from "@/lib/giveaway";
 import { verifyProofToken } from "@/lib/proof-token";
 import { SHARE_REWARD_PERCENT } from "@/lib/rewards";
 
@@ -96,7 +96,10 @@ export async function portalSnapshot(ctx: PortalContext, promoEligible: boolean)
       where: { giveawayId_email: { giveawayId: giveaway.id, email: ctx.email.toLowerCase() } },
       select: { bonusEntries: true },
     });
-    chances = entry ? 1 + entry.bonusEntries : 0;
+    if (entry) {
+      const paid = await paidTrialEmails([ctx.email]);
+      chances = chancesOf(entry, paid.has(ctx.email.toLowerCase()));
+    }
   }
 
   return {
