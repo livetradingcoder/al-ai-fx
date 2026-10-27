@@ -88,6 +88,11 @@ test("whopPaymentAmount: decimal-string Money in major units, currency upper-cas
   assert.deepEqual(whopPaymentAmount({ total: { amount: "29.00", currency: "usd" } }), { amount: 29, currency: "USD" });
   assert.deepEqual(whopPaymentAmount({ total: { amount: "0.00", currency: "usd" } }), { amount: 0, currency: "USD" });
   assert.deepEqual(whopPaymentAmount({ total: { amount: 14.5 }, currency: "eur" }), { amount: 14.5, currency: "EUR" });
+  // The REST payment object sends plain numbers, and usd_total is the USD equivalent.
+  assert.deepEqual(whopPaymentAmount({ total: 4, currency: "usd" }), { amount: 4, currency: "USD" });
+  assert.deepEqual(whopPaymentAmount({ total: 0, currency: "usd" }), { amount: 0, currency: "USD" });
+  assert.deepEqual(whopPaymentAmount({ total: 331.66, currency: "all", usd_total: 4 }), { amount: 4, currency: "USD" });
+  assert.equal(whopPaymentAmount({ total: -2 }), null);
   assert.equal(whopPaymentAmount({ total: null }), null);
   assert.equal(whopPaymentAmount({ total: { amount: "-1" } }), null);
 });

@@ -186,7 +186,10 @@ export interface WhopPayment {
   currency?: string;
   customer_email?: string | null;
   user?: { email?: string | null } | null;
-  total?: Money;
+  // The REST API sends these as plain numbers in major units; the webhook
+  // payload was first read as { amount, currency }, so both shapes are accepted.
+  total?: Money | number;
+  usd_total?: number | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -248,14 +251,30 @@ export function resolveWhopPaymentTarget(
   };
 }
 
-// Whop Money is { amount: "29.00", currency: "usd" } — a decimal string in major
-// units. What the buyer actually paid (after any Whop promo code), in USD.
-export function whopPaymentAmount(payment: Pick<WhopPayment, "total" | "currency">): { amount: number; currency: string } | null {
-  const raw = payment.total?.amount;
+// What the buyer actually paid (after any Whop promo code), in USD. Whop's
+// payment object carries `total` as a plain number in major units (and
+// `usd_total`, its USD equivalent); an older reading had it as Money,
+// { amount: "29.00", currency: "usd" }. A total this cannot read is null, and
+// the webhook then refuses the payment — so every shape has to be handled.
+export function whopPaymentAmount(
+  payment: Pick<WhopPayment, "total" | "currency"> & { usd_total?: number | null },
+): { amount: number; currency: string } | null {
+  if (typeof payment.usd_total === "number" && Number.isFinite(payment.usd_total) && payment.usd_total >= 0) {
+    return { amount: payment.usd_total, currency: "USD" };
+  }
+  const total = payment.total;
+  const money = total !== null && typeof total === "object" ? total : null;
+  const raw = money ? money.amount : total;
   const amount = typeof raw === "number" ? raw : Number.parseFloat(String(raw ?? ""));
   if (!Number.isFinite(amount) || amount < 0) return null;
-  const currency = (payment.total?.currency ?? payment.currency ?? "usd").toUpperCase();
+  const currency = (money?.currency ?? payment.currency ?? "usd").toUpperCase();
   return { amount, currency };
+}
+
+// GET /payments/{id}: the payment as Whop holds it, for confirming a return
+// from checkout without waiting on the webhook.
+export function fetchWhopPayment(paymentId: string): Promise<WhopPayment> {
+  return whopFetch<WhopPayment>(`/payments/${encodeURIComponent(paymentId)}`);
 }
 
 // payment.succeeded carries status "paid"; anything else on a succeeded event is

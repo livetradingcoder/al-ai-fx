@@ -64,6 +64,9 @@ export default function ThankYouClient() {
   // Whop appends ?status=succeeded|failed|canceled to its redirect. Anything but
   // succeeded means the buyer did not pay, so don't make them wait for a webhook.
   const providerStatus = searchParams?.get("status");
+  // Whop's payment id on the same redirect: lets the server confirm the payment
+  // with Whop itself rather than only waiting for the webhook.
+  const paymentId = searchParams?.get("payment") || "";
   const providerSaysUnpaid = providerStatus === "failed" || providerStatus === "canceled";
   const [status, setStatus] = useState<"idle" | "pending" | "success" | "failed" | "unpaid">(
     !orderRef ? "failed" : providerSaysUnpaid ? "unpaid" : "pending",
@@ -106,7 +109,9 @@ export default function ThankYouClient() {
     async function checkOrderStatus() {
       try {
         const response = await fetch(
-          `/api/paygate/order-status?orderRef=${encodeURIComponent(orderRef)}`,
+          `/api/paygate/order-status?orderRef=${encodeURIComponent(orderRef)}${
+            paymentId ? `&payment=${encodeURIComponent(paymentId)}` : ""
+          }`,
           { cache: "no-store" },
         );
 
@@ -179,7 +184,7 @@ export default function ThankYouClient() {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [orderRef, pendingCheckout, providerSaysUnpaid, providerStatus]);
+  }, [orderRef, paymentId, pendingCheckout, providerSaysUnpaid, providerStatus]);
 
   // Only offer the trial when there really is one to claim.
   useEffect(() => {

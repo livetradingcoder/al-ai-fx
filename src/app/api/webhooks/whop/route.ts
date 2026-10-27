@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { redeemCoupon, validateCoupon } from "@/lib/coupons";
 import { UnknownTierError } from "@/lib/pricing-tiers";
 import { checkWebhookRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
-import { provisionSubscription } from "@/lib/subscriptions";
+import { fulfilWhopPayment } from "@/lib/whop-fulfilment";
 import { validateAmount, validateEmail } from "@/lib/validation";
 import {
   isWhopMembershipLive,
   isWhopPaid,
   resolveWhopPaymentTarget,
   verifyWhopWebhook,
-  whopOrderRef,
   whopPaymentAmount,
   whopWebhookSecret,
   type WhopEvent,
@@ -120,35 +118,7 @@ async function provision(
   }
 
   try {
-    const result = await provisionSubscription(
-      target.email,
-      target.tierSlug,
-      target.robotSlug,
-      whopOrderRef(target.orderRef),
-      paid.amount,
-      paid.currency,
-      target.refCode,
-    );
-    if (target.couponCode && !result.duplicated) {
-      const check = await validateCoupon({
-        code: target.couponCode,
-        robotSlug: target.robotSlug,
-        tier: target.tierSlug,
-        email: target.email,
-      });
-      if (check.ok) {
-        await redeemCoupon({
-          couponId: check.couponId,
-          email: target.email,
-          robotSlug: target.robotSlug,
-          tier: target.tierSlug,
-          amountBefore: check.priceBefore,
-          amountAfter: paid.amount,
-          userId: result.userId,
-          orderId: result.orderId ?? null,
-        });
-      }
-    }
+    const result = await fulfilWhopPayment({ ...target, email: target.email }, paid);
     console.log(
       "[Whop] %s %s → %s/%s user=%s duplicated=%s",
       eventType,
