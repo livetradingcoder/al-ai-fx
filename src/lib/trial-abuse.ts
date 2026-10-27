@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 
+import { changeAllowance } from "@/lib/mt5-changes";
 import { prisma } from "@/lib/prisma";
 
 // One free trial per MT5 account. A licence is locked to the MT5 account it is
@@ -16,7 +17,7 @@ export const MT5_ACCOUNT_USED_MESSAGE =
   "This MT5 account has already been used with a GoldBot licence, so it can't be used for a free trial. " +
   "Link a different MT5 account, choose a plan to use this one, or contact support@al-ai-fx.xyz if you think this is a mistake.";
 
-export type LinkOutcome = { ok: true } | { ok: false; reason: "account-used" };
+export type LinkOutcome = { ok: true } | { ok: false; reason: "account-used" | "change-limit" };
 
 /**
  * Links an MT5 account to a licence, enforcing the trial rule.
@@ -29,6 +30,11 @@ export type LinkOutcome = { ok: true } | { ok: false; reason: "account-used" };
  *
  * The check and the write happen under a per-account lock, so two trials
  * racing for the same new account can't both get it.
+ *
+ * Moving a licence that already has an account to a different one is a
+ * change, and changes are limited (see lib/mt5-changes.ts): the user's one
+ * free change, then a paid credit. The check and the write sit under a
+ * per-user lock, so two changes racing cannot both take the free one.
  */
 export async function linkMt5Account(input: {
   subscriptionId: string;
@@ -59,12 +65,31 @@ export async function linkMt5Account(input: {
         }
       }
 
+      const current = await tx.subscription.findUnique({
+        where: { id: subscriptionId },
+        select: { mt5AccountNumber: true },
+      });
+      const previous = current?.mt5AccountNumber?.trim() || null;
+      const isChange = previous !== null && previous !== accountNumber;
+      let creditId: string | null = null;
+      if (isChange) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"mt5change:" + userId}::text))`;
+        const allowance = await changeAllowance(tx, { userId, subscriptionId });
+        if (allowance.kind === "payment") return { ok: false, reason: "change-limit" } as const;
+        creditId = allowance.kind === "credit" ? allowance.creditId : null;
+      }
+
       await tx.subscription.update({ where: { id: subscriptionId }, data: { mt5AccountNumber: accountNumber } });
       await tx.mt5AccountUse.upsert({
         where: { subscriptionId_accountNumber: { subscriptionId, accountNumber } },
         update: {},
         create: { accountNumber, userId, subscriptionId, tier },
       });
+      if (isChange) {
+        await tx.mt5AccountChange.create({
+          data: { userId, subscriptionId, fromAccount: previous, toAccount: accountNumber, creditId },
+        });
+      }
       return { ok: true } as const;
     });
   } catch (err) {

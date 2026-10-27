@@ -1,4 +1,5 @@
 import { redeemCoupon, validateCoupon } from "@/lib/coupons";
+import { ACCOUNT_CHANGE_TIER, grantChangeCredit } from "@/lib/mt5-changes";
 import { provisionSubscription } from "@/lib/subscriptions";
 import { validateEmail } from "@/lib/validation";
 import {
@@ -20,6 +21,16 @@ export async function fulfilWhopPayment(
   target: WhopPaymentTarget & { email: string },
   paid: { amount: number; currency: string },
 ) {
+  // A fee for moving a licence to another MT5 account, not a purchase of one.
+  if (target.tierSlug === ACCOUNT_CHANGE_TIER) {
+    return grantChangeCredit({
+      email: target.email,
+      subscriptionId: target.subscriptionId,
+      orderRef: whopOrderRef(target.orderRef),
+      amount: paid.amount,
+      currency: paid.currency,
+    });
+  }
   const result = await provisionSubscription(
     target.email,
     target.tierSlug,

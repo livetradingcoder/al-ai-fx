@@ -6,6 +6,7 @@ import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { redirect } from "next/navigation";
 import LicenseManager from "@/components/dashboard/LicenseManager";
 import { getTranslations } from "next-intl/server";
+import { quoteChange } from "@/lib/mt5-changes";
 
 export default async function LicensesPage() {
   const t = await getTranslations("Dashboard");
@@ -35,6 +36,8 @@ export default async function LicensesPage() {
   });
 
   const activeSubs = user?.subscriptions || [];
+  // What an MT5 account change would involve for each licence: the free one, a paid credit, or the fee.
+  const quotes = await Promise.all(activeSubs.map((sub) => quoteChange(session.user.id, sub)));
 
   return (
     <div style={{ maxWidth: '900px' }}>
@@ -44,9 +47,10 @@ export default async function LicensesPage() {
       </header>
 
       {activeSubs.length > 0 ? (
-        activeSubs.map((sub) => (
+        activeSubs.map((sub, index) => (
           <LicenseManager
             key={sub.id}
+            changeQuote={quotes[index]}
             subscription={sub}
             robotName={sub.robot.name}
             robotSlug={sub.robot.slug}

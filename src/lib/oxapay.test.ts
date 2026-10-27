@@ -63,3 +63,13 @@ test("isOxapayPaid: only 'paid', in any case; 'paying' is not fulfilment", () =>
 test("oxapayOrderRef: prefixed so it can share Order.paygateId with other providers", () => {
   assert.equal(oxapayOrderRef("abc"), "OXAPAY-abc");
 });
+
+test("a callback signature binds the licence only when one is present", () => {
+  const base = { order_ref: "r1", email: "a@b.co", robot: "x", tier: "account-change", amount: "33.50" };
+  assert.equal(callbackSignaturePayload(base), "r1a@b.coxaccount-change33.50");
+  assert.notEqual(
+    signCallbackParams("k", { ...base, sub: "s1" }),
+    signCallbackParams("k", { ...base, sub: "s2" }),
+  );
+  assert.equal(signCallbackParams("k", base), signCallbackParams("k", { ...base, sub: undefined }));
+});

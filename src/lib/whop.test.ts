@@ -64,8 +64,14 @@ test("resolveWhopPaymentTarget: only payments carrying our source marker and map
     email: "buyer@example.com",
     refCode: "R1",
     couponCode: "C1",
+    subscriptionId: null,
     expectedAmount: 29,
   });
+  // an account-change fee names the licence it is for
+  assert.equal(
+    resolveWhopPaymentTarget({ metadata: { ...meta, tier: "account-change", subscription: "sub_1" } })?.subscriptionId,
+    "sub_1",
+  );
   assert.equal(resolveWhopPaymentTarget({ metadata: meta })?.expectedAmount, null, "no amount metadata → unknown");
   assert.equal(
     resolveWhopPaymentTarget({ metadata: { ...meta, email: undefined }, user: { email: "Nested@Example.com" } })?.email,

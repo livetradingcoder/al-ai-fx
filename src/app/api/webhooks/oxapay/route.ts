@@ -12,6 +12,7 @@ import { UnknownTierError } from "@/lib/pricing-tiers";
 import { checkWebhookRateLimit, getClientIdentifier } from "@/lib/rate-limit";
 import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { provisionSubscription } from "@/lib/subscriptions";
+import { ACCOUNT_CHANGE_TIER, grantChangeCredit } from "@/lib/mt5-changes";
 import { validateAmount, validateEmail } from "@/lib/validation";
 
 // OxaPay expects a 200 with body "ok"; anything else is retried (5 attempts).
@@ -70,7 +71,10 @@ export async function POST(req: Request) {
     tier: q("tier").toLowerCase(),
     amount: q("amount"),
   };
-  if (!verifyCallbackParams(key, params, url.searchParams.get("signature"))) {
+  // Only account-change invoices carry the licence; adding the key for the
+  // others would change what an older invoice's signature covers.
+  const sub = q("sub");
+  if (!verifyCallbackParams(key, sub ? { ...params, sub } : params, url.searchParams.get("signature"))) {
     console.error("[OxaPay] callback rejected: bad param signature (track %s)", body.track_id);
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
@@ -96,6 +100,23 @@ export async function POST(req: Request) {
   const amountValidation = validateAmount(paid);
   if (!amountValidation.valid) {
     return NextResponse.json({ error: amountValidation.error }, { status: 400 });
+  }
+
+  if (params.tier === ACCOUNT_CHANGE_TIER) {
+    try {
+      const result = await grantChangeCredit({
+        email: params.email,
+        subscriptionId: sub || null,
+        orderRef: oxapayOrderRef(params.order_ref),
+        amount: paid,
+        currency: "USD",
+      });
+      console.log("[OxaPay] track %s → account change credit user=%s duplicated=%s", body.track_id, result.userId, result.duplicated);
+      return ok({ source: "oxapay-callback", ...result });
+    } catch (err) {
+      console.error("[OxaPay] track %s account change failed:", body.track_id, err);
+      return NextResponse.json({ error: "Webhook payload processing failed." }, { status: 500 });
+    }
   }
 
   try {

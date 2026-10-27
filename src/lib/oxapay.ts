@@ -106,10 +106,12 @@ export interface CallbackParams {
   robot: string;
   tier: string;
   amount: string; // fixed(2)
+  /** Account-change fee only: the licence the change is for. Absent on every other invoice. */
+  sub?: string;
 }
 
 export function callbackSignaturePayload(p: CallbackParams): string {
-  return `${p.order_ref}${p.email}${p.robot}${p.tier}${p.amount}`;
+  return `${p.order_ref}${p.email}${p.robot}${p.tier}${p.amount}${p.sub ?? ""}`;
 }
 
 export function signCallbackParams(key: string, p: CallbackParams): string {

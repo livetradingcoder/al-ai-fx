@@ -91,6 +91,8 @@ export interface WhopCheckoutInput {
   refCode: string | null;
   couponCode: string | null;
   redirectUrl: string;
+  /** An account-change fee only: the licence the paid change is for. */
+  subscriptionId?: string | null;
 }
 
 export interface WhopCheckout {
@@ -133,6 +135,7 @@ export async function createWhopCheckout(input: WhopCheckoutInput): Promise<Whop
         amount: input.amountUsd.toFixed(2),
         ...(input.refCode ? { ref: input.refCode } : {}),
         ...(input.couponCode ? { coupon: input.couponCode } : {}),
+        ...(input.subscriptionId ? { subscription: input.subscriptionId } : {}),
       },
       redirect_url: input.redirectUrl,
     }),
@@ -220,6 +223,8 @@ export interface WhopPaymentTarget {
   email: string | null;
   refCode: string | null;
   couponCode: string | null;
+  /** Account-change fee only: the licence the paid change is for. */
+  subscriptionId: string | null;
   // The price we asked Whop to charge (metadata.amount). Only used when the
   // order has to be provisioned from a membership event, which carries no payment.
   expectedAmount: number | null;
@@ -247,6 +252,7 @@ export function resolveWhopPaymentTarget(
     email,
     refCode: metaString(meta.ref),
     couponCode: metaString(meta.coupon),
+    subscriptionId: metaString(meta.subscription),
     expectedAmount: Number.isFinite(expected) && expected >= 0 ? expected : null,
   };
 }

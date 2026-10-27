@@ -531,7 +531,7 @@ const PROP_MAILS = [
           "**Register the challenge account's MT5 number.** Your build is compiled for that exact account, so use the number of the account you will trade.",
           "**Size conservatively.** Use risk-percent sizing, and switch off the session ranges you do not want running so fewer positions can be open at once.",
           "**Run it on a VPS.** It keeps MetaTrader connected 24/5, so a trade is never left without the EA managing it.",
-          "**Move to the funded account when you pass.** You can change the registered MT5 account from your dashboard up to twice a month.",
+          "**Move to the funded account when you pass.** You can change the registered MT5 account from your dashboard. One change is included; each change after that costs half of the plan's price.",
         ],
       },
       RULES_LINE,
@@ -555,7 +555,7 @@ const PROP_MAILS = [
       {
         list: [
           "Every trade has a fixed stop, and the hedge is capped, so the risk of a trade is defined before it opens.",
-          "Each build is locked to one MT5 account, and you can move it to a new account up to twice a month.",
+          "Each build is locked to one MT5 account. One change to a new account is included; each change after that costs half of the plan's price.",
           "You can read our refund policy before you buy, not after.",
         ],
       },
@@ -616,7 +616,7 @@ const PROP_MAILS = [
       "If you run GoldBot, or are thinking about it, two things matter now:",
       {
         list: [
-          "**Move the licence to the funded account's MT5 number** from your dashboard. You can change the registered account up to twice a month.",
+          "**Move the licence to the funded account's MT5 number** from your dashboard. One change is included; each change after that costs half of the plan's price.",
           "**Check whether your firm's EA rules for funded accounts differ** from the challenge rules. Read the current policy before you attach any robot.",
         ],
       },

@@ -571,6 +571,41 @@ model Mt5AccountUse {
   @@index([accountNumber])
 }
 
+/// A licence that already had an MT5 account was moved to another one. Each user
+/// gets one free change; every later one needs a paid Mt5ChangeCredit. First-time
+/// linking is not a change. Plain references, not foreign keys, like
+/// Mt5AccountUse: the record outlives the licence. See src/lib/mt5-changes.ts.
+model Mt5AccountChange {
+  id             String           @id @default(cuid())
+  userId         String
+  subscriptionId String
+  fromAccount    String
+  toAccount      String
+  /// The paid credit this change used. Null for the one free change.
+  creditId       String?          @unique
+  credit         Mt5ChangeCredit? @relation(fields: [creditId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@index([userId])
+}
+
+/// Paid for: one more account change on one licence. Written when the fee
+/// payment (50% of the plan price) arrives, from either payment webhook, and
+/// spent by the Mt5AccountChange that references it.
+model Mt5ChangeCredit {
+  id             String            @id @default(cuid())
+  userId         String
+  subscriptionId String
+  /// The same reference the Order carries in paygateId (WHOP-…, OXAPAY-…).
+  orderRef       String            @unique
+  amount         Float
+  currency       String            @default("USD")
+  createdAt      DateTime          @default(now())
+  change         Mt5AccountChange?
+
+  @@index([userId])
+}
+
 /// An IP address we have seen a person use (signing in, starting a free trial,
 /// linking an MT5 account), with the country it is in, looked up from a
 /// database on our own server. One row per person and address. Kept to spot

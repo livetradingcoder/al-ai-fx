@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncLapsedSubscriptions } from "@/lib/subscription-expiry";
 import { displayStatus, loadUnpaidAttempts } from "@/lib/payment-attempts";
+import { changeFeeOrderRefs } from "@/lib/mt5-changes";
 import { redirect } from "next/navigation";
 import OrdersTable, { type OrderRow } from "../OrdersTable";
 
@@ -42,12 +43,14 @@ export default async function AdminOrdersPage() {
     // once money arrives, so these are the buyers who did not pay).
     loadUnpaidAttempts(),
   ]);
+  // An MT5 account change fee is an order too; its tier column would show the licence's plan.
+  const feeRefs = await changeFeeOrderRefs(orderRows.flatMap((o) => (o.paygateId ? [o.paygateId] : [])));
   const orders: OrderRow[] = [
     ...orderRows.map((order) => ({
       kind: "order" as const,
       id: order.id,
       email: order.user.email,
-      tier: order.pricingTier,
+      tier: order.paygateId && feeRefs.has(order.paygateId) ? "MT5 CHANGE FEE" : order.pricingTier,
       amount: order.amount,
       currency: order.currency,
       paygateId: order.paygateId,

@@ -108,7 +108,7 @@ export const CONTENT_PAGES: ContentPage[] = [
       },
       {
         q: "Can I use one licence on several MT5 accounts?",
-        a: "Each build is locked to one MT5 account number. You can change the registered account from your dashboard up to twice a month.",
+        a: "Each build is locked to one MT5 account number. You can change the registered account from your dashboard: one change is included. Each change after that costs half of the plan's price.",
       },
       {
         q: "What is the refund policy?",
@@ -163,7 +163,7 @@ export const CONTENT_PAGES: ContentPage[] = [
           { title: "Register the prop firm MT5 account number", text: "Your build is compiled for that exact account — use the challenge or funded account's number." },
           { title: "Size conservatively", text: "Use risk-percent sizing, and switch off ranges you don't want running to reduce how many positions can be open at once." },
           { title: "Run it on a VPS", text: "A VPS keeps MetaTrader connected 24/5, so a trade is never left without the EA managing it." },
-          { title: "Move to the new account when you pass", text: "You can change the registered MT5 account from your dashboard up to twice a month." },
+          { title: "Move to the new account when you pass", text: "You can change the registered MT5 account from your dashboard. One change is included. Each change after that costs half of the plan's price." },
         ],
       },
       { type: "callout", tone: "warn", title: "Trading risk", text: RISK },
@@ -179,7 +179,7 @@ export const CONTENT_PAGES: ContentPage[] = [
       },
       {
         q: "Can I switch the licence to my funded account after passing?",
-        a: "Yes. You can change the registered MT5 account number from your dashboard up to twice a month.",
+        a: "Yes. You can change the registered MT5 account number from your dashboard. One change is included. Each change after that costs half of the plan's price.",
       },
     ],
     related: ["hedging-vs-martingale", "gold-ea-mt5", "install-ea-on-mt5"],

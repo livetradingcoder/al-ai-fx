@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { openSupportChat } from "@/components/NdeskWidget";
 import {
@@ -20,6 +20,8 @@ interface LicenseManagerProps {
   };
   robotName: string;
   robotSlug: string;
+  /** How the next MT5 account change on this licence would be covered (src/lib/mt5-changes.ts). */
+  changeQuote: { allowance: "free" | "credit" | "payment"; fee: number | null };
   latestCompilation: {
     id: string;
     status: string;
@@ -32,6 +34,7 @@ export default function LicenseManager({
   subscription,
   robotName,
   robotSlug,
+  changeQuote,
   latestCompilation: initialCompilation,
 }: LicenseManagerProps) {
   const [mt5Account, setMt5Account] = useState(subscription.mt5AccountNumber || "");
@@ -42,6 +45,51 @@ export default function LicenseManager({
   const [timedOut, setTimedOut] = useState(false);
   const router = useRouter();
   const t = useTranslations("Dashboard");
+  const locale = useLocale();
+  // Changing the account on a licence that already has one. The first change
+  // is free; after that the fee is half the plan price, paid before the change.
+  const [changing, setChanging] = useState(false);
+  const [feeDue, setFeeDue] = useState<number | null>(null);
+  const [payingBy, setPayingBy] = useState<"card" | "crypto" | null>(null);
+  const [payError, setPayError] = useState<string | null>(null);
+  const lockedAccount = subscription.mt5AccountNumber;
+  const needsPayment = changeQuote.allowance === "payment" || feeDue !== null;
+  const fee = feeDue ?? changeQuote.fee;
+
+  const startChange = () => {
+    setChanging(true);
+    setIsEditing(true);
+    setMt5Account("");
+    setPayError(null);
+  };
+  const cancelChange = () => {
+    setChanging(false);
+    setIsEditing(false);
+    setMt5Account(lockedAccount || "");
+    setFeeDue(null);
+    setPayError(null);
+  };
+  const payForChange = async (method: "card" | "crypto") => {
+    setPayingBy(method);
+    setPayError(null);
+    try {
+      const res = await fetch("/api/checkout/account-change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: subscription.id, method, locale }),
+      });
+      const data = await res.json();
+      if (res.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      setPayError(data.error || "Could not start the payment. Please try again.");
+    } catch {
+      setPayError("Could not start the payment. Please try again.");
+    } finally {
+      setPayingBy(null);
+    }
+  };
 
   // Bounded polling loop:
   //   - starts at CLIENT_POLL_INITIAL_MS (5s), backs off 1.5x up to CLIENT_POLL_MAX_MS (30s)
@@ -90,6 +138,12 @@ export default function LicenseManager({
 
   const handleUpdateMt5 = async () => {
     if (!mt5Account) return;
+    if (changing && changeQuote.allowance === "free" && feeDue === null) {
+      const ok = window.confirm(
+        `Change the MT5 account on this licence to ${mt5Account}?\n\nThis uses your one included change. Any change after it costs half of your plan's price.`,
+      );
+      if (!ok) return;
+    }
     // Clear stale timeout state so a fresh compile retry can poll again.
     setTimedOut(false);
     setIsUpdating(true);
@@ -100,7 +154,14 @@ export default function LicenseManager({
         body: JSON.stringify({ subscriptionId: subscription.id, mt5AccountNumber: mt5Account }),
       });
       const data = await res.json();
+      if (res.status === 402 && data.code === "mt5-change-limit") {
+        // Over the limit: the change is for sale, not refused.
+        setFeeDue(typeof data.fee === "number" ? data.fee : changeQuote.fee);
+        return;
+      }
       if (data.success) {
+        setChanging(false);
+        setFeeDue(null);
         setIsEditing(false);
         setCompilation(data.job);
         setIsPolling(true);
@@ -166,6 +227,58 @@ export default function LicenseManager({
           <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
             {isEditing ? t("importantSetOnce") : t("mt5LockedPermanently")}
           </p>
+          {!isEditing && lockedAccount && (
+            <button
+              type="button"
+              onClick={startChange}
+              style={{ marginTop: "0.5rem", background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--accent-primary)", fontWeight: 600, fontSize: "0.85rem", fontFamily: "inherit" }}
+            >
+              {t("changeAccount")}
+            </button>
+          )}
+          {changing && (
+            <div style={{ marginTop: "0.75rem", padding: "0.9rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", background: "rgba(0,0,0,0.15)", fontSize: "0.85rem" }}>
+              {changeQuote.allowance === "credit" ? (
+                <p style={{ margin: 0 }}>You have a paid account change ready for this licence. Enter the new number and save.</p>
+              ) : needsPayment ? (
+                <>
+                  <p style={{ margin: "0 0 0.6rem 0" }}>
+                    You have used the one MT5 account change that is included. Another change costs half of your
+                    plan&apos;s price{fee !== null ? `: $${fee.toFixed(2)}` : ""}. Pay it once, then come back to
+                    this page and enter the new number.
+                  </p>
+                  {fee !== null ? (
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                      <button className="btn-primary" disabled={payingBy !== null} onClick={() => payForChange("card")} style={{ padding: "0.6rem 1.1rem" }}>
+                        {payingBy === "card" ? "Opening…" : `Pay $${fee.toFixed(2)} by card`}
+                      </button>
+                      <button className="btn-secondary" disabled={payingBy !== null} onClick={() => payForChange("crypto")} style={{ padding: "0.6rem 1.1rem" }}>
+                        {payingBy === "crypto" ? "Opening…" : `Pay $${fee.toFixed(2)} with crypto`}
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={openSupportChat} className="btn-secondary" style={{ padding: "0.6rem 1.1rem" }}>
+                      Contact support
+                    </button>
+                  )}
+                  {payError && <p style={{ color: "#ff6b6b", margin: "0.6rem 0 0 0" }}>{payError}</p>}
+                </>
+              ) : (
+                <p style={{ margin: 0 }}>
+                  This is your one included change. Any change after it costs half of your plan&apos;s price.
+                </p>
+              )}
+              <p style={{ margin: "0.6rem 0 0 0" }}>
+                <button
+                  type="button"
+                  onClick={cancelChange}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--text-muted)", fontFamily: "inherit", fontSize: "0.85rem", textDecoration: "underline" }}
+                >
+                  Keep {lockedAccount}
+                </button>
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="licence-download">

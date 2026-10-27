@@ -440,7 +440,7 @@ export function buildTutorialArticles(facts: PricingFacts): TutorialArticle[] {
             { title: "Run it on a VPS", text: "A trade is then never left without the EA managing it." },
             {
               title: "Move to the new account when you pass",
-              text: "You can change the registered MT5 account from your dashboard up to twice a month.",
+              text: "You can change the registered MT5 account from your dashboard. One change is included. Each change after that costs half of the plan's price.",
             },
           ],
         },

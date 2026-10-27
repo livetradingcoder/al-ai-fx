@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { validateMT5Account } from "@/lib/validation";
 import { ipFromHeaders } from "@/lib/client-ip";
 import { linkMt5Account, MT5_ACCOUNT_USED_MESSAGE } from "@/lib/trial-abuse";
+import { MT5_CHANGE_LIMIT_MESSAGE, quoteChange } from "@/lib/mt5-changes";
 import { recordUserIp } from "@/lib/user-ip";
 
 type UpdateMt5Payload = {
@@ -49,6 +50,14 @@ export async function PUT(req: Request) {
       tier: subscription.tier,
       accountNumber: account,
     });
+    if (!outcome.ok && outcome.reason === "change-limit") {
+      // 402: the change is allowed, for a fee. The page offers to pay it.
+      const quote = await quoteChange(session.user.id, subscription);
+      return NextResponse.json(
+        { error: MT5_CHANGE_LIMIT_MESSAGE, code: "mt5-change-limit", fee: quote.fee },
+        { status: 402 },
+      );
+    }
     if (!outcome.ok) {
       return NextResponse.json({ error: MT5_ACCOUNT_USED_MESSAGE, code: "mt5-account-used" }, { status: 409 });
     }
