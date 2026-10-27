@@ -11,16 +11,26 @@ import {
 
 export type OrderRow = {
   id: string;
-  /** A payment, or a free trial: a licence with no payment behind it. */
-  kind: "order" | "trial";
+  /**
+   * A payment; a free trial (a licence with no payment behind it); or a payment
+   * attempt that never became an order.
+   */
+  kind: "order" | "trial" | "attempt";
   email: string;
   tier: string;
   amount: number;
   currency: string;
   paygateId: string | null;
-  /** Trials only: the robot the trial is for. */
+  /** Trials: the robot the trial is for. Attempts: the robot slug. */
   robotName?: string;
-  /** An order's payment status, or a trial's licence status (ACTIVE, EXPIRED…). */
+  /** Attempts only: whop | oxapay | polar. */
+  provider?: string;
+  /** Attempts only: why it did not complete, when we know. */
+  detail?: string;
+  /**
+   * An order's payment status, a trial's licence status (ACTIVE, EXPIRED…), or
+   * an attempt's: IN PROGRESS, ABANDONED, FAILED, CANCELED or ERROR.
+   */
   status: string;
   createdAt: string;
 };
@@ -35,6 +45,7 @@ const FILTERS: FilterDef<OrderRow>[] = [
     label: "Failed",
     test: (r) => r.kind === "order" && r.status !== "SUCCESS" && r.status !== "PENDING",
   },
+  { key: "attempts", label: "Not paid", test: (r) => r.kind === "attempt" },
 ];
 
 const SORTS: SortDef<OrderRow>[] = [
@@ -46,6 +57,10 @@ const SORTS: SortDef<OrderRow>[] = [
 
 function tone(row: OrderRow) {
   if (row.kind === "trial") return row.status === "ACTIVE" ? "live" : "off";
+  if (row.kind === "attempt") {
+    if (row.status === "IN PROGRESS") return "soon";
+    return row.status === "ABANDONED" || row.status === "CANCELED" ? "off" : "bad";
+  }
   if (row.status === "SUCCESS") return "live";
   if (row.status === "PENDING") return "soon";
   return "bad";
@@ -56,9 +71,15 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
   // the chip takes them out so the list reads as payments only.
   const [showTrials, setShowTrials] = useState(true);
   const trialCount = useMemo(() => orders.filter((o) => o.kind === "trial").length, [orders]);
+  // Attempts are people who pressed pay and did not complete: not sales either.
+  const [showAttempts, setShowAttempts] = useState(true);
+  const attemptCount = useMemo(() => orders.filter((o) => o.kind === "attempt").length, [orders]);
   const rows = useMemo(
-    () => (showTrials ? orders : orders.filter((o) => o.kind === "order")),
-    [orders, showTrials],
+    () =>
+      orders.filter((o) =>
+        o.kind === "trial" ? showTrials : o.kind === "attempt" ? showAttempts : true,
+      ),
+    [orders, showTrials, showAttempts],
   );
 
   const view = useTableView(rows, {
@@ -67,7 +88,8 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
     search: (row, q) =>
       row.email.toLowerCase().includes(q) ||
       (row.paygateId ?? "").toLowerCase().includes(q) ||
-      (row.robotName ?? "").toLowerCase().includes(q),
+      (row.robotName ?? "").toLowerCase().includes(q) ||
+      (row.provider ?? "").toLowerCase().includes(q),
     filters: FILTERS,
     sorts: SORTS,
     pageSize: 10,
@@ -82,7 +104,9 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
       ? "No orders match those filters."
       : trialCount > 0 && !showTrials
         ? "No payments yet — free trials are hidden."
-        : "No orders yet.";
+        : attemptCount > 0 && !showAttempts
+          ? "No payments yet — payment attempts are hidden."
+          : "No orders yet.";
 
   return (
     <section className="card" style={{ marginTop: "20px" }}>
@@ -119,6 +143,23 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
           Free trials
           <span className="chip-count">{trialCount}</span>
         </button>
+        <button
+          type="button"
+          className="toolbar-chip"
+          aria-pressed={showAttempts}
+          title={showAttempts ? "Hide payment attempts" : "Show payment attempts"}
+          onClick={() => {
+            setShowAttempts((on) => !on);
+            view.setPage(1);
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path className="chip-tick" d="M8 12.5l2.7 2.7L16 9.5" />
+          </svg>
+          Payment attempts
+          <span className="chip-count">{attemptCount}</span>
+        </button>
       </TableToolbar>
 
       <div className="table-wrap">
@@ -148,8 +189,15 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                     <span className="robot-slug">
                       {row.kind === "trial"
                         ? `Free trial · ${row.robotName ?? "robot"}`
-                        : (row.paygateId ?? "no reference")}
+                        : row.kind === "attempt"
+                          ? `Attempt · ${row.provider ?? "provider"} · ${row.robotName ?? "robot"}`
+                          : (row.paygateId ?? "no reference")}
                     </span>
+                    {row.kind === "attempt" && row.detail && (
+                      <span className="robot-slug" style={{ color: "var(--text-muted)" }}>
+                        {row.detail}
+                      </span>
+                    )}
                   </span>
                 </td>
                 <td data-label="Tier" style={{ whiteSpace: "nowrap" }}>
@@ -158,7 +206,9 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                 <td data-label="Amount" style={{ whiteSpace: "nowrap", fontWeight: 600 }}>
                   {row.kind === "trial"
                     ? "Free"
-                    : `$${row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${row.currency}`}
+                    : row.kind === "attempt" && !row.amount
+                      ? "—"
+                      : `$${row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${row.currency}`}
                 </td>
                 <td data-label="Status">
                   <span className="pill" data-tone={tone(row)}>

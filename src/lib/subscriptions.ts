@@ -6,6 +6,7 @@ import { buildDashboardMagicLink } from "@/lib/magic-links";
 import { mapTier, computeExpirationDate, trialDays, UnknownTierError } from "@/lib/pricing-tiers";
 import { resolveRobotPrice } from "@/lib/robot-pricing";
 import { inBackground, sendPurchaseEvent } from "@/lib/meta-events";
+import { markAttemptPaid } from "@/lib/payment-attempts";
 import { emitWebhookEvent, inBackground as webhooksInBackground, providerOf, type EventData } from "@/lib/outbound-webhooks";
 import type { MetaUserInput } from "@/lib/meta-capi";
 
@@ -175,6 +176,7 @@ export async function provisionSubscription(
       },
     });
     orderId = order.id;
+    await markAttemptPaid(paygateId);
 
     // A paid trial stays one message: trial.started already announced it, and a
     // trial fee is not takings a relay should add to the day's sales.

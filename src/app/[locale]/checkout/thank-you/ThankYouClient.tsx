@@ -88,6 +88,13 @@ export default function ThankYouClient() {
       // The provider already told us the buyer did not pay; nothing to wait for.
       setStatus("unpaid");
       setIsChecking(false);
+      // Close the attempt in the admin's payment log. Best effort: the page
+      // reads the same either way.
+      void fetch("/api/checkout/attempt-outcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderRef, status: providerStatus }),
+      }).catch(() => {});
       return;
     }
 
@@ -172,7 +179,7 @@ export default function ThankYouClient() {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [orderRef, pendingCheckout, providerSaysUnpaid]);
+  }, [orderRef, pendingCheckout, providerSaysUnpaid, providerStatus]);
 
   // Only offer the trial when there really is one to claim.
   useEffect(() => {

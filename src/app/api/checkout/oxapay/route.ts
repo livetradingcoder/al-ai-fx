@@ -13,6 +13,7 @@ import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
 import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
+import { recordAttemptError, recordAttemptStarted } from "@/lib/payment-attempts";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -53,6 +54,8 @@ export async function POST(req: Request) {
   const tier = (body.tier || "1-month") as TierId;
   const email = (body.email || "").trim().toLowerCase();
   const robotSlug = (body.robotSlug || "").trim().toLowerCase();
+  // What every payment-attempt row for this request shares (src/lib/payment-attempts.ts).
+  const attempt = { provider: "oxapay" as const, email, robotSlug, tier };
 
   const emailValidation = validateEmail(email);
   if (!emailValidation.valid) {
@@ -67,6 +70,7 @@ export async function POST(req: Request) {
 
   const key = oxapayKey();
   if (!key) {
+    await recordAttemptError({ ...attempt, detail: "Crypto checkout is not configured" });
     return NextResponse.json(
       { error: "Crypto checkout is not available right now — pay by card instead." },
       { status: 503 },
@@ -81,6 +85,7 @@ export async function POST(req: Request) {
   try {
     const priced = await priceCheckout({ email, robotSlug, tier, couponCode: body.couponCode, refCode });
     if (!priced.ok) {
+      await recordAttemptError({ ...attempt, couponCode: body.couponCode ?? null, detail: priced.error });
       return NextResponse.json({ error: priced.error }, { status: 400 });
     }
     const { chargeable, listPrice, discountPercent, coupon, couponWon, robotName } = priced.priced;
@@ -95,6 +100,7 @@ export async function POST(req: Request) {
     }
 
     if (!(await isProviderAvailable("oxapay"))) {
+      await recordAttemptError({ ...attempt, amount: chargeable, detail: "Crypto is switched off in admin" });
       return NextResponse.json({ error: providerOffMessage("oxapay") }, { status: 503 });
     }
 
@@ -126,6 +132,12 @@ export async function POST(req: Request) {
 
     // Meta: remember the browser for the webhook, report the payment-info step.
     const fullRef = oxapayOrderRef(orderRef);
+    await recordAttemptStarted({
+      ...attempt,
+      orderRef: fullRef,
+      amount: chargeable,
+      couponCode: couponWon && coupon ? coupon.code : null,
+    });
     const metaCtx = readMetaRequestContext(req);
     inBackground(async () => {
       await rememberCheckoutAttribution(fullRef, metaCtx);
@@ -146,6 +158,7 @@ export async function POST(req: Request) {
       couponLabel: couponWon && coupon ? coupon.label : null,
     });
   } catch (error) {
+    await recordAttemptError({ ...attempt, detail: error instanceof Error ? error.message : "Checkout failed" });
     if (
       error instanceof UnknownTierError ||
       error instanceof UnknownRobotError ||

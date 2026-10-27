@@ -13,6 +13,7 @@ import { UnknownRobotError, UnknownRobotPriceError } from "@/lib/robot-pricing";
 import { validateEmail } from "@/lib/validation";
 import type { TierId } from "@/config/pricing";
 import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
+import { recordAttemptError, recordAttemptStarted } from "@/lib/payment-attempts";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -79,6 +80,8 @@ export async function POST(req: Request) {
   const tier = (body.tier || "1-month") as TierId;
   const email = (body.email || "").trim().toLowerCase();
   const robotSlug = (body.robotSlug || "").trim().toLowerCase();
+  // What every payment-attempt row for this request shares (src/lib/payment-attempts.ts).
+  const attempt = { provider: "polar" as const, email, robotSlug, tier };
 
   const emailValidation = validateEmail(email);
   if (!emailValidation.valid) {
@@ -93,6 +96,7 @@ export async function POST(req: Request) {
   try {
     const priced = await priceCheckout({ email, robotSlug, tier, couponCode: body.couponCode, refCode });
     if (!priced.ok) {
+      await recordAttemptError({ ...attempt, couponCode: body.couponCode ?? null, detail: priced.error });
       return NextResponse.json({ error: priced.error }, { status: 400 });
     }
     const { chargeable, listPrice, discountPercent, coupon, couponWon, robotName } = priced.priced;
@@ -107,11 +111,13 @@ export async function POST(req: Request) {
     }
 
     if (!(await isProviderAvailable("polar"))) {
+      await recordAttemptError({ ...attempt, amount: chargeable, detail: "Card checkout is switched off in admin" });
       return NextResponse.json({ error: providerOffMessage("polar") }, { status: 503 });
     }
 
     const productId = await findPolarProduct(robotSlug, tier);
     if (!productId) {
+      await recordAttemptError({ ...attempt, amount: chargeable, detail: "No Polar product for this plan" });
       return NextResponse.json(
         { error: "Card checkout is not available for this plan yet — pay with crypto instead." },
         { status: 404 },
@@ -139,6 +145,12 @@ export async function POST(req: Request) {
     // Meta: remember what this browser looked like (the payment webhook has no
     // browser) and report the payment-info step. Background, and fenced off.
     const orderRef = polarCheckoutRef(checkout.id);
+    await recordAttemptStarted({
+      ...attempt,
+      orderRef,
+      amount: chargeable,
+      couponCode: couponWon && coupon ? coupon.code : null,
+    });
     const metaCtx = readMetaRequestContext(req);
     inBackground(async () => {
       await rememberCheckoutAttribution(orderRef, metaCtx);
@@ -158,6 +170,7 @@ export async function POST(req: Request) {
       couponLabel: couponWon && coupon ? coupon.label : null,
     });
   } catch (error) {
+    await recordAttemptError({ ...attempt, detail: error instanceof Error ? error.message : "Checkout failed" });
     if (isPriceError(error)) {
       return NextResponse.json({ error: (error as Error).message }, { status: 400 });
     }

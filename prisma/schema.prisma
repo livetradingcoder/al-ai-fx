@@ -731,3 +731,32 @@ model PaymentSettings {
   oxapayEnabled Boolean  @default(true)
   updatedAt     DateTime @updatedAt
 }
+
+/// Every time someone presses pay: written when a checkout session is created
+/// (STARTED), and again when it could not be (ERROR). An Order exists only once
+/// money has arrived, so without this a buyer who never paid leaves no trace.
+/// See src/lib/payment-attempts.ts. A STARTED row older than half an hour is
+/// shown as abandoned; nothing rewrites it.
+model PaymentAttempt {
+  id         String   @id @default(cuid())
+  /// The reference the provider's webhook stores on the Order (WHOP-…, OXAPAY-…,
+  /// POLAR-…). Null for an attempt that failed before a session existed.
+  orderRef   String?  @unique
+  /// whop | oxapay | polar
+  provider   String
+  email      String
+  robotSlug  String
+  tier       String
+  /// What the checkout asked for, in USD. Null when pricing itself failed.
+  amount     Float?
+  couponCode String?
+  /// STARTED | PAID | FAILED | CANCELED | ERROR
+  status     String   @default("STARTED")
+  /// Why it failed: the provider's or our own message, truncated.
+  detail     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([email])
+}

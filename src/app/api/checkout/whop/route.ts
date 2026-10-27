@@ -13,6 +13,7 @@ import { validateEmail } from "@/lib/validation";
 import { WHOP_MIN_AMOUNT, createWhopCheckout, whopKey, whopOrderRef, whopProductId } from "@/lib/whop";
 import type { TierId } from "@/config/pricing";
 import { isProviderAvailable, providerOffMessage } from "@/lib/payment-settings";
+import { recordAttemptError, recordAttemptStarted } from "@/lib/payment-attempts";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -61,6 +62,8 @@ export async function POST(req: Request) {
   const tier = (body.tier || "1-month") as TierId;
   const email = (body.email || "").trim().toLowerCase();
   const robotSlug = (body.robotSlug || "").trim().toLowerCase();
+  // What every payment-attempt row for this request shares (src/lib/payment-attempts.ts).
+  const attempt = { provider: "whop" as const, email, robotSlug, tier };
 
   const emailValidation = validateEmail(email);
   if (!emailValidation.valid) {
@@ -73,6 +76,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "This plan cannot be bought through Whop." }, { status: 400 });
   }
   if (!whopKey() || !whopProductId(robotSlug)) {
+    await recordAttemptError({ ...attempt, detail: "Whop is not set up for this robot" });
     return NextResponse.json(
       { error: "Whop checkout is not available right now — pay by card or crypto instead." },
       { status: 503 },
@@ -87,6 +91,7 @@ export async function POST(req: Request) {
   try {
     const priced = await priceCheckout({ email, robotSlug, tier, couponCode: body.couponCode, refCode });
     if (!priced.ok) {
+      await recordAttemptError({ ...attempt, couponCode: body.couponCode ?? null, detail: priced.error });
       return NextResponse.json({ error: priced.error }, { status: 400 });
     }
     const { chargeable, listPrice, discountPercent, coupon, couponWon, robotName } = priced.priced;
@@ -101,9 +106,11 @@ export async function POST(req: Request) {
     }
 
     if (!(await isProviderAvailable("whop"))) {
+      await recordAttemptError({ ...attempt, amount: chargeable, detail: "Whop is switched off in admin" });
       return NextResponse.json({ error: providerOffMessage("whop") }, { status: 503 });
     }
     if (chargeable < WHOP_MIN_AMOUNT) {
+      await recordAttemptError({ ...attempt, amount: chargeable, detail: "Below Whop's $1 minimum" });
       return NextResponse.json(
         { error: "This amount is too small for Whop — pay by card or crypto instead." },
         { status: 400 },
@@ -133,6 +140,12 @@ export async function POST(req: Request) {
 
     // Meta: remember the browser for the webhook, report the payment-info step.
     const fullRef = whopOrderRef(orderRef);
+    await recordAttemptStarted({
+      ...attempt,
+      orderRef: fullRef,
+      amount: chargeable,
+      couponCode: couponWon && coupon ? coupon.code : null,
+    });
     const metaCtx = readMetaRequestContext(req);
     inBackground(async () => {
       await rememberCheckoutAttribution(fullRef, metaCtx);
@@ -152,6 +165,7 @@ export async function POST(req: Request) {
       couponLabel: couponWon && coupon ? coupon.label : null,
     });
   } catch (error) {
+    await recordAttemptError({ ...attempt, detail: error instanceof Error ? error.message : "Checkout failed" });
     if (
       error instanceof UnknownTierError ||
       error instanceof UnknownRobotError ||
