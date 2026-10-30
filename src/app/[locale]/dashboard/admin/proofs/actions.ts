@@ -102,6 +102,43 @@ export async function setProofPublished(input: { id: string; published: boolean 
   return { ok: true, message: input.published ? "Published on the results page." : "Taken off the results page." };
 }
 
+/**
+ * Publishes an approved screenshot whose owner did not tick the public-display
+ * box, because the admin has their consent another way (an email or a message).
+ * The consent flag is the privacy record, so this never flips it quietly: the
+ * admin must say how consent was given, and that statement, who recorded it and
+ * when are written to the proof's admin note.
+ */
+export async function publishWithRecordedConsent(input: { id: string; basis: string }): Promise<ActionResult> {
+  const session = await getServerSession(authOptions);
+  if (session?.user?.role !== "ADMIN") return { ok: false, error: "Admins only" };
+
+  const basis = cleanNote(input.basis);
+  if (!basis) return { ok: false, error: "Say how the person gave consent, for example “email on 30 Oct”" };
+
+  const proof = await prisma.resultProof.findUnique({
+    where: { id: input.id },
+    select: { status: true, publishConsent: true, adminNote: true },
+  });
+  if (!proof) return { ok: false, error: "That screenshot no longer exists" };
+  if (proof.status !== "APPROVED") return { ok: false, error: "Approve it before publishing" };
+  if (proof.publishConsent) return { ok: false, error: "The person already agreed: use Publish" };
+
+  const record =
+    `Consent given outside the site and recorded by ${session.user.email ?? "an admin"} ` +
+    `on ${new Date().toISOString().slice(0, 10)}: ${basis}`;
+  await prisma.resultProof.update({
+    where: { id: input.id },
+    data: {
+      publishConsent: true,
+      publishedAt: new Date(),
+      adminNote: [proof.adminNote, record].filter(Boolean).join("\n").slice(0, 1000),
+    },
+  });
+  refresh();
+  return { ok: true, message: "Published on the results page, with the consent recorded in the admin note." };
+}
+
 export async function reviewShareProof(input: {
   id: string;
   decision: "approve" | "reject";

@@ -10,7 +10,7 @@ import {
   type SortDef,
 } from "@/components/dashboard/table-view";
 import type { ActionResult } from "@/lib/action-result";
-import { reviewResultProof, reviewShareProof, setProofPublished } from "./actions";
+import { publishWithRecordedConsent, reviewResultProof, reviewShareProof, setProofPublished } from "./actions";
 import { formatDateTime } from "@/lib/format-date";
 
 type Status = "PENDING" | "APPROVED" | "REJECTED";
@@ -98,6 +98,16 @@ export default function ProofsAdmin({ results, shares }: { results: ResultRow[];
         setNotice({ kind: "error", text: "Something went wrong" });
       }
     });
+
+  // The person did not tick the box but the admin has their consent another way.
+  function publishWithConsent(id: string) {
+    const basis = window.prompt(
+      "This person did not tick public display. Publish only if they agreed another way.\nHow did they give consent? (recorded in the admin note)",
+      "",
+    );
+    if (basis === null) return;
+    run(() => publishWithRecordedConsent({ id, basis }));
+  }
 
   // A short reason is optional; cancelling the prompt cancels the rejection.
   function reject(kind: "result" | "share", id: string) {
@@ -201,6 +211,11 @@ export default function ProofsAdmin({ results, shares }: { results: ResultRow[];
                               Reject
                             </button>
                           </>
+                        )}
+                        {r.status === "APPROVED" && !r.publishConsent && (
+                          <button type="button" className="btn-mini" disabled={pending} title="Consent was given outside the site" onClick={() => publishWithConsent(r.id)}>
+                            Publish with consent
+                          </button>
                         )}
                         {r.status === "APPROVED" && r.publishConsent && (
                           <button type="button" className="btn-mini" disabled={pending} onClick={() => run(() => setProofPublished({ id: r.id, published: !r.published }))}>
