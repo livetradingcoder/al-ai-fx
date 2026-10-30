@@ -423,7 +423,7 @@ textarea.rw-input {
   text-align: center;
 }
 
-.rw-disclaimer {
+.rw-scope .rw-disclaimer {
   margin-top: 28px;
   padding: 14px 16px;
   border-left: 3px solid var(--rw-primary);
